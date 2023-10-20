@@ -44,7 +44,7 @@ class _plannerAppState extends State<plannerApp>{
     @override
     Widget build(BuildContext context){
         return GetMaterialApp(
-            home: login ? eventView() : loginView(),
+            // home: login ? eventView() : loginView(),
         );
     }
 }
