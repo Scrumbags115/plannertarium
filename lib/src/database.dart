@@ -1,29 +1,21 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-// import 'package:planner/firebase_options.dart'
-import 'package:planner/main.dart';
-import 'package:get/get.dart';
+import 'package:planner/models/event.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  print('-- WidgetsFlutterBinding.ensureInitialized');
+class DatabaseService {
 
-  await Firebase.initializeApp();
-  print('-- main: Firebase.initializeApp');
+  final String uid;
+  DatabaseService({ required this.uid });
 
-  var db = FirebaseFirestore.instance;
+  // users collection reference
+  // todo: merge with task branch
+  final CollectionReference users = FirebaseFirestore.instance.collection('users');
 
-  print("hello");
+  getUserTasks(String eventID) {
+    return FirebaseFirestore.instance.collection('users').doc(uid).collection("events").doc(eventID); // turn this into a map of taskID to task objects?
+  }
 
-  await Firebase.initializeApp(
-    options: const FirebaseOptions(
-        apiKey: 'AIzaSyBwR4cKdPaa5c7p0fMLcAgu-VL8w3L3IUs',
-        appId: '1:86325497409:android:85586ccfa7c01ea29cc0c0',
-        messagingSenderId: '86325497409',
-        projectId: 'plannertarium-d1696'),
-  );
+  Future<void> setUserTasks(String taskID, Event e) async {
+    return await users.doc(uid).collection("events").doc(taskID).set(e.toMap());
+  }
 
-  runApp(const plannerApp());
 }
