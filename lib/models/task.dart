@@ -7,7 +7,7 @@ class Task {
   num timeDue;
   String location;
   String color;
-  Set<String> tags = <String>{};
+  Set<String> tags;
   Recurrence? recurrenceRules;
   final num timeCreated = DateTime.now().millisecondsSinceEpoch / 1000;
   num timeModified = 0;
@@ -22,6 +22,8 @@ class Task {
       this.recurrenceRules}) {
     timeModified = timeCreated;
   }
+
+  /// Alternate constructor so VSCode autogenerates all fields
   Task.require(
       {required this.name,
       required this.description,
@@ -33,6 +35,7 @@ class Task {
     timeModified = timeCreated;
   }
 
+  /// returns a mapping with kv pairs corresponding to Firebase's
   toMap() {
     return ({
       'date created': timeCreated,
