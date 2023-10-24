@@ -1,3 +1,4 @@
+import 'package:planner/common/recurrence.dart';
 // import recurrence class here
 class Event {
   String name;
@@ -34,7 +35,7 @@ class Event {
       'location' : location,
       'recurrence rules' : recurrenceRules?.toMap() ?? Recurrence(false, 0, 0, []).toMap(),
       'tags' : tags.toList(),
-      'task name' : name
+      'event name' : name
     }
     );
   }
