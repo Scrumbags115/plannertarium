@@ -10,12 +10,12 @@ class Task {
   Set<String> tags;
   Recurrence? recurrenceRules;
   final DateTime? timeCreated = DateTime.now();
-  DateTime? timeModified = 0;
+  DateTime? timeModified;
 
   Task(
       {required this.name,
       this.description = "",
-      this.timeDue = 0,
+      this.timeDue,
       this.location = "",
       this.color = "#919191",
       required this.tags,
