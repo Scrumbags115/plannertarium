@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:planner/src/recurrence.dart';
+import 'package:planner/common/recurrence.dart';
 import 'package:planner/models/event.dart';
 
 class DatabaseService {

@@ -1,4 +1,4 @@
-import 'package:planner/src/recurrence.dart';
+import 'package:planner/common/recurrence.dart';
 // import recurrence class here
 class Event {
   String name;
