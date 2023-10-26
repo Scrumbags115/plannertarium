@@ -4,13 +4,13 @@ import 'package:planner/common/recurrence.dart';
 class Task {
   String name;
   String description;
-  num timeDue;
+  DateTime? timeDue;
   String location;
   String color;
   Set<String> tags;
   Recurrence? recurrenceRules;
-  final num timeCreated = DateTime.now().millisecondsSinceEpoch / 1000;
-  num timeModified = 0;
+  final DateTime? timeCreated = DateTime.now().millisecondsSinceEpoch / 1000;
+  DateTime? timeModified = 0;
 
   Task(
       {required this.name,
