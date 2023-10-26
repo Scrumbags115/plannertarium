@@ -44,8 +44,7 @@ class Task {
       'due date': timeDue,
       'hex color': color,
       'location': location,
-      'recurrence rules':
-          recurrenceRules?.toMap() ?? Recurrence(false, 0, 0, []).toMap(),
+      'recurrence rules': recurrenceRules?.toMap(),
       'tags': tags.toList(),
       'task name': name
     });
