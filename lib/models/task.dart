@@ -9,7 +9,7 @@ class Task {
   String color;
   Set<String> tags;
   Recurrence? recurrenceRules;
-  final DateTime? timeCreated = DateTime.now().millisecondsSinceEpoch / 1000;
+  final DateTime? timeCreated = DateTime.now();
   DateTime? timeModified = 0;
 
   Task(
