@@ -7,7 +7,7 @@ class DatabaseService {
 
   // users collection reference
   final CollectionReference users =
-  FirebaseFirestore.instance.collection('users');
+      FirebaseFirestore.instance.collection('users');
   late CollectionReference events;
 
   DatabaseService({required this.uid}) {
@@ -38,24 +38,24 @@ class DatabaseService {
   /// Each event ID is the current creation timestamp
   Future<void> addUniqueUserEvent(
       {required String eventName,
-        String eventDescription = "",
-        String eventLocation = "",
-        String eventColor = "",
-        required Set<String> eventTags,
-        required DateTime timeStart,
-        required DateTime timeEnd,
-        bool recurrenceEnabled = false,
-        DateTime? recurrenceTimeStart,
-        DateTime? recurrenceTimeEnd,
-        List<bool> recurrenceDates = const [
-          false,
-          false,
-          false,
-          false,
-          false,
-          false,
-          false
-        ]}) async {
+      String eventDescription = "",
+      String eventLocation = "",
+      String eventColor = "",
+      required Set<String> eventTags,
+      required DateTime timeStart,
+      required DateTime timeEnd,
+      bool recurrenceEnabled = false,
+      DateTime? recurrenceTimeStart,
+      DateTime? recurrenceTimeEnd,
+      List<bool> recurrenceDates = const [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]}) async {
     final now = DateTime.now();
     // final random = generateRandomString(10);
     var eventID = now.toString();
@@ -88,8 +88,8 @@ class DatabaseService {
         .doc(uid)
         .collection("events")
         .where("event time start",
-        isGreaterThanOrEqualTo: timestampStart,
-        isLessThanOrEqualTo: timestampEnd)
+            isGreaterThanOrEqualTo: timestampStart,
+            isLessThanOrEqualTo: timestampEnd)
         .get();
   }
 
@@ -102,7 +102,7 @@ class DatabaseService {
     Map<String, dynamic> m = {};
 
     final userEvents =
-    await getUserEventsInDateRange(dateStart: dateStart, dateEnd: dateEnd);
+        await getUserEventsInDateRange(dateStart: dateStart, dateEnd: dateEnd);
     userEvents.docs.forEach((doc) {
       m[doc.id] = doc.data();
     });
@@ -130,25 +130,25 @@ class DatabaseService {
   /// optional: String eventDescription,, String, eventLocation, String eventColor, bool recurrenceEnabled, num recurrenceTimeStart, num recurrenceTimeEnd, List<bool> recurrenceDates
   Future<void> addUserEvent(
       {required String eventID,
-        required String eventName,
-        String eventDescription = "",
-        String eventLocation = "",
-        String eventColor = "",
-        required Set<String> eventTags,
-        required DateTime timeStart,
-        required DateTime timeEnd,
-        bool recurrenceEnabled = false,
-        DateTime? recurrenceTimeStart,
-        DateTime? recurrenceTimeEnd,
-        List<bool> recurrenceDates = const [
-          false,
-          false,
-          false,
-          false,
-          false,
-          false,
-          false
-        ]}) async {
+      required String eventName,
+      String eventDescription = "",
+      String eventLocation = "",
+      String eventColor = "",
+      required Set<String> eventTags,
+      required DateTime timeStart,
+      required DateTime timeEnd,
+      bool recurrenceEnabled = false,
+      DateTime? recurrenceTimeStart,
+      DateTime? recurrenceTimeEnd,
+      List<bool> recurrenceDates = const [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]}) async {
     Recurrence r = Recurrence(recurrenceEnabled, recurrenceTimeStart,
         recurrenceTimeEnd, recurrenceDates);
     Event e = Event(
