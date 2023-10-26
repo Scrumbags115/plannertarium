@@ -1,11 +1,12 @@
+import 'package:planner/common/recurrence.dart';
 // import recurrence class here
 class Event {
   String name;
   String description;
-  final num timeCreated = DateTime.now().millisecondsSinceEpoch/1000;
-  num timeModified=0;
-  num timeStart;
-  num timeEnd;
+  final DateTime timeCreated = DateTime.now();
+  DateTime timeModified=DateTime.now();
+  DateTime timeStart;
+  DateTime timeEnd;
   String color;
   String location;
   Set<String> tags=<String>{};
@@ -21,7 +22,7 @@ class Event {
     required this.timeEnd
   })
   {
-    timeModified=timeCreated;
+    return;
   }
   toMap() {
     return ({
@@ -32,9 +33,9 @@ class Event {
       'event time end' : timeEnd,
       'hex color' : color,
       'location' : location,
-      'recurrence rules' : recurrenceRules?.toMap() ?? Recurrence(false, 0, 0, []).toMap(),
+      'recurrence rules' : recurrenceRules?.toMap(),
       'tags' : tags.toList(),
-      'task name' : name
+      'event name' : name
     }
     );
   }
