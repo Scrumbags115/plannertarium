@@ -24,7 +24,7 @@ class Event {
   {
     return;
   }
-  toMap() {
+  Map<String, dynamic> toMap() {
     return ({
       'date created' : timeCreated,
       'date modified' : timeModified,
