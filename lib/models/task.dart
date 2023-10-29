@@ -27,19 +27,39 @@ class Task {
     timeModified = DateTime.now();
   }
 
-  void setName(String newName) {
+  set Name(String newName) {
     timeModified = DateTime.now();
     name = newName;
   }
 
-  void setDescription(String newDescription) {
+  set Description(String newDescription) {
     timeModified = DateTime.now();
     description = newDescription;
   }
 
-  void setTimeDue(DateTime newTimeDue) {
+  set TimeDue(DateTime newTimeDue) {
     timeModified = DateTime.now();
     timeDue = newTimeDue;
+  }
+
+  set Location(String newLocation) {
+    timeModified = DateTime.now();
+    location = newLocation;
+  }
+
+  set Color(String newColor) {
+    timeModified = DateTime.now();
+    location = newColor;
+  }
+
+  set Tags(Set<String> newTags) {
+    timeModified = DateTime.now();
+    tags = newTags;
+  }
+
+  set RecurrenceRules(Recurrence newRecurrence) {
+    timeModified = DateTime.now();
+    recurrenceRules = newRecurrence;
   }
 
   /// Alternate constructor so VSCode autogenerates all fields
