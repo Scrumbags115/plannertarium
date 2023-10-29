@@ -27,6 +27,18 @@ class Task {
     timeModified = DateTime.now();
   }
 
+  void setName(String newName) {
+    timeModified = DateTime.now();
+    name = newName;
+  }
+
+  void setDescription(String newDescription) {
+    timeModified = DateTime.now();
+    description = newDescription;
+  }
+
+  
+
   /// Alternate constructor so VSCode autogenerates all fields
   /// Good for reading from database
   Task.requireFields(
@@ -38,13 +50,11 @@ class Task {
       required this.tags,
       required this.recurrenceRules,
       required this.timeCreated,
-      required this.timeModified}) {
-    timeCreated  = timeCreated ?? DateTime.now();
-    timeModified = timeModified ?? DateTime.now();
-  }
+      required this.timeModified});
 
   /// returns a mapping with kv pairs corresponding to Firebase's
-  Map<String, dynamic> toMap({keepClasses=false}) {
+  /// possibly a better getter 
+  Map<String, dynamic> toMap({keepClasses = false}) {
     return ({
       'date created': timeCreated,
       'date modified': timeModified,
@@ -52,7 +62,8 @@ class Task {
       'due date': timeDue,
       'hex color': color,
       'location': location,
-      'recurrence rules': keepClasses ? recurrenceRules : recurrenceRules?.toMap(),
+      'recurrence rules':
+          keepClasses ? recurrenceRules : recurrenceRules?.toMap(),
       'tags': keepClasses ? tags : tags.toList(),
       'task name': name
     });
