@@ -1,4 +1,5 @@
 import 'package:planner/common/recurrence.dart';
+import 'package:planner/common/date.dart';
 
 /// Class to hold information about a task
 class Task {
@@ -31,36 +32,47 @@ class Task {
     timeModified = DateTime.now();
     name = newName;
   }
+  String get Name => name;
 
   set Description(String newDescription) {
     timeModified = DateTime.now();
     description = newDescription;
   }
+  String get Description => description;
 
-  set TimeDue(DateTime newTimeDue) {
+  set TimeDue(newTimeDue) { // Can't force DateTime type because it can be null
     timeModified = DateTime.now();
     timeDue = newTimeDue;
   }
+  get TimeDue => timeDue;
 
   set Location(String newLocation) {
     timeModified = DateTime.now();
     location = newLocation;
   }
+  String get Location => location;
 
   set Color(String newColor) {
     timeModified = DateTime.now();
     location = newColor;
   }
+  String get Color => color;
 
   set Tags(Set<String> newTags) {
     timeModified = DateTime.now();
     tags = newTags;
   }
+  Set<String> get Tags => tags;
 
-  set RecurrenceRules(Recurrence newRecurrence) {
+  set RecurrenceRules(newRecurrence) { // Can't force Recurrence type because it can be null
     timeModified = DateTime.now();
     recurrenceRules = newRecurrence;
   }
+  get RecurrenceRules => recurrenceRules;
+
+  get TimeCreated => timeCreated;
+
+  get TimeModified => timeModified;
 
   /// Alternate constructor so VSCode autogenerates all fields
   /// Good for reading from database

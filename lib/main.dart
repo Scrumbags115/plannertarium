@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:planner/models/task.dart';
+
+Task t = Task(name: "test", tags: {});
 
 void main() {
   runApp(const MyApp());
@@ -66,6 +69,8 @@ class _MyHomePageState extends State<MyHomePage> {
       // called again, and so nothing would appear to happen.
       _counter++;
     });
+    t.Name = t.Name + '1';
+    print("FIND ME");
   }
 
   @override
@@ -109,7 +114,7 @@ class _MyHomePageState extends State<MyHomePage> {
               'You have pushed the button this many times:',
             ),
             Text(
-              '$_counter',
+              '$_counter'+"."+"task is."+t.name+"."+t.timeModified.toString(),
               style: Theme.of(context).textTheme.headlineMedium,
             ),
           ],
