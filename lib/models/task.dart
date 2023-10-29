@@ -37,7 +37,10 @@ class Task {
     description = newDescription;
   }
 
-  
+  void setTimeDue(DateTime newTimeDue) {
+    timeModified = DateTime.now();
+    timeDue = newTimeDue;
+  }
 
   /// Alternate constructor so VSCode autogenerates all fields
   /// Good for reading from database
