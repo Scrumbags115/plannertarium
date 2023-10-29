@@ -70,9 +70,9 @@ class Task {
   }
   get RecurrenceRules => recurrenceRules;
 
-  get TimeCreated => timeCreated;
+  get TimeCreated => timeCreated; // Do not want to timeCreated this after the constructor
 
-  get TimeModified => timeModified;
+  get TimeModified => timeModified; // Do not want to change timeModified unless modifying a field
 
   /// Alternate constructor so VSCode autogenerates all fields
   /// Good for reading from database
