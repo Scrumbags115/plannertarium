@@ -1,10 +1,23 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:planner/common/database.dart';
 import 'package:planner/models/task.dart';
 
 Task t = Task(name: "test", tags: {});
+DatabaseService d = DatabaseService(uid: "test_user_1");
 
-void main() {
-  runApp(const MyApp());
+void main() async{
+  print("IN MAIN");
+    WidgetsFlutterBinding.ensureInitialized();
+    await Firebase.initializeApp(
+        options: const FirebaseOptions(
+            apiKey: 'AIzaSyBwR4cKdPaa5c7p0fMLcAgu-VL8w3L3IUs',
+            appId: '1:86325497409:android:85586ccfa7c01ea29cc0c0',
+            messagingSenderId: '86325497409',
+            projectId: 'plannertarium-d1696'),
+    );
+    d.setUserTasks("1", t);
+    runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -70,7 +83,8 @@ class _MyHomePageState extends State<MyHomePage> {
       _counter++;
     });
     t.Name = t.Name + '1';
-    print("FIND ME");
+    d.setUserTasks("1", t);
+    print("UPDATED NAME");
   }
 
   @override
@@ -114,7 +128,7 @@ class _MyHomePageState extends State<MyHomePage> {
               'You have pushed the button this many times:',
             ),
             Text(
-              '$_counter'+"."+"task is."+t.name+"."+t.timeModified.toString(),
+              '$_counter'+"."+"task is."+t.Name+"."+t.timeModified.toString(),
               style: Theme.of(context).textTheme.headlineMedium,
             ),
           ],

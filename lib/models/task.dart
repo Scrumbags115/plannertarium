@@ -1,5 +1,4 @@
 import 'package:planner/common/recurrence.dart';
-import 'package:planner/common/date.dart';
 
 /// Class to hold information about a task
 class Task {
