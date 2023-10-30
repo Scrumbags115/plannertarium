@@ -206,14 +206,16 @@ class DatabaseService {
           .collection('tasks')
           .doc(taskID)
           .get();
-      return Task.require(
+      return Task.requireFields(
           name: taskDocument['name'],
           description: taskDocument['description'],
           timeDue: taskDocument['due date'],
           location: taskDocument['location'],
           color: taskDocument['hex color'],
           tags: taskDocument['tags'],
-          recurrenceRules: taskDocument['recurrence rules']);
+          recurrenceRules: taskDocument['recurrence rules'],
+          timeCreated: taskDocument['date created'],
+          timeModified: taskDocument['date modified']);
     } catch (e) {
       print("Get Failed");
       return Task(name: "", tags: <String>{});

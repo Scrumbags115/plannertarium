@@ -1,10 +1,14 @@
-import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:get/get.dart';
+import 'package:flutter/material.dart';
+import 'package:planner/common/database.dart';
+import 'package:planner/models/task.dart';
+import 'package:planner/temp_frontend.dart';
+
+Task t = Task(name: "test", tags: {});
+DatabaseService d = DatabaseService(uid: "test_user_1");
 
 void main() async{
+  print("IN MAIN");
     WidgetsFlutterBinding.ensureInitialized();
     await Firebase.initializeApp(
         options: const FirebaseOptions(
@@ -13,39 +17,6 @@ void main() async{
             messagingSenderId: '86325497409',
             projectId: 'plannertarium-d1696'),
     );
-     runApp(const plannerApp());
+    d.setUserTasks("1", t);
+    runApp(const MyApp());
 }
-
-class plannerApp extends StatefulWidget{
-    const plannerApp({Key? key}): super(key: key);
-
-    @override
-    State<plannerApp> createState() => _plannerAppState();
-}
-
-class _plannerAppState extends State<plannerApp>{
-    final FirebaseAuth auth=FirebaseAuth.instance;
-    final FirebaseFirestore firestore=FirebaseFirestore.instance;
-    final User? user=FirebaseAuth.instance.currentUser;
-    bool login=false;
-
-    @override
-
-    void initState(){
-        super.initState();
-        FirebaseAuth.instance.setPersistence(Persistence.LOCAL);
-        auth.authStateChanges().listen((user) {
-            setState(() {
-              login=user!=null;
-            });
-        });
-    }
-
-    @override
-    Widget build(BuildContext context){
-        return GetMaterialApp(
-            // home: login ? eventView() : loginView(),
-        );
-    }
-}
-

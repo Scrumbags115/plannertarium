@@ -9,9 +9,11 @@ class Task {
   String color;
   Set<String> tags;
   Recurrence? recurrenceRules;
-  final DateTime? timeCreated = DateTime.now();
+  DateTime? timeCreated;
   DateTime? timeModified;
 
+  /// Default constructor
+  /// Good for if you want to add a new task from user
   Task(
       {required this.name,
       this.description = "",
@@ -19,24 +21,74 @@ class Task {
       this.location = "",
       this.color = "#919191",
       required this.tags,
-      this.recurrenceRules}) {
-    timeModified = timeCreated;
+      this.recurrenceRules,
+      this.timeCreated}) {
+    timeCreated = timeCreated ?? DateTime.now();
+    timeModified = DateTime.now();
   }
 
+  set Name(String newName) {
+    timeModified = DateTime.now();
+    name = newName;
+  }
+  String get Name => name;
+
+  set Description(String newDescription) {
+    timeModified = DateTime.now();
+    description = newDescription;
+  }
+  String get Description => description;
+
+  set TimeDue(newTimeDue) { // Can't force DateTime type because it can be null
+    timeModified = DateTime.now();
+    timeDue = newTimeDue;
+  }
+  get TimeDue => timeDue;
+
+  set Location(String newLocation) {
+    timeModified = DateTime.now();
+    location = newLocation;
+  }
+  String get Location => location;
+
+  set Color(String newColor) {
+    timeModified = DateTime.now();
+    location = newColor;
+  }
+  String get Color => color;
+
+  set Tags(Set<String> newTags) {
+    timeModified = DateTime.now();
+    tags = newTags;
+  }
+  Set<String> get Tags => tags;
+
+  set RecurrenceRules(newRecurrence) { // Can't force Recurrence type because it can be null
+    timeModified = DateTime.now();
+    recurrenceRules = newRecurrence;
+  }
+  get RecurrenceRules => recurrenceRules;
+
+  get TimeCreated => timeCreated; // Do not want to timeCreated this after the constructor
+
+  get TimeModified => timeModified; // Do not want to change timeModified unless modifying a field
+
   /// Alternate constructor so VSCode autogenerates all fields
-  Task.require(
+  /// Good for reading from database
+  Task.requireFields(
       {required this.name,
       required this.description,
       required this.timeDue,
       required this.location,
       required this.color,
       required this.tags,
-      required this.recurrenceRules}) {
-    timeModified = timeCreated;
-  }
+      required this.recurrenceRules,
+      required this.timeCreated,
+      required this.timeModified});
 
   /// returns a mapping with kv pairs corresponding to Firebase's
-  toMap() {
+  /// possibly a better getter 
+  Map<String, dynamic> toMap({keepClasses = false}) {
     return ({
       'date created': timeCreated,
       'date modified': timeModified,
@@ -44,8 +96,9 @@ class Task {
       'due date': timeDue,
       'hex color': color,
       'location': location,
-      'recurrence rules': recurrenceRules?.toMap(),
-      'tags': tags.toList(),
+      'recurrence rules':
+          keepClasses ? recurrenceRules : recurrenceRules?.toMap(),
+      'tags': keepClasses ? tags : tags.toList(),
       'task name': name
     });
   }
