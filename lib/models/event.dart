@@ -3,10 +3,10 @@ import 'package:planner/common/recurrence.dart';
 class Event {
   String name;
   String description;
-  final DateTime timeCreated = DateTime.now();
-  DateTime timeModified=DateTime.now();
-  DateTime timeStart;
-  DateTime timeEnd;
+  DateTime timeCreated = DateTime.now();
+  DateTime timeModified = DateTime.now();
+  DateTime? timeStart;
+  DateTime? timeEnd;
   String color;
   String location;
   Set<String> tags=<String>{};
@@ -20,10 +20,76 @@ class Event {
     this.recurrenceRules,
     required this.timeStart,
     required this.timeEnd
-  })
-  {
-    return;
+  });
+
+
+  /// Alternate constructor so VSCode autogenerates all fields
+  /// Good for reading from database
+  Event.requireFields(
+      {required this.name,
+        required this.description,
+        required this.timeCreated,
+        required this.timeModified,
+        required this.timeStart,
+        required this.timeEnd,
+        required this.color,
+        required this.location,
+        required this.tags,
+        required this.recurrenceRules});
+
+  set Name(String newName) {
+    timeModified = DateTime.now();
+    name = newName;
   }
+  String get Name => name;
+
+  set Description(String newDescription) {
+    timeModified = DateTime.now();
+    description = newDescription;
+  }
+  String get Description => description;
+
+  set TimeStart(newTimeStart) {
+    timeModified = DateTime.now();
+    timeStart = newTimeStart;
+  }
+  get TimeStart => timeStart;
+
+  set TimeEnd(newTimeEnd) {
+    timeModified = DateTime.now();
+    timeEnd = newTimeEnd;
+  }
+
+  get TimeEnd => timeEnd;
+
+  set Location(String newLocation) {
+    timeModified = DateTime.now();
+    location = newLocation;
+  }
+  String get Location => location;
+
+  set Color(String newColor) {
+    timeModified = DateTime.now();
+    location = newColor;
+  }
+  String get Color => color;
+
+  set Tags(Set<String> newTags) {
+    timeModified = DateTime.now();
+    tags = newTags;
+  }
+  Set<String> get Tags => tags;
+
+  set RecurrenceRules(newRecurrence) { // Can't force Recurrence type because it can be null
+    timeModified = DateTime.now();
+    recurrenceRules = newRecurrence;
+  }
+  get RecurrenceRules => recurrenceRules;
+
+  get TimeCreated => timeCreated; // Do not want to timeCreated this after the constructor
+
+  get TimeModified => timeModified; // Do not want to change timeModified unless modifying a field
+
   Map<String, dynamic> toMap() {
     return ({
       'date created' : timeCreated,

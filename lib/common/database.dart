@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:planner/common/recurrence.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/models/task.dart';
@@ -96,16 +97,16 @@ class DatabaseService {
 
   /// Get all events within a date range as a Map
   ///
-  /// Returns a map, with the eventID being the key and value being a map of the event values
-  Future<Map<String, dynamic>> getMapOfUserEventsInDateRange(
+  /// Returns a map, with the eventID being the key and value being an Event class
+  Future<Map<String, Event>> getMapOfUserEventsInDateRange(
       {required DateTime dateStart, required DateTime dateEnd}) async {
     // Not too sure how to attach a .then function to a future to convert into another future when awaited, so this will just force an await
-    Map<String, dynamic> m = {};
+    Map<String, Event> m = {};
 
     final userEvents =
         await getUserEventsInDateRange(dateStart: dateStart, dateEnd: dateEnd);
     userEvents.docs.forEach((doc) {
-      m[doc.id] = doc.data();
+      m[doc.id] = mapToEvent(doc.data());
     });
 
     return m;
@@ -162,6 +163,65 @@ class DatabaseService {
         timeEnd: timeEnd,
         recurrenceRules: r);
     return await _addUserEvent(eventID, e);
+  }
+
+  /// Turn a properly formatted map into an Event class
+  ///
+  /// the map must have all the proper fields
+  Event mapToEvent(Map<String, dynamic> m) {
+    // Kinda messy, but dealing with types are very annoying
+    // ex: why does Set() make a _HashSet??
+    try {
+      final name = m["event name"];
+      final description = m["description"];
+      var timeCreated = m["date created"];
+      var timeModified = m["date modified"];
+      var timeStart = m["event time start"];
+      var timeEnd = m["event time end"];
+      if (timeCreated != null) {
+        timeCreated = timeCreated.toDate();
+      }
+      if (timeModified != null) {
+        timeModified = timeModified.toDate();
+      }
+      if (timeStart != null) {
+        timeStart = timeStart.toDate();
+      }
+      if (timeEnd != null) {
+        timeEnd = timeEnd.toDate();
+      }
+      final color = m["hex color"];
+      final location = m["location"];
+      var tagsList = m["tags"];
+      var tags = <String>{};
+      for (final tag in tagsList) {
+        tags.add(tag);
+      }
+      final recurrenceRulesList = m["recurrence rules"];
+      final recurrenceDates = recurrenceRulesList["repeat on days"];
+      var dates = <bool>[];
+      if (recurrenceDates != null) {
+        for (final date in recurrenceDates) {
+          dates.add(date);
+        }
+      } else {
+        dates = null;
+      }
+      final recurrenceRules = Recurrence.requireFields(enabled: recurrenceRulesList["enabled"], timeStart: recurrenceRulesList["starts on"], timeEnd: recurrenceRulesList["ends on"], dates: dates);
+      return Event.requireFields(
+          name: name,
+          description: description,
+          timeCreated: timeCreated,
+          timeModified: timeModified,
+          timeStart: timeStart,
+          timeEnd: timeEnd,
+          color: color,
+          location: location,
+          tags: tags,
+          recurrenceRules: recurrenceRules);
+    } catch (e) {
+      throw Exception("Given map is malformed!\n$e");
+    }
   }
 
   /// Change an option in the event
