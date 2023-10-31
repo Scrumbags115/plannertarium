@@ -199,7 +199,7 @@ class DatabaseService {
       }
       final recurrenceRulesList = m["recurrence rules"];
       final recurrenceDates = recurrenceRulesList["repeat on days"];
-      var dates = <bool>[];
+      List<bool>? dates = <bool>[];
       if (recurrenceDates != null) {
         for (final date in recurrenceDates) {
           dates.add(date);
