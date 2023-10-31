@@ -4,6 +4,7 @@ import 'package:planner/common/database.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/temp_frontend2.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'common/login.dart';
 
@@ -26,7 +27,14 @@ void main() async {
   d.setUserTasks("1", t);
   runApp(MyApp());
 
-  await signInWithGoogle();
+  if (kIsWeb) {
+    // running on the web!
+    await signInWithGoogleWeb();
+  } else {
+    // NOT running on the web!
+    await signInWithGoogleMobile();
+  }
+
 
   User? u = FirebaseAuth.instance.currentUser;
   print(u);
