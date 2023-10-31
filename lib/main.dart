@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'common/login.dart';
+import 'firebase_options.dart';
 
 Task t = Task(name: "test", tags: {});
 DatabaseService d = DatabaseService(uid: "test_user_1");
@@ -15,28 +16,8 @@ void main() async {
   print("IN MAIN");
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    options: const FirebaseOptions(
-        apiKey: "AIzaSyCZGLE7nkKMlGA5zuxHM0kSACM066Mj8Ao",
-        authDomain: "plannertarium-d1696.firebaseapp.com",
-        projectId: "plannertarium-d1696",
-        storageBucket: "plannertarium-d1696.appspot.com",
-        messagingSenderId: "86325497409",
-        appId: "1:86325497409:web:98f01f217afeb0779cc0c0",
-        measurementId: "G-HM91TY6988"),
+    options: DefaultFirebaseOptions.currentPlatform,
   );
   d.setUserTasks("1", t);
-  runApp(MyApp());
-
-  if (kIsWeb) {
-    // running on the web!
-    await signInWithGoogleWeb();
-  } else {
-    // NOT running on the web!
-    await signInWithGoogleMobile();
-  }
-
-
-  User? u = FirebaseAuth.instance.currentUser;
-  print(u);
-  print("weeee");
+  runApp(const MyApp());
 }

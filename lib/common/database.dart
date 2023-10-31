@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 import 'package:planner/common/recurrence.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/models/task.dart';
@@ -105,9 +104,9 @@ class DatabaseService {
 
     final userEvents =
         await getUserEventsInDateRange(dateStart: dateStart, dateEnd: dateEnd);
-    userEvents.docs.forEach((doc) {
+    for (var doc in userEvents.docs) {
       m[doc.id] = mapToEvent(doc.data());
-    });
+    }
 
     return m;
   }
