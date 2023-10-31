@@ -2,6 +2,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/models/task.dart';
+import 'package:planner/view/dayView.dart';
+import 'package:planner/view/weekView.dart';
+import 'package:get/get.dart';
 
 Task t = Task(name: "test", tags: {});
 DatabaseService d = DatabaseService(uid: "test_user_1");
@@ -12,7 +15,9 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
+      home: weekView(),
+    ); /*MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
         // This is the theme of your application.
@@ -34,7 +39,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
+    );*/
   }
 }
 
@@ -114,7 +119,12 @@ class _MyHomePageState extends State<MyHomePage> {
               'You have pushed the button this many times:',
             ),
             Text(
-              '$_counter'+"."+"task is."+t.Name+"."+t.timeModified.toString(),
+              '$_counter' +
+                  "." +
+                  "task is." +
+                  t.Name +
+                  "." +
+                  t.timeModified.toString(),
               style: Theme.of(context).textTheme.headlineMedium,
             ),
           ],
