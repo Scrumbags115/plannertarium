@@ -1,23 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-// final FirebaseAuth auth=FirebaseAuth.instance;
-// final FirebaseFirestore firestore=FirebaseFirestore.instance;
-// final User? user=FirebaseAuth.instance.currentUser;
-// bool login=false;
-//
-// @override
-//
-// void initState(){
-//   super.initState();
-//   FirebaseAuth.instance.setPersistence(Persistence.LOCAL);
-//   auth.authStateChanges().listen((user) {
-//     setState(() {
-//       login=user!=null;
-//     });
-//   });
-// }
-
 /// Sign in with Google SSO, taken from documentation
 Future<UserCredential> signInWithGoogleWeb() async {
   // Create a new provider
