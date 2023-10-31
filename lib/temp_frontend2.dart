@@ -16,17 +16,19 @@ Future<void> main() async {
         projectId: 'plannertarium-d1696'),
   );
   await auth.setPersistence(Persistence.LOCAL);
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
   @override
   createState() => MyAppState();
 }
 
 class MyAppState extends State<MyApp> {
-  List<String> _toDoItems = [];
-  TextEditingController _controller = TextEditingController();
+  final List<String> _toDoItems = [];
+  final TextEditingController _controller = TextEditingController();
 
   @override
   void initState() {
