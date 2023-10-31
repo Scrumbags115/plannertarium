@@ -20,16 +20,6 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 /// Sign in with Google SSO, taken from documentation
 Future<UserCredential> signInWithGoogleWeb() async {
-  // GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-  //
-  // GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
-  //
-  // AuthCredential credential = GoogleAuthProvider.credential(
-  //   accessToken: googleAuth?.accessToken,
-  //   idToken: googleAuth?.idToken,
-  // );
-  //
-  // UserCredential userCreds = await FirebaseAuth.instance.signInWithCredential(credential);
   // Create a new provider
   GoogleAuthProvider googleProvider = GoogleAuthProvider();
 
