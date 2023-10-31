@@ -20,4 +20,9 @@ void main() async {
   );
   d.setUserTasks("1", t);
   runApp(const MyApp());
+
+  User u = await triggerAuthFlow();
+  print(u);
+  print(u.uid);
+  print("wee");
 }
