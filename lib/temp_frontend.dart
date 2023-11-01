@@ -1,4 +1,3 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/models/task.dart';
@@ -73,7 +72,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // called again, and so nothing would appear to happen.
       _counter++;
     });
-    t.Name = t.Name + '1';
+    t.Name = '${t.Name}1';
     d.setUserTasks("1", t);
     print("UPDATED NAME");
   }
@@ -125,6 +124,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   t.Name +
                   "." +
                   t.timeModified.toString(),
+              '$_counter'".""task is."+t.Name+"."+t.timeModified.toString(),
               style: Theme.of(context).textTheme.headlineMedium,
             ),
           ],

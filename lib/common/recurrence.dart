@@ -7,6 +7,11 @@ class Recurrence {
 
   Recurrence(this.enabled, this.timeStart, this.timeEnd, this.dates);
 
+  Recurrence.requireFields(
+      {required this.enabled,
+        required this.timeStart,
+        required this.timeEnd,
+        required this.dates});
   toMap() {
     return ({
       'enabled' : enabled,
