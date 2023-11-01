@@ -124,7 +124,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   t.Name +
                   "." +
                   t.timeModified.toString(),
-              '$_counter'".""task is."+t.Name+"."+t.timeModified.toString(),
               style: Theme.of(context).textTheme.headlineMedium,
             ),
           ],
