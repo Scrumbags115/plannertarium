@@ -19,18 +19,10 @@ void main() async {
   print("IN MAIN");
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    options: const FirebaseOptions(
-        apiKey: 'AIzaSyBwR4cKdPaa5c7p0fMLcAgu-VL8w3L3IUs',
-        appId: '1:86325497409:android:85586ccfa7c01ea29cc0c0',
-        messagingSenderId: '86325497409',
-        projectId: 'plannertarium-d1696'),
+    options: DefaultFirebaseOptions.currentPlatform, // needs firebase_options.dart from flutterfire configure
   );
-  d.setUserTasks("1", t);
-  runApp(const MyApp());
   //Uncomment below line and comment out above line to see weekView + dayView UI
   //runApp(GetMaterialApp(home: weekView()));
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
   d.setUserTasks("1", t);
   runApp(const MyApp());
 }
