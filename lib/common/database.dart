@@ -268,6 +268,9 @@ class DatabaseService {
       return Task.requireFields(
           name: taskDocument['name'],
           description: taskDocument['description'],
+          completed: taskDocument['completed'],
+          timeCurrent: taskDocument['current date'],
+          timeStart: taskDocument['start date'],
           timeDue: taskDocument['due date'],
           location: taskDocument['location'],
           color: taskDocument['hex color'],
