@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/models/task.dart';
-import 'package:planner/view/dayView.dart';
 import 'package:planner/view/weekView.dart';
 import 'package:get/get.dart';
 
@@ -14,7 +13,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
+    return const GetMaterialApp(
       home: weekView(),
     ); /*MaterialApp(
       title: 'Flutter Demo',
@@ -118,9 +117,7 @@ class _MyHomePageState extends State<MyHomePage> {
               'You have pushed the button this many times:',
             ),
             Text(
-              '$_counter' +
-                  "." +
-                  "task is." +
+              '$_counter' "." "task is." +
                   t.Name +
                   "." +
                   t.timeModified.toString(),

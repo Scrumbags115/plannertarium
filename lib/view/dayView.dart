@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 
 class dayView extends StatelessWidget {
+  const dayView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
           margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-          child: SingleDayCard()), //Creates one SingleDayCard
+          child: const SingleDayCard()), //Creates one SingleDayCard
     );
   }
 }
 
 //The entirety of the dayView is one SingleDayCard
 class SingleDayCard extends StatefulWidget {
-  const SingleDayCard();
+  const SingleDayCard({super.key});
   @override
   State<StatefulWidget> createState() => SingleDayCardState();
 }
