@@ -30,9 +30,12 @@ class MyAppState extends State<MyApp> {
   final List<String> _toDoItems = [];
   final TextEditingController _controller = TextEditingController();
 
+  final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+
   @override
   void initState() {
     super.initState();
+
 
     // Start listening to changes.
     _controller.addListener(_printLatestValue);
@@ -126,6 +129,7 @@ class MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+
     return MaterialApp(
       home: Scaffold(
         appBar: PreferredSize(
@@ -187,5 +191,8 @@ class MyAppState extends State<MyApp> {
         ),
       ),
     );
+  }
+  void showInSnackBar(String value) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("show in snack bar $value")));
   }
 }
