@@ -206,7 +206,11 @@ class DatabaseService {
       } else {
         dates = null;
       }
-      final recurrenceRules = Recurrence.requireFields(enabled: recurrenceRulesList["enabled"], timeStart: recurrenceRulesList["starts on"], timeEnd: recurrenceRulesList["ends on"], dates: dates);
+      final recurrenceRules = Recurrence.requireFields(
+          enabled: recurrenceRulesList["enabled"],
+          timeStart: recurrenceRulesList["starts on"],
+          timeEnd: recurrenceRulesList["ends on"],
+          dates: dates);
       return Event.requireFields(
           name: name,
           description: description,
@@ -267,6 +271,7 @@ class DatabaseService {
           .get();
       return Task.requireFields(
           name: taskDocument['name'],
+          id: taskID,
           description: taskDocument['description'],
           completed: taskDocument['completed'],
           timeCurrent: taskDocument['current date'],
@@ -280,7 +285,7 @@ class DatabaseService {
           timeModified: taskDocument['date modified']);
     } catch (e) {
       print("Get Failed");
-      return Task(name: "");
+      return Task();
     }
   }
 

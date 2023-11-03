@@ -3,6 +3,7 @@ import 'package:planner/common/recurrence.dart';
 /// Class to hold information about a task
 class Task {
   late String _name;
+  late String _id;
   late String _description;
   late bool _completed;
   late String _location;
@@ -19,6 +20,7 @@ class Task {
   /// Good for if you want to add a new task from user with missing fields
   Task(
       {String name = "",
+      String? id,
       String description = "",
       bool completed = false,
       String location = "",
@@ -31,6 +33,7 @@ class Task {
       DateTime? timeCreated,
       DateTime? timeModified}) {
     _name = name;
+    _id = id ?? DateTime.now().millisecondsSinceEpoch as String;
     _description = description;
     _completed = completed;
     _location = location;
@@ -48,18 +51,33 @@ class Task {
   /// Alternate constructor so VSCode autogenerates all fields
   /// Good for reading from database
   Task.requireFields(
-      {required name,
-      required description,
-      required completed,
-      required location,
-      required color,
-      required tags,
-      required recurrenceRules,
-      required timeStart,
-      required timeDue,
-      required timeCurrent,
-      required timeCreated,
-      required timeModified});
+      {required String name,
+      required String id,
+      required String description,
+      required bool completed,
+      required String location,
+      required String color,
+      required Set<String> tags,
+      required Recurrence recurrenceRules,
+      required DateTime timeStart,
+      required DateTime timeDue,
+      required DateTime timeCurrent,
+      required DateTime timeCreated,
+      required DateTime timeModified}) {
+    _name = name;
+    _id = id;
+    _description = description;
+    _completed = completed;
+    _location = location;
+    _color = color;
+    _tags = tags;
+    _recurrenceRules = recurrenceRules;
+    _timeStart = timeStart;
+    _timeDue = timeDue;
+    _timeCurrent = timeCurrent;
+    _timeCreated = timeCreated;
+    _timeModified = timeModified;
+  }
 
   /// Alternate constructor to get a task obj from some valid map
   /// Good for reading from database
@@ -162,19 +180,19 @@ class Task {
   /// possibly a better getter
   Map<String, dynamic> toMap({keepClasses = false}) {
     return ({
-      'task name': name,
-      'description': description,
-      'completed': completed,
-      'location': location,
-      'hex color': color,
+      'task name': _name,
+      'description': _description,
+      'completed': _completed,
+      'location': _location,
+      'hex color': _color,
       'recurrence rules':
-          keepClasses ? recurrenceRules : recurrenceRules?.toMap(),
-      'tags': keepClasses ? tags : tags.toList(),
-      'start date': timeStart,
-      'due date': timeDue,
-      'current date': timeCurrent,
-      'date created': timeCreated,
-      'date modified': timeModified
+          keepClasses ? _recurrenceRules : _recurrenceRules?.toMap(),
+      'tags': keepClasses ? _tags : _tags.toList(),
+      'start date': _timeStart,
+      'due date': _timeDue,
+      'current date': _timeCurrent,
+      'date created': _timeCreated,
+      'date modified': _timeModified
     });
   }
 }
