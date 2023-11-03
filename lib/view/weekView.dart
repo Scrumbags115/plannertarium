@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:planner/view/dayView.dart';
 
 class weekView extends StatelessWidget {
+  const weekView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,7 +21,7 @@ class weekView extends StatelessWidget {
 
 //Each one of these is a day in the week view, consisting of the placeholder date and card to its right
 class MultiDayCard extends StatefulWidget {
-  const MultiDayCard(this.data);
+  const MultiDayCard(this.data, {super.key});
   final int data;
   @override
   State<StatefulWidget> createState() => MultiDayCardState(data);
@@ -65,7 +67,7 @@ class MultiDayCardState extends State<MultiDayCard> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => dayView()),
+                    MaterialPageRoute(builder: (context) => const dayView()),
                   );
                 },
                 child: const Center(
