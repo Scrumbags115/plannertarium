@@ -2,18 +2,18 @@ import 'package:planner/common/recurrence.dart';
 
 /// Class to hold information about a task
 class Task {
-  String name;
-  String description;
-  bool completed;
+  late String name;
+  late String description;
+  late bool completed;
   DateTime? timeCurrent;
   DateTime? timeStart;
   DateTime? timeDue;
-  String location;
-  String color;
-  Set<String> tags;
-  Recurrence? recurrenceRules;
-  DateTime? timeCreated;
-  DateTime? timeModified;
+  late String location;
+  late String color;
+  late Set<String> tags;
+  late Recurrence? recurrenceRules;
+  late DateTime timeCreated;
+  late DateTime timeModified;
 
   /// Default constructor
   /// Good for if you want to add a new task from user
@@ -26,8 +26,7 @@ class Task {
       this.location = "",
       this.color = "#919191",
       required this.tags,
-      this.recurrenceRules,
-      this.timeCreated}) {
+      this.recurrenceRules}) {
     timeCreated = timeCreated ?? DateTime.now();
     timeModified = DateTime.now();
     timeCurrent = timeStart;
@@ -129,16 +128,32 @@ class Task {
       required this.timeCreated,
       required this.timeModified});
 
+  Task.mapToTask(Map map) {
+    description = map['description'];
+    timeCreated = map['date created'];
+    timeModified = map['date modified'];
+    completed = map['completed'];
+    timeCurrent = map['current date'];
+    description = map['description'];
+    timeStart = map['start date'];
+    timeDue = map['due date'];
+    color = map['hex color'];
+    location = map['location'];
+    recurrenceRules = map['recurrence rules'];
+    tags = map['tags'];
+    name = map['task name'];
+  }
+
   /// returns a mapping with kv pairs corresponding to Firebase's
   /// possibly a better getter
   Map<String, dynamic> toMap({keepClasses = false}) {
     return ({
       'date created': timeCreated,
       'date modified': timeModified,
-      'completed' : completed,
-      'current date' : timeCurrent,
+      'completed': completed,
+      'current date': timeCurrent,
       'description': description,
-      'start date' : timeStart,
+      'start date': timeStart,
       'due date': timeDue,
       'hex color': color,
       'location': location,

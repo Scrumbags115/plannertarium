@@ -257,7 +257,7 @@ class DatabaseService {
     }
   }
 
-  Future<Task> getUserTasks(String taskID) async {
+  Future<Task> getUserTask(String taskID) async {
     try {
       var taskDocument = await FirebaseFirestore.instance
           .collection('users')
@@ -284,7 +284,37 @@ class DatabaseService {
     }
   }
 
-  Future<void> setUserTasks(String taskID, Task t) async {
+  /// All tasks in a date range
+  /// returns a _JsonQueryDocumentSnapshot of all events within the date range
+  Future<QuerySnapshot<Map<String, dynamic>>> getUserTasksInDateRange(
+      {required DateTime dateStart, required DateTime dateEnd}) async {
+    final timestampStart = Timestamp.fromDate(dateStart);
+    final timestampEnd = Timestamp.fromDate(dateEnd);
+    return users
+        .doc(uid)
+        .collection("tasks")
+        .where("start time",
+            isGreaterThanOrEqualTo: timestampStart,
+            isLessThanOrEqualTo: timestampEnd)
+        .get();
+  }
+
+  /// Get all tasks within a date range as a Map
+  /// Returns a map, with the eventID being the key and value being an Event class
+  Future<Map<String, Task>> getMapOfUserTasksInDateRange(
+      {required DateTime dateStart, required DateTime dateEnd}) async {
+    // Not too sure how to attach a .then function to a future to convert into another future when awaited, so this will just force an await
+    Map<String, Task> m = <String, Task>{};
+    final userTasks =
+        await getUserTasksInDateRange(dateStart: dateStart, dateEnd: dateEnd);
+    for (var doc in userTasks.docs) {
+      m[doc.id] = Task.mapToTask(doc.data());
+    }
+
+    return m;
+  }
+
+  Future<void> setUserTask(String taskID, Task t) async {
     return await users.doc(uid).collection('tasks').doc(taskID).set(t.toMap());
   }
 }

@@ -73,7 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _counter++;
     });
     t.Name = '${t.Name}1';
-    d.setUserTasks("1", t);
+    d.setUserTask("1", t);
     print("UPDATED NAME");
   }
 
