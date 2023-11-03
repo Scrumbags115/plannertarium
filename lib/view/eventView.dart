@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
+import 'package:planner/view/weekView.dart';
 
 class eventView extends StatefulWidget {
   const eventView({Key? key}) : super(key: key);
@@ -63,6 +64,78 @@ class eventViewState extends State<eventView> {
     });
   }
 
+  void addButtonForm(BuildContext context) {
+    TextEditingController textController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Add Text'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              TextField(
+                controller: textController,
+                decoration: InputDecoration(labelText: 'Enter Text'),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Submit'),
+              onPressed: () {
+                String enteredText = textController.text;
+                // Handle the entered text (e.g., save it or use it in your app).
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void showSearchBar(BuildContext context) {
+    TextEditingController searchController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Search'),
+          content: TextField(
+            controller: searchController,
+            decoration: InputDecoration(
+              hintText: 'Enter your search query',
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Search'),
+              onPressed: () {
+                String searchQuery = searchController.text;
+                // Handle the search query as needed (e.g., perform a search operation).
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   var scaffoldKey = GlobalKey<ScaffoldState>();
@@ -81,7 +154,7 @@ class eventViewState extends State<eventView> {
             IconButton(
               icon: const Icon(Icons.search),
               onPressed: () {
-
+                  showSearchBar(context);
               },
             ),
           ],
@@ -156,36 +229,51 @@ class eventViewState extends State<eventView> {
           ],
         ),
       ),
-      body: Stack(
-        children: [
-          Positioned(
-            bottom: 25,
-            right: 25,
-            child: ClipOval(
-              child: ElevatedButton(
-                onPressed: (){
-
-                },
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(75,75),
+        body: ListView(
+          children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(2.0),
+                child: TaskEventCard(
+                  event: TaskEvent(
+                    title: 'Sample Task',
+                    description: 'This is a sample task description',
+                    startTime: DateTime.now(),
+                    endTime: DateTime.now().add(Duration(hours: 1)),
+                  ),
                 ),
-                child: const Icon(Icons.add_outlined),
               ),
-            )
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: TaskEventCard(
-              event: TaskEvent(
-                title: 'Sample Task',
-                description: 'This is a sample task description.',
-                startTime: DateTime.now(),
-                endTime: DateTime.now().add(Duration(hours: 1)),
-              )
             ),
-          )
-        ],
-      ),
+            Padding(
+              padding: const EdgeInsets.all(2.0),
+              child: TaskEventCard(
+                event: TaskEvent(
+                  title: 'Sample Task',
+                  description: 'This is a sample task description',
+                  startTime: DateTime.now(),
+                  endTime: DateTime.now().add(Duration(hours: 1)),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6.0),
+              child: Align(
+                alignment: Alignment.bottomRight,
+                child: ClipOval(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      addButtonForm(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(75, 75),
+                    ),
+                    child: const Icon(Icons.add_outlined),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        )
     );
   }
 }
@@ -213,22 +301,77 @@ class TaskEvent {
   }
 }
 
-class TaskEventCard extends StatelessWidget {
+class TaskEventCard extends StatefulWidget {
   final TaskEvent event;
 
   TaskEventCard({required this.event});
 
   @override
+  _TaskEventCardState createState() => _TaskEventCardState();
+}
+
+class _TaskEventCardState extends State<TaskEventCard> {
+  bool isCompleted = false;
+
+  @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.all(8.0),
-      child: ListTile(
-        title: Text(event.title),
-        subtitle: Text(event.description),
-        trailing: Text(
-          '${event.startTime.hour}:${event.startTime.minute} - ${event.endTime.hour}:${event.endTime.minute}',
+      elevation: 0,
+      margin: const EdgeInsets.all(1.0),
+      child: InkWell(
+        onTap: () {
+          _showDetailPopup(context);
+        },
+        child: ListTile(
+          leading: InkWell(
+            onTap: () {
+              setState(() {
+                isCompleted = !isCompleted;
+              });
+            },
+            child: CircleAvatar(
+              backgroundColor: isCompleted ? Colors.green : Colors.blue,
+              child: isCompleted
+                  ? const Icon(Icons.check, color: Colors.white)
+                  : const Icon(Icons.circle, color: Colors.white),
+            ),
+          ),
+          title: Text(widget.event.title),
+          subtitle: Text(widget.event.description),
+          trailing: Text(
+            '${widget.event.startTime.hour}:${widget.event.startTime.minute} - ${widget.event.endTime.hour}:${widget.event.endTime.minute}',
+          ),
         ),
       ),
+    );
+  }
+
+  void _showDetailPopup(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+            title: const Text('Task Details'),
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Title: ${widget.event.title}'),
+                Text('Description: ${widget.event.description}'),
+                Text(
+                  'Time: ${widget.event.startTime.hour}:${widget.event.startTime.minute} - ${widget.event.endTime.hour}:${widget.event.endTime.minute}',
+                ),
+              ],
+            ),
+            actions: [
+            TextButton(
+            onPressed: () {
+          Navigator.of(context).pop();
+        },
+        child: const Text('Close'),
+            )],
+        );
+      },
     );
   }
 }

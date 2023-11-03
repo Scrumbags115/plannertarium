@@ -23,7 +23,7 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform, // needs firebase_options.dart from flutterfire configure
   );
   //Uncomment below line and comment out above line to see weekView + dayView UI
-  //runApp(GetMaterialApp(home: weekView()));
+  runApp(GetMaterialApp(home: eventView()));
   d.setUserTasks("1", t);
-  runApp(const MyApp());
+  //runApp(const MyApp());
 }
