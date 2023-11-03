@@ -280,7 +280,7 @@ class DatabaseService {
           timeModified: taskDocument['date modified']);
     } catch (e) {
       print("Get Failed");
-      return Task(name: "", tags: <String>{});
+      return Task(name: "");
     }
   }
 
@@ -298,6 +298,7 @@ class DatabaseService {
             isLessThanOrEqualTo: timestampEnd)
         .get();
   }
+  //maybe try to return a List of them instead?
 
   /// Get all tasks within a date range as a Map
   /// Returns a map, with the eventID being the key and value being an Event class
@@ -310,7 +311,7 @@ class DatabaseService {
     for (var doc in userTasks.docs) {
       m[doc.id] = Task.mapToTask(doc.data());
     }
-
+    // maybe try to map by day of week? or just by day?
     return m;
   }
 

@@ -72,7 +72,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // called again, and so nothing would appear to happen.
       _counter++;
     });
-    t.Name = '${t.Name}1';
+    t.name = '${t.name}1';
     d.setUserTask("1", t);
     print("UPDATED NAME");
   }
@@ -121,7 +121,7 @@ class _MyHomePageState extends State<MyHomePage> {
               '$_counter' +
                   "." +
                   "task is." +
-                  t.Name +
+                  t.name +
                   "." +
                   t.timeModified.toString(),
               style: Theme.of(context).textTheme.headlineMedium,

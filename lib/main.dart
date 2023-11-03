@@ -5,7 +5,7 @@ import 'package:planner/models/task.dart';
 import 'package:planner/temp_frontend.dart';
 import 'package:planner/view/weekView.dart';
 import 'package:get/get.dart';
-import 'package:planner/temp_frontend2.dart';
+// import 'package:planner/temp_frontend2.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
@@ -23,6 +23,6 @@ void main() async {
   );
   //Uncomment below line and comment out above line to see weekView + dayView UI
   //runApp(GetMaterialApp(home: weekView()));
-  d.setUserTasks("1", t);
+  d.setUserTask("1", t);
   runApp(const MyApp());
 }
