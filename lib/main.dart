@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/temp_frontend.dart';
+import 'package:planner/view/eventView.dart';
 import 'package:planner/view/weekView.dart';
 import 'package:get/get.dart';
 import 'package:planner/temp_frontend2.dart';
