@@ -37,7 +37,7 @@ class DatabaseService {
   /// Should use this over the other add event functions
   /// Won't need to deal with eventIDs
   /// Each event ID is the current creation timestamp
-  Future<void> addUniqueUserEvent(
+  Future<void> addUniqueUserEventArgs(
       {required String eventName,
       String eventDescription = "",
       String eventLocation = "",
@@ -58,10 +58,9 @@ class DatabaseService {
         false
       ]}) async {
     final now = DateTime.now();
-    // final random = generateRandomString(10);
     var eventID = now.toString();
 
-    addUserEvent(
+    addUserEventArgs(
         eventID: eventID,
         eventName: eventName,
         eventDescription: eventDescription,
@@ -81,8 +80,6 @@ class DatabaseService {
   /// returns a _JsonQueryDocumentSnapshot of all events within the date range
   Future<QuerySnapshot<Map<String, dynamic>>> getUserEventsInDateRange(
       {required DateTime dateStart, required DateTime dateEnd}) async {
-    // final dateTimeNow = DateTime.now();
-    // final dateTimeFuture = dateTimeNow.add(const Duration(hours:3));
     final timestampStart = Timestamp.fromDate(dateStart);
     final timestampEnd = Timestamp.fromDate(dateEnd);
     return users
@@ -111,7 +108,42 @@ class DatabaseService {
     return m;
   }
 
-  Future<void> _addUserEvent(String eventID, Event e) async {
+  // Get list of all events within a date range
+  Future<List<Event>> getListOfUserEventsInDateRange({
+      required DateTime dateStart, required DateTime dateEnd}) async {
+    List<Event> events = [];
+    final userEvents = await getUserEventsInDateRange(dateStart: dateStart, dateEnd: dateEnd);
+    for (final doc in userEvents.docs) {
+      events.add(mapToEvent(doc.data()));
+    }
+    return events;
+  }
+
+  /// Get all events in a day
+  ///
+  /// returns a QuerySnapshot
+  Future<QuerySnapshot<Map<String, dynamic>>> getUserEventsInDay({required DateTime date}) async {
+    DateTime tomorrow = date;
+    tomorrow.add(const Duration(days: 1));
+    return getUserEventsInDateRange(dateStart: date, dateEnd: tomorrow);
+  }
+
+  /// Get all events in a day as a Map
+  Future<Map<String, Event>> getMapOfUserEventsInDay({required DateTime date}) async {
+    DateTime tomorrow = date;
+    tomorrow.add(const Duration(days: 1));
+    return getMapOfUserEventsInDateRange(dateStart: date, dateEnd: tomorrow);
+  }
+
+  /// Get list of events in a day
+  Future<List<Event>> getListOfUserEventsInDay({
+    required DateTime date}) async {
+    DateTime tomorrow = date;
+    tomorrow.add(const Duration(days: 1));
+    return getListOfUserEventsInDateRange(dateStart: date, dateEnd: tomorrow);
+  }
+
+  Future<void> addUserEvent(String eventID, Event e) async {
     var doc = await events.doc(eventID).get();
     // can't add an event with the same name
     if (doc.exists) {
@@ -124,12 +156,19 @@ class DatabaseService {
         .set(e.toMap());
   }
 
+
+  Future<void> addUniqueUserEvent(Event e) async {
+    final now = DateTime.now();
+    var eventID = now.toString();
+    return await addUserEvent(eventID, e);
+  }
+
   /// Add/set the user event. The eventID is necessary.
   ///
   /// Every possible option to set is an argument
   /// required: String eventID, String eventName, Set<String> eventTags, num timeStart, num timeEnd
   /// optional: String eventDescription,, String, eventLocation, String eventColor, bool recurrenceEnabled, num recurrenceTimeStart, num recurrenceTimeEnd, List<bool> recurrenceDates
-  Future<void> addUserEvent(
+  Future<void> addUserEventArgs(
       {required String eventID,
       required String eventName,
       String eventDescription = "",
@@ -150,8 +189,8 @@ class DatabaseService {
         false,
         false
       ]}) async {
-    Recurrence r = Recurrence(recurrenceEnabled, recurrenceTimeStart,
-        recurrenceTimeEnd, recurrenceDates);
+    Recurrence r = Recurrence(enabled: recurrenceEnabled, timeStart: recurrenceTimeStart,
+        timeEnd: recurrenceTimeEnd, dates: recurrenceDates);
     Event e = Event(
         name: eventName,
         tags: eventTags,
@@ -161,12 +200,13 @@ class DatabaseService {
         timeStart: timeStart,
         timeEnd: timeEnd,
         recurrenceRules: r);
-    return await _addUserEvent(eventID, e);
+    return await addUserEvent(eventID, e);
   }
 
   /// Turn a properly formatted map into an Event class
   ///
-  /// the map must have all the proper fields
+  /// the map must have all the proper fields, m should be the return value from firebase as a Map
+  /// although I think it should work now if the map has a bunch of datetimes instead
   Event mapToEvent(Map<String, dynamic> m) {
     // Kinda messy, but dealing with types are very annoying
     // ex: why does Set() make a _HashSet??
@@ -177,16 +217,16 @@ class DatabaseService {
       var timeModified = m["date modified"];
       var timeStart = m["event time start"];
       var timeEnd = m["event time end"];
-      if (timeCreated != null) {
+      if (timeCreated != null && timeCreated.runtimeType == Timestamp) {
         timeCreated = timeCreated.toDate();
       }
-      if (timeModified != null) {
+      if (timeModified != null && timeModified.runtimeType == Timestamp) {
         timeModified = timeModified.toDate();
       }
-      if (timeStart != null) {
+      if (timeStart != null && timeStart.runtimeType == Timestamp) {
         timeStart = timeStart.toDate();
       }
-      if (timeEnd != null) {
+      if (timeEnd != null && timeEnd.runtimeType == Timestamp) {
         timeEnd = timeEnd.toDate();
       }
       final color = m["hex color"];
@@ -196,8 +236,8 @@ class DatabaseService {
       for (final tag in tagsList) {
         tags.add(tag);
       }
-      final recurrenceRulesList = m["recurrence rules"];
-      final recurrenceDates = recurrenceRulesList["repeat on days"];
+      final recurrenceRulesObj = m["recurrence rules"];
+      final recurrenceDates = recurrenceRulesObj["repeat on days"];
       List<bool>? dates = <bool>[];
       if (recurrenceDates != null) {
         for (final date in recurrenceDates) {
@@ -206,7 +246,15 @@ class DatabaseService {
       } else {
         dates = null;
       }
-      final recurrenceRules = Recurrence.requireFields(enabled: recurrenceRulesList["enabled"], timeStart: recurrenceRulesList["starts on"], timeEnd: recurrenceRulesList["ends on"], dates: dates);
+      var recurrenceTimeStart = recurrenceRulesObj["starts on"];
+      var recurrenceTimeEnd = recurrenceRulesObj["ends on"];
+      final recurrenceID = recurrenceRulesObj["id"];
+      if (recurrenceTimeStart != null && recurrenceTimeStart.runtimeType == Timestamp) {
+        recurrenceTimeStart = recurrenceTimeStart.toDate();
+      }if (recurrenceTimeEnd != null && recurrenceTimeEnd.runtimeType == Timestamp) {
+        recurrenceTimeEnd = recurrenceTimeEnd.toDate();
+      }
+      final recurrenceRules = Recurrence(enabled: recurrenceRulesObj["enabled"], timeStart: recurrenceTimeStart, timeEnd: recurrenceTimeEnd, dates: dates, id: recurrenceID);
       return Event.requireFields(
           name: name,
           description: description,
@@ -286,5 +334,34 @@ class DatabaseService {
 
   Future<void> setUserTasks(String taskID, Task t) async {
     return await users.doc(uid).collection('tasks').doc(taskID).set(t.toMap());
+  }
+
+  // add all recurring events in the database
+  Future<void> setRecurringEvents(Event e) async {
+    List<Event> recurringEvents = e.generateRecurringEvents();
+    for (final e in recurringEvents) {
+      await addUniqueUserEvent(e);
+    }
+  }
+
+  // delete all recurring events in the database given a base event
+  Future<void> deleteRecurringEvents(Event e) async {
+    // guard case, no recurrence then don't do anything
+    if (e.recurrenceRules == null || e.recurrenceRules?.enabled == false) {
+      return;
+    }
+    List<DateTime> dts = e.getDatesOfRelatedRecurringEvents();
+    final parentID = e.recurrenceRules!.id;
+    for (final dt in dts) {
+      // search the database for event on this date
+      final Map<String, Event> eventList = await getMapOfUserEventsInDay(date: dt);
+      // search the corresponding events on that day for the right recurrence ID
+      eventList.forEach((docID, event) {
+        if (event.recurrenceRules!.id == parentID) {
+          // if the recurrence ID matches, delete
+          events.doc(docID).delete();
+        }
+      });
+    }
   }
 }
