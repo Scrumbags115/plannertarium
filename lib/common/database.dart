@@ -37,42 +37,10 @@ class DatabaseService {
   /// Should use this over the other add event functions
   /// Won't need to deal with eventIDs
   /// Each event ID is the current creation timestamp
-  Future<void> addUniqueUserEventArgs(
-      {required String eventName,
-      String eventDescription = "",
-      String eventLocation = "",
-      String eventColor = "",
-      required Set<String> eventTags,
-      required DateTime timeStart,
-      required DateTime timeEnd,
-      bool recurrenceEnabled = false,
-      DateTime? recurrenceTimeStart,
-      DateTime? recurrenceTimeEnd,
-      List<bool> recurrenceDates = const [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ]}) async {
+  Future<void> addUniqueUserEvent(Event event) async {
     final now = DateTime.now();
     var eventID = now.toString();
-
-    addUserEventArgs(
-        eventID: eventID,
-        eventName: eventName,
-        eventDescription: eventDescription,
-        eventLocation: eventLocation,
-        eventColor: eventColor,
-        eventTags: eventTags,
-        timeStart: timeStart,
-        timeEnd: timeEnd,
-        recurrenceEnabled: recurrenceEnabled,
-        recurrenceTimeStart: recurrenceTimeStart,
-        recurrenceTimeEnd: recurrenceTimeEnd,
-        recurrenceDates: recurrenceDates);
+    addUserEvent(eventID, event);
   }
 
   /// Get all events within a date range
@@ -143,7 +111,7 @@ class DatabaseService {
     return getListOfUserEventsInDateRange(dateStart: date, dateEnd: tomorrow);
   }
 
-  Future<void> addUserEvent(String eventID, Event e) async {
+  Future<void> addUserEvent(String eventID, Event event) async {
     var doc = await events.doc(eventID).get();
     // can't add an event with the same name
     if (doc.exists) {
@@ -153,14 +121,7 @@ class DatabaseService {
         .doc(uid)
         .collection("events")
         .doc(eventID)
-        .set(e.toMap());
-  }
-
-
-  Future<void> addUniqueUserEvent(Event e) async {
-    final now = DateTime.now();
-    var eventID = now.toString();
-    return await addUserEvent(eventID, e);
+        .set(event.toMap());
   }
 
   /// Add/set the user event. The eventID is necessary.
@@ -170,105 +131,8 @@ class DatabaseService {
   /// optional: String eventDescription,, String, eventLocation, String eventColor, bool recurrenceEnabled, num recurrenceTimeStart, num recurrenceTimeEnd, List<bool> recurrenceDates
   Future<void> addUserEventArgs(
       {required String eventID,
-      required String eventName,
-      String eventDescription = "",
-      String eventLocation = "",
-      String eventColor = "",
-      required Set<String> eventTags,
-      required DateTime timeStart,
-      required DateTime timeEnd,
-      bool recurrenceEnabled = false,
-      DateTime? recurrenceTimeStart,
-      DateTime? recurrenceTimeEnd,
-      List<bool> recurrenceDates = const [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ]}) async {
-    Recurrence r = Recurrence(enabled: recurrenceEnabled, timeStart: recurrenceTimeStart,
-        timeEnd: recurrenceTimeEnd, dates: recurrenceDates);
-    Event e = Event(
-        name: eventName,
-        tags: eventTags,
-        description: eventDescription,
-        location: eventLocation,
-        color: eventColor,
-        timeStart: timeStart,
-        timeEnd: timeEnd,
-        recurrenceRules: r);
-    return await addUserEvent(eventID, e);
-  }
-
-  /// Turn a properly formatted map into an Event class
-  ///
-  /// the map must have all the proper fields, m should be the return value from firebase as a Map
-  /// although I think it should work now if the map has a bunch of datetimes instead
-  Event mapToEvent(Map<String, dynamic> m) {
-    // Kinda messy, but dealing with types are very annoying
-    // ex: why does Set() make a _HashSet??
-    try {
-      final name = m["event name"];
-      final description = m["description"];
-      var timeCreated = m["date created"];
-      var timeModified = m["date modified"];
-      var timeStart = m["event time start"];
-      var timeEnd = m["event time end"];
-      if (timeCreated != null && timeCreated.runtimeType == Timestamp) {
-        timeCreated = timeCreated.toDate();
-      }
-      if (timeModified != null && timeModified.runtimeType == Timestamp) {
-        timeModified = timeModified.toDate();
-      }
-      if (timeStart != null && timeStart.runtimeType == Timestamp) {
-        timeStart = timeStart.toDate();
-      }
-      if (timeEnd != null && timeEnd.runtimeType == Timestamp) {
-        timeEnd = timeEnd.toDate();
-      }
-      final color = m["hex color"];
-      final location = m["location"];
-      var tagsList = m["tags"];
-      var tags = <String>{};
-      for (final tag in tagsList) {
-        tags.add(tag);
-      }
-      final recurrenceRulesObj = m["recurrence rules"];
-      final recurrenceDates = recurrenceRulesObj["repeat on days"];
-      List<bool>? dates = <bool>[];
-      if (recurrenceDates != null) {
-        for (final date in recurrenceDates) {
-          dates.add(date);
-        }
-      } else {
-        dates = null;
-      }
-      var recurrenceTimeStart = recurrenceRulesObj["starts on"];
-      var recurrenceTimeEnd = recurrenceRulesObj["ends on"];
-      final recurrenceID = recurrenceRulesObj["id"];
-      if (recurrenceTimeStart != null && recurrenceTimeStart.runtimeType == Timestamp) {
-        recurrenceTimeStart = recurrenceTimeStart.toDate();
-      }if (recurrenceTimeEnd != null && recurrenceTimeEnd.runtimeType == Timestamp) {
-        recurrenceTimeEnd = recurrenceTimeEnd.toDate();
-      }
-      final recurrenceRules = Recurrence(enabled: recurrenceRulesObj["enabled"], timeStart: recurrenceTimeStart, timeEnd: recurrenceTimeEnd, dates: dates, id: recurrenceID);
-      return Event.requireFields(
-          name: name,
-          description: description,
-          timeCreated: timeCreated,
-          timeModified: timeModified,
-          timeStart: timeStart,
-          timeEnd: timeEnd,
-          color: color,
-          location: location,
-          tags: tags,
-          recurrenceRules: recurrenceRules);
-    } catch (e) {
-      throw Exception("Given map is malformed!\n$e");
-    }
+        required Event event}) async {
+    return await addUserEvent(eventID, event);
   }
 
   /// Change an option in the event
