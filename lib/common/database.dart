@@ -292,7 +292,7 @@ class DatabaseService {
 
   /// Returns a pair of lists of the form (active tasks, completed tasks)
   /// where task.timeCureent is in a date range [dateStart, dateEnd) for all tasks in either list
-  Future<(List<Task>, List<Task>)> _getTasksActiveOrCompletedInRange(DateTime dateStart, DateTime dateEnd) async {
+  Future<(List<Task>, List<Task>)> _getTasksActiveOrCompleted(DateTime dateStart, DateTime dateEnd) async {
     assert (dateStart.isBefore(dateEnd));
     final timestampStart = Timestamp.fromDate(dateStart);
     final timestampEnd = Timestamp.fromDate(dateEnd);
@@ -313,7 +313,7 @@ class DatabaseService {
 
   /// All tasks that have a delay in the window [dateStart, dateEnd)
   /// Returns a list of tasks with delays in the time window in order of ending date
-  Future<List<Task>> _getTasksDelayedInRange(DateTime dateStart, DateTime dateEnd) async {
+  Future<List<Task>> _getTasksDelayed(DateTime dateStart, DateTime dateEnd) async {
     assert (dateStart.isBefore(dateEnd));
     final timestampStart = Timestamp.fromDate(dateStart);
     final timestampEnd = Timestamp.fromDate(dateEnd);
@@ -339,26 +339,6 @@ class DatabaseService {
     return delayedList;
   }
 
-  /// Adds all tasks that have a delay in the time window into the map organized by day
-  Future<Map<DateTime, List<Task>>> _getTaskDelaysByDay(Map<DateTime, List<Task>> map, DateTime dateStart, DateTime dateEnd) async {
-    assert (dateStart.isBefore(dateEnd));
-    List<Task> delayList = await _getTasksDelayedInRange(dateStart, dateEnd);
-
-    for (Task t in delayList) {
-      DateTime loopStart = t.timeStart.isBefore(dateStart) ? dateStart : t.timeStart;
-      DateTime loopEnd = t.timeCurrent.isBefore(dateEnd) ? t.timeCurrent : dateEnd;
-      loopStart = DateTime(loopStart.year, loopStart.month, loopStart.day);
-      loopEnd = DateTime(loopEnd.year, loopEnd.month, loopEnd.day);
-      for (int i = 0; i < loopEnd.difference(loopStart).inDays; i++) {
-        DateTime date = dateStart.add(Duration(days: i));
-        assert (map[date] != null);
-        map[date]!.add(t);
-      }
-    }
-
-    return map;
-  }
-
   /// Returns a 3-tuple of Maps<DateTime, List<Task>> where each map goes from [dateStart, dateEnd)
   /// Values are lists of tasks that are either active, completed, or delayed on a day
   /// Takes the form (ActiveMap, CompletedMap, DelayedMap)
@@ -377,21 +357,30 @@ class DatabaseService {
       delayedMap[newDay] = [];
     }
 
-    delayedMap = await _getTaskDelaysByDay(delayedMap, dateStart, dateEnd);
-
     List<Task> activeList, completedList;
-    (activeList, completedList) = await _getTasksActiveOrCompletedInRange(dateStart, dateEnd);
-
+    (activeList, completedList) = await _getTasksActiveOrCompleted(dateStart, dateEnd);
     for (Task t in activeList) {
       DateTime currentDay = DateTime(t.timeCurrent.year, t.timeCurrent.month, t.timeCurrent.day);
       assert (activeMap[currentDay] != null);
       activeMap[currentDay]!.add(t);
     }
-
     for (Task t in completedList) {
       DateTime currentDay = DateTime(t.timeCurrent.year, t.timeCurrent.month, t.timeCurrent.day);
       assert (completedMap[currentDay] != null);
       completedMap[currentDay]!.add(t);
+    }
+
+    List<Task> delayList = await _getTasksDelayed(dateStart, dateEnd);
+    for (Task t in delayList) {
+      DateTime loopStart = t.timeStart.isBefore(dateStart) ? dateStart : t.timeStart;
+      DateTime loopEnd = t.timeCurrent.isBefore(dateEnd) ? t.timeCurrent : dateEnd;
+      loopStart = DateTime(loopStart.year, loopStart.month, loopStart.day);
+      loopEnd = DateTime(loopEnd.year, loopEnd.month, loopEnd.day);
+      for (int i = 0; i < loopEnd.difference(loopStart).inDays; i++) {
+        DateTime date = dateStart.add(Duration(days: i));
+        assert (delayedMap[date] != null);
+        delayedMap[date]!.add(t);
+      }
     }
 
     return (activeMap, completedMap, delayedMap);

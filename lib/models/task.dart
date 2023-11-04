@@ -236,18 +236,3 @@ class Task {
     );
   }
 }
-
-/// All tasks where (current date) is in a date range, separated by if they are completed, including delays for them
-/// Ok for frontend use
-/// Returns a pair of lists of the form (active tasks, completed tasks)
-List<Task> tasksWithDelays(List<Task> a, List<Task> b) {
-  List<Task> delayed = [];
-
-  for (Task t in a+b) {
-    if (t.timeStart.isBefore(t.timeCurrent)) {
-      delayed.add(t);
-    }
-  }
-
-  return delayed;
-}
