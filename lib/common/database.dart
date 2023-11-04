@@ -5,6 +5,7 @@ import 'package:planner/models/task.dart';
 
 class DatabaseService {
   final String uid;
+  // TODO: Add caching layer here if time permits
 
   // users collection reference
   final CollectionReference users =
@@ -263,23 +264,19 @@ class DatabaseService {
 
   Future<Task> getTask(String taskID) async {
     try {
-      var taskDocument = await users
-          .doc(uid)
-          .collection('tasks')
-          .doc(taskID)
-          .get();
+      var taskDocument = await users.doc(uid).collection('tasks').doc(taskID).get();
       return Task.requireFields(
           name: taskDocument['name'],
           id: taskID,
           description: taskDocument['description'],
           completed: taskDocument['completed'],
-          timeCurrent: taskDocument['current date'],
-          timeStart: taskDocument['start date'],
-          timeDue: taskDocument['due date'],
-          location: taskDocument['location'],
           color: taskDocument['hex color'],
+          location: taskDocument['location'],
           tags: taskDocument['tags'],
           recurrenceRules: taskDocument['recurrence rules'],
+          timeStart: taskDocument['start date'],
+          timeDue: taskDocument['due date'],
+          timeCurrent: taskDocument['current date'],
           timeCreated: taskDocument['date created'],
           timeModified: taskDocument['date modified']);
     } catch (e) {
@@ -288,46 +285,35 @@ class DatabaseService {
     }
   }
 
-  /// All tasks where (current date) is in a date range
-  /// Only for backend
-  /// Returns a _JsonQueryDocumentSnapshot
-  Future<QuerySnapshot<Map<String, dynamic>>> _getTasksCurrentDateInRange(DateTime dateStart, DateTime dateEnd) async {
+  /// Saves a task into the database
+  Future<void> setUserTask(Task t) async {
+    return await users.doc(uid).collection('tasks').doc(t.id).set(t.toMap());
+  }
+
+  /// Returns a pair of lists of the form (active tasks, completed tasks)
+  /// where task.timeCureent is in a date range [dateStart, dateEnd) for all tasks in either list
+  Future<(List<Task>, List<Task>)> _getTasksActiveOrCompletedInRange(DateTime dateStart, DateTime dateEnd) async {
     assert (dateStart.isBefore(dateEnd));
     final timestampStart = Timestamp.fromDate(dateStart);
     final timestampEnd = Timestamp.fromDate(dateEnd);
-    return users
-        .doc(uid)
-        .collection("tasks")
-        .where("current date",
-            isGreaterThanOrEqualTo: timestampStart,
-            isLessThanOrEqualTo: timestampEnd)
-        .get();
-  }
+    final allTasks = await users.doc(uid).collection("tasks")
+            .where("current date",  isGreaterThanOrEqualTo: timestampStart,
+                                    isLessThan: timestampEnd).get();
 
-  /// All tasks where (current date) is in a date range, separated by if they are completed
-  /// Ok for frontend use
-  /// Returns a pair of lists of the form (active tasks, completed tasks)
-  Future<(List<Task>, List<Task>)> getTasksActiveOrCompletedInRange(DateTime dateStart, DateTime dateEnd) async {
-    assert (dateStart.isBefore(dateEnd));
     List<Task> activeList = [];
     List<Task> completedList = [];
-    final allTasks = await _getTasksCurrentDateInRange(dateStart, dateEnd);
-
     for (var doc in allTasks.docs) {
       Task t = Task.mapToTask(doc.data(), id: doc.id);
-      if (t.completed)
-        completedList.add(t);
-      else
-        activeList.add(t);
+      if (t.completed) completedList.add(t);
+      else activeList.add(t);
     }
 
     return (activeList, completedList);
   }
 
-  /// All tasks that have a delay in the window
-  /// More useful for backend but ok for frontend
+  /// All tasks that have a delay in the window [dateStart, dateEnd)
   /// Returns a list of tasks with delays in the time window in order of ending date
-  Future<List<Task>> getTasksDelayedInRange(DateTime dateStart, DateTime dateEnd) async {
+  Future<List<Task>> _getTasksDelayedInRange(DateTime dateStart, DateTime dateEnd) async {
     assert (dateStart.isBefore(dateEnd));
     final timestampStart = Timestamp.fromDate(dateStart);
     final timestampEnd = Timestamp.fromDate(dateEnd);
@@ -338,7 +324,7 @@ class DatabaseService {
         .where("current date",
             isGreaterThanOrEqualTo: timestampStart)
         .where("start date",
-            isLessThanOrEqualTo: timestampEnd)
+            isLessThan: timestampEnd)
         .get();
 
     for (var doc in candidateTasks.docs) {
@@ -353,45 +339,62 @@ class DatabaseService {
     return delayedList;
   }
 
-  /// All tasks that have a delay in the time window, organized by day in a map
-  /// For frontend
-  Future<Map<DateTime, List<Task>>> getTaskDelaysByDay(DateTime dateStart, DateTime dateEnd) async {
+  /// Adds all tasks that have a delay in the time window into the map organized by day
+  Future<Map<DateTime, List<Task>>> _getTaskDelaysByDay(Map<DateTime, List<Task>> map, DateTime dateStart, DateTime dateEnd) async {
     assert (dateStart.isBefore(dateEnd));
-    List<Task> delayList = await getTasksDelayedInRange(dateStart, dateEnd);
-    Map<DateTime, List<Task>> dateToDelays = <DateTime, List<Task>>{};
-
+    List<Task> delayList = await _getTasksDelayedInRange(dateStart, dateEnd);
 
     for (Task t in delayList) {
-      for (int i = 0; i < dateEnd.difference(dateStart).inDays; i++) {
-        DateTime date = dateStart.add(Duration(days: 1));
-        DateTime currentDay = DateTime(t.timeCurrent.year, t.timeCurrent.month, t.timeCurrent.day);
-        dateToDelays.update(curr, (value) => null);
+      DateTime loopStart = t.timeStart.isBefore(dateStart) ? dateStart : t.timeStart;
+      DateTime loopEnd = t.timeCurrent.isBefore(dateEnd) ? t.timeCurrent : dateEnd;
+      loopStart = DateTime(loopStart.year, loopStart.month, loopStart.day);
+      loopEnd = DateTime(loopEnd.year, loopEnd.month, loopEnd.day);
+      for (int i = 0; i < loopEnd.difference(loopStart).inDays; i++) {
+        DateTime date = dateStart.add(Duration(days: i));
+        assert (map[date] != null);
+        map[date]!.add(t);
       }
     }
 
-    return dateToDelays;
+    return map;
   }
-  
-  Future<Map<DateTime, List<Task>>> getTaskDelaysByDayForWeekly
 
-  //maybe try to return a List of them instead?
-  // methods for tasks current (day) and tasks delayed (day) and for week
-
-  /// Get all tasks within a date range as a Map
-  /// Returns a map, with the eventID being the key and value being an Event class
-  Future<Map<String, Task>> getMapOfTasksInDateRange({required DateTime dateStart, required DateTime dateEnd}) async {
+  /// Returns a 3-tuple of Maps<DateTime, List<Task>> where each map goes from [dateStart, dateEnd)
+  /// Values are lists of tasks that are either active, completed, or delayed on a day
+  /// Takes the form (ActiveMap, CompletedMap, DelayedMap)
+  Future<(Map<DateTime, List<Task>>, Map<DateTime, List<Task>>, Map<DateTime, List<Task>>)> getTaskMap(DateTime dateStart, DateTime dateEnd) async {
     assert (dateStart.isBefore(dateEnd));
-    Map<String, Task> m = <String, Task>{};
-    final userTasks = await _getTasksCurrentDateInRange(dateStart, dateEnd);
+    assert (dateStart.isAtSameMomentAs(DateTime(dateStart.year, dateStart.month, dateStart.day)));
+    assert (dateEnd.isAtSameMomentAs(DateTime(dateEnd.year, dateEnd.month, dateEnd.day)));
 
-    for (var doc in userTasks.docs) {
-      m[doc.id] = Task.mapToTask(doc.data());
+    Map<DateTime, List<Task>> activeMap = {};
+    Map<DateTime, List<Task>> completedMap = {};
+    Map<DateTime, List<Task>> delayedMap = {};
+    for (int i = 0; i < dateEnd.difference(dateStart).inDays; i++) {
+      DateTime newDay = dateStart.add(Duration(days: i));
+      activeMap[newDay] = [];
+      completedMap[newDay] = [];
+      delayedMap[newDay] = [];
     }
-    // maybe try to map by day of week? or just by day?
-    return m;
+
+    delayedMap = await _getTaskDelaysByDay(delayedMap, dateStart, dateEnd);
+
+    List<Task> activeList, completedList;
+    (activeList, completedList) = await _getTasksActiveOrCompletedInRange(dateStart, dateEnd);
+
+    for (Task t in activeList) {
+      DateTime currentDay = DateTime(t.timeCurrent.year, t.timeCurrent.month, t.timeCurrent.day);
+      assert (activeMap[currentDay] != null);
+      activeMap[currentDay]!.add(t);
+    }
+
+    for (Task t in completedList) {
+      DateTime currentDay = DateTime(t.timeCurrent.year, t.timeCurrent.month, t.timeCurrent.day);
+      assert (completedMap[currentDay] != null);
+      completedMap[currentDay]!.add(t);
+    }
+
+    return (activeMap, completedMap, delayedMap);
   }
 
-  Future<void> setUserTask(Task t) async {
-    return await users.doc(uid).collection('tasks').doc(t.id).set(t.toMap());
-  }
 }
