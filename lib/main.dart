@@ -12,9 +12,6 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'common/login.dart';
 import 'firebase_options.dart';
 
-Task t = Task(name: "test", tags: {});
-DatabaseService d = DatabaseService(uid: "test_user_1");
-
 void main() async {
   print("IN MAIN");
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,6 +20,6 @@ void main() async {
   );
   //Uncomment below line and comment out above line to see weekView + dayView UI
   //runApp(GetMaterialApp(home: weekView()));
-  d.setUserTask("1", t);
+  d.setUserTask(t);
   runApp(const MyApp());
 }

@@ -1,14 +1,15 @@
+import 'package:flutter/foundation.dart';
 import 'package:planner/common/recurrence.dart';
 
 /// Class to hold information about a task
 class Task {
   late String _name;
-  late String _id;
+  late final String _id;
   late String _description;
   late bool _completed;
   late String _location;
   late String _color;
-  late Set<String> _tags = {};
+  late List<String> _tags;
   late Recurrence? _recurrenceRules;
   late DateTime _timeStart;
   DateTime? _timeDue;
@@ -25,7 +26,7 @@ class Task {
       bool completed = false,
       String location = "",
       String color = "#919191",
-      Set<String> tags = const <String>{}, // const will be eliminated?
+      List<String> tags = const <String>[], // const will be eliminated?
       Recurrence? recurrenceRules,
       DateTime? timeStart,
       DateTime? timeDue,
@@ -33,7 +34,7 @@ class Task {
       DateTime? timeCreated,
       DateTime? timeModified}) {
     _name = name;
-    _id = id ?? DateTime.now().millisecondsSinceEpoch as String;
+    _id = id ?? DateTime.now().millisecondsSinceEpoch.toString();
     _description = description;
     _completed = completed;
     _location = location;
@@ -57,7 +58,7 @@ class Task {
       required bool completed,
       required String location,
       required String color,
-      required Set<String> tags,
+      required List<String> tags,
       required Recurrence recurrenceRules,
       required DateTime timeStart,
       required DateTime timeDue,
@@ -80,10 +81,12 @@ class Task {
   }
 
   /// Alternate constructor to get a task obj from some valid map
+  /// Can have ID as a separate parameter if not in the map
   /// Good for reading from database
-  Task.mapToTask(Map<String, dynamic> map) {
+  Task.mapToTask(Map<String, dynamic> map, {String? id}) {
     _name = map['task name'];
     _description = map['description'];
+    _id = id ?? map['id'];
     _completed = map['completed'];
     _location = map['location'];
     _color = map['hex color'];
@@ -94,6 +97,26 @@ class Task {
     _timeCurrent = map['current date'];
     _timeCreated = map['date created'];
     _timeModified = map['date modified'];
+  }
+
+  /// returns a mapping with kv pairs corresponding to Firebase's
+  /// possibly a better getter
+  Map<String, dynamic> toMap({keepClasses = false}) {
+    return ({
+      'task name': _name,
+      'description': _description,
+      'completed': _completed,
+      'location': _location,
+      'hex color': _color,
+      'recurrence rules':
+          keepClasses ? _recurrenceRules : _recurrenceRules?.toMap(),
+      'tags': keepClasses ? _tags : _tags.toList(),
+      'start date': _timeStart,
+      'due date': _timeDue,
+      'current date': _timeCurrent,
+      'date created': _timeCreated,
+      'date modified': _timeModified
+    });
   }
 
   set name(String newName) {
@@ -115,6 +138,8 @@ class Task {
     _completed = newCompleted;
   }
 
+  String get id => _id;
+
   bool get completed => _completed;
 
   set location(String newLocation) {
@@ -131,68 +156,98 @@ class Task {
 
   String get color => _color;
 
-  set tags(Set<String> newTags) {
+  set tags(List<String> newTags) {
     _timeModified = DateTime.now();
     _tags = newTags;
   }
 
-  Set<String> get tags => _tags;
+  List<String> get tags => _tags;
 
-  set recurrenceRules(newRecurrence) {
+  set recurrenceRules(Recurrence? newRecurrence) {
     // Can't force Recurrence type because it can be null
     _timeModified = DateTime.now();
     _recurrenceRules = newRecurrence;
   }
 
-  get recurrenceRules => _recurrenceRules;
+  Recurrence? get recurrenceRules => _recurrenceRules;
 
-  set timeCurrent(newTimeCurrent) {
-    // Can't force DateTime type because it can be null
+  set timeCurrent(DateTime newTimeCurrent) {
     _timeModified = DateTime.now();
     _timeCurrent = newTimeCurrent;
   }
 
-  get timeCurrent => _timeCurrent;
+  DateTime get timeCurrent => _timeCurrent;
 
-  set timeStart(newTimeStart) {
-    // Can't force DateTime type because it can be null
+  set timeStart(DateTime newTimeStart) {
     _timeModified = DateTime.now();
     _timeStart = newTimeStart;
   }
 
-  get timeStart => _timeStart;
+  DateTime get timeStart => _timeStart;
 
-  set timeDue(newTimeDue) {
-    // Can't force DateTime type because it can be null
+  set timeDue(DateTime? newTimeDue) {
     _timeModified = DateTime.now();
     _timeDue = newTimeDue;
   }
 
-  get timeDue => _timeDue;
+  DateTime? get timeDue => _timeDue;
 
-  get timeCreated =>
-      _timeCreated; // Do not want to change timeCreated this after the constructor
+  DateTime get timeCreated => _timeCreated; // Do not want to change timeCreated this after the constructor
 
-  get timeModified =>
-      _timeModified; // Do not want to change timeModified unless modifying a field
+  DateTime get timeModified => _timeModified; // Do not want to change timeModified unless modifying a field
 
-  /// returns a mapping with kv pairs corresponding to Firebase's
-  /// possibly a better getter
-  Map<String, dynamic> toMap({keepClasses = false}) {
-    return ({
-      'task name': _name,
-      'description': _description,
-      'completed': _completed,
-      'location': _location,
-      'hex color': _color,
-      'recurrence rules':
-          keepClasses ? _recurrenceRules : _recurrenceRules?.toMap(),
-      'tags': keepClasses ? _tags : _tags.toList(),
-      'start date': _timeStart,
-      'due date': _timeDue,
-      'current date': _timeCurrent,
-      'date created': _timeCreated,
-      'date modified': _timeModified
-    });
+  // Override the == operator
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is Task &&
+        _name == other._name &&
+        _id == other._id &&
+        _description == other._description &&
+        _completed == other._completed &&
+        _location == other._location &&
+        _color == other._color &&
+        listEquals(_tags, other._tags) &&
+        _recurrenceRules == other._recurrenceRules &&
+        _timeStart == other._timeStart &&
+        _timeDue == other._timeDue &&
+        _timeCurrent == other._timeCurrent &&
+        _timeCreated == other._timeCreated &&
+        _timeModified == other._timeModified;
   }
+
+  @override
+  int get hashCode {
+    return Object.hash(
+      _name,
+      _id,
+      _description,
+      _completed,
+      _location,
+      _color,
+      _tags,
+      _recurrenceRules,
+      _timeStart,
+      _timeDue,
+      _timeCurrent,
+      _timeCreated,
+      _timeModified,
+    );
+  }
+}
+
+/// All tasks where (current date) is in a date range, separated by if they are completed, including delays for them
+/// Ok for frontend use
+/// Returns a pair of lists of the form (active tasks, completed tasks)
+List<Task> tasksWithDelays(List<Task> a, List<Task> b) {
+  List<Task> delayed = [];
+
+  for (Task t in a+b) {
+    if (t.timeStart.isBefore(t.timeCurrent)) {
+      delayed.add(t);
+    }
+  }
+
+  return delayed;
 }
