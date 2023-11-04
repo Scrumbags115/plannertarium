@@ -299,7 +299,6 @@ class DatabaseService {
     final allTasks = await users.doc(uid).collection("tasks")
             .where("current date",  isGreaterThanOrEqualTo: timestampStart,
                                     isLessThan: timestampEnd).get();
-
     List<Task> activeList = [];
     List<Task> completedList = [];
     for (var doc in allTasks.docs) {
@@ -307,7 +306,6 @@ class DatabaseService {
       if (t.completed) completedList.add(t);
       else activeList.add(t);
     }
-
     return (activeList, completedList);
   }
 
@@ -318,22 +316,17 @@ class DatabaseService {
     final timestampStart = Timestamp.fromDate(dateStart);
     final timestampEnd = Timestamp.fromDate(dateEnd);
     List<Task> delayedList = [];
-    final candidateTasks = await users
-        .doc(uid)
-        .collection("tasks")
+    final candidateTasks = await users.doc(uid).collection("tasks")
         .where("current date",
-            isGreaterThanOrEqualTo: timestampStart)
+                isGreaterThanOrEqualTo: timestampStart)
         .where("start date",
-            isLessThan: timestampEnd)
-        .get();
-
+                isLessThan: timestampEnd).get();
     for (var doc in candidateTasks.docs) {
       Task t = Task.mapToTask(doc.data(), id: doc.id);
       DateTime startDay = DateTime(t.timeStart.year, t.timeStart.month, t.timeStart.day);
       DateTime currentDay = DateTime(t.timeCurrent.year, t.timeCurrent.month, t.timeCurrent.day);
-      if (startDay != currentDay) {
-          delayedList.add(t);
-      }
+      if (startDay.isBefore(currentDay)) 
+        delayedList.add(t);
     }
 
     return delayedList;
@@ -382,7 +375,6 @@ class DatabaseService {
         delayedMap[date]!.add(t);
       }
     }
-
     return (activeMap, completedMap, delayedMap);
   }
 
