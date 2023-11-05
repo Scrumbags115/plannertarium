@@ -5,7 +5,7 @@ import 'package:planner/view/dayView.dart';
 import 'package:planner/view/weekView.dart';
 import 'package:get/get.dart';
 
-Task t = Task(name: "test", tags: {});
+Task t = Task(name: "test");
 DatabaseService d = DatabaseService(uid: "test_user_1");
 
 class MyApp extends StatelessWidget {
@@ -14,9 +14,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      home: weekView(),
-    ); /*MaterialApp(
+    return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
         // This is the theme of your application.
@@ -38,7 +36,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );*/
+    );
   }
 }
 
@@ -72,8 +70,8 @@ class _MyHomePageState extends State<MyHomePage> {
       // called again, and so nothing would appear to happen.
       _counter++;
     });
-    t.Name = '${t.Name}1';
-    d.setUserTasks("1", t);
+    t.name = '${t.name}1';
+    d.setUserTask(t);
     print("UPDATED NAME");
   }
 
@@ -121,7 +119,7 @@ class _MyHomePageState extends State<MyHomePage> {
               '$_counter' +
                   "." +
                   "task is." +
-                  t.Name +
+                  t.name +
                   "." +
                   t.timeModified.toString(),
               style: Theme.of(context).textTheme.headlineMedium,

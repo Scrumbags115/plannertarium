@@ -5,6 +5,7 @@ import 'package:planner/models/task.dart';
 
 class DatabaseService {
   final String uid;
+  // TODO: Add caching layer here if time permits
 
   // users collection reference
   final CollectionReference users =
@@ -169,37 +170,6 @@ class DatabaseService {
     }
   }
 
-  Future<Task> getUserTasks(String taskID) async {
-    try {
-      var taskDocument = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .collection('tasks')
-          .doc(taskID)
-          .get();
-      return Task.requireFields(
-          name: taskDocument['name'],
-          description: taskDocument['description'],
-          completed: taskDocument['completed'],
-          timeCurrent: taskDocument['current date'],
-          timeStart: taskDocument['start date'],
-          timeDue: taskDocument['due date'],
-          location: taskDocument['location'],
-          color: taskDocument['hex color'],
-          tags: taskDocument['tags'],
-          recurrenceRules: taskDocument['recurrence rules'],
-          timeCreated: taskDocument['date created'],
-          timeModified: taskDocument['date modified']);
-    } catch (e) {
-      print("Get Failed");
-      return Task(name: "", tags: <String>{});
-    }
-  }
-
-  Future<void> setUserTasks(String taskID, Task t) async {
-    return await users.doc(uid).collection('tasks').doc(taskID).set(t.toMap());
-  }
-
   // add all recurring events in the database
   Future<void> setRecurringEvents(Event e) async {
     List<Event> recurringEvents = e.generateRecurringEvents();
@@ -227,5 +197,123 @@ class DatabaseService {
         }
       });
     }
+  }
+
+  Future<Task> getTask(String taskID) async {
+    try {
+      var taskDocument = await users.doc(uid).collection('tasks').doc(taskID).get();
+      return Task.requireFields(
+          name: taskDocument['name'],
+          id: taskID,
+          description: taskDocument['description'],
+          completed: taskDocument['completed'],
+          color: taskDocument['hex color'],
+          location: taskDocument['location'],
+          tags: taskDocument['tags'],
+          recurrenceRules: taskDocument['recurrence rules'],
+          timeStart: taskDocument['start date'],
+          timeDue: taskDocument['due date'],
+          timeCurrent: taskDocument['current date'],
+          timeCreated: taskDocument['date created'],
+          timeModified: taskDocument['date modified']);
+    } catch (e) {
+      print("Get Failed");
+      return Task();
+    }
+  }
+
+  /// Saves a task into the database
+  Future<void> setUserTask(Task t) async {
+    return await users.doc(uid).collection('tasks').doc(t.id).set(t.toMap());
+  }
+
+  /// Returns a pair of lists of the form (active tasks, completed tasks)
+  /// where task.timeCureent is in a date range [dateStart, dateEnd) for all tasks in either list
+  Future<(List<Task>, List<Task>)> _getTasksActiveOrCompleted(DateTime dateStart, DateTime dateEnd) async {
+    assert (dateStart.isBefore(dateEnd));
+    final timestampStart = Timestamp.fromDate(dateStart);
+    final timestampEnd = Timestamp.fromDate(dateEnd);
+    final allTasks = await users.doc(uid).collection("tasks")
+            .where("current date",  isGreaterThanOrEqualTo: timestampStart,
+                                    isLessThan: timestampEnd).get();
+    List<Task> activeList = [];
+    List<Task> completedList = [];
+    for (var doc in allTasks.docs) {
+      Task t = Task.mapToTask(doc.data(), id: doc.id);
+      if (t.completed) completedList.add(t);
+      else activeList.add(t);
+    }
+    return (activeList, completedList);
+  }
+
+  /// All tasks that have a delay in the window [dateStart, dateEnd)
+  /// Returns a list of tasks with delays in the time window in order of current date
+  Future<List<Task>> _getTasksDelayed(DateTime dateStart, DateTime dateEnd) async {
+    assert (dateStart.isBefore(dateEnd));
+    final timestampStart = Timestamp.fromDate(dateStart);
+    List<Task> delayedList = [];
+    final candidateTasks = await users.doc(uid).collection("tasks")
+        .where("current date",
+                isGreaterThanOrEqualTo: timestampStart)
+        // .where("start date",
+        //         isLessThan: timestampEnd) // stupid internal firebase
+        .get();
+    for (var doc in candidateTasks.docs) {
+      if (DateTime.fromMillisecondsSinceEpoch(doc['start date'].seconds*1000).isBefore(dateEnd)) {
+        Task t = Task.mapToTask(doc.data(), id: doc.id);
+        DateTime startDay = DateTime(t.timeStart.year, t.timeStart.month, t.timeStart.day);
+        DateTime currentDay = DateTime(t.timeCurrent.year, t.timeCurrent.month, t.timeCurrent.day);
+        if (startDay.isBefore(currentDay)) 
+          delayedList.add(t);
+      }
+    }
+
+    return delayedList;
+  }
+
+  /// Returns a 3-tuple of Maps<DateTime, List<Task>> where each map goes from [dateStart, dateEnd)
+  /// Values are lists of tasks that are either active, completed, or delayed on a day
+  /// Takes the form (ActiveMap, CompletedMap, DelayedMap)
+  Future<(Map<DateTime, List<Task>>, Map<DateTime, List<Task>>, Map<DateTime, List<Task>>)> getTaskMaps(DateTime dateStart, DateTime dateEnd) async {
+    assert (dateStart.isBefore(dateEnd));
+    assert (dateStart.isAtSameMomentAs(DateTime(dateStart.year, dateStart.month, dateStart.day)));
+    assert (dateEnd.isAtSameMomentAs(DateTime(dateEnd.year, dateEnd.month, dateEnd.day)));
+
+    Map<DateTime, List<Task>> activeMap = {};
+    Map<DateTime, List<Task>> completedMap = {};
+    Map<DateTime, List<Task>> delayedMap = {};
+    for (int i = 0; i < dateEnd.difference(dateStart).inDays; i++) {
+      DateTime newDay = DateTime(dateStart.year, dateStart.month, dateStart.day+i);
+      activeMap[newDay] = [];
+      completedMap[newDay] = [];
+      delayedMap[newDay] = [];
+    }
+
+    List<Task> activeList, completedList;
+    (activeList, completedList) = await _getTasksActiveOrCompleted(dateStart, dateEnd);
+    for (Task t in activeList) {
+      DateTime currentDay = DateTime(t.timeCurrent.year, t.timeCurrent.month, t.timeCurrent.day);
+      assert (activeMap[currentDay] != null);
+      activeMap[currentDay]!.add(t);
+    }
+    for (Task t in completedList) {
+      DateTime currentDay = DateTime(t.timeCurrent.year, t.timeCurrent.month, t.timeCurrent.day);
+      assert (completedMap[currentDay] != null);
+      completedMap[currentDay]!.add(t);
+    }
+
+    List<Task> delayList = await _getTasksDelayed(dateStart, dateEnd);
+    for (Task t in delayList) {
+      DateTime loopStart = t.timeStart.isBefore(dateStart) ? dateStart : t.timeStart;
+      DateTime loopEnd = t.timeCurrent.isBefore(dateEnd) ? t.timeCurrent : dateEnd;
+      loopStart = DateTime(loopStart.year, loopStart.month, loopStart.day);
+      loopEnd = DateTime(loopEnd.year, loopEnd.month, loopEnd.day);
+      for (int i = 0; i < loopEnd.difference(loopStart).inDays; i++) {
+        DateTime date = DateTime(loopStart.year, loopStart.month, loopStart.day+i);
+        assert (delayedMap[date] != null);
+        delayedMap[date]!.add(t);
+      }
+    }
+    return (activeMap, completedMap, delayedMap);
   }
 }

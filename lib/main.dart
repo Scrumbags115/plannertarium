@@ -5,15 +5,14 @@ import 'package:planner/models/task.dart';
 import 'package:planner/temp_frontend.dart';
 import 'package:planner/view/weekView.dart';
 import 'package:get/get.dart';
-import 'package:planner/temp_frontend2.dart';
+// import 'package:planner/temp_frontend2.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'common/login.dart';
 import 'firebase_options.dart';
 
-Task t = Task(name: "test", tags: {});
-DatabaseService d = DatabaseService(uid: "test_user_1");
+import 'tests/task_tests.dart';
 
 void main() async {
   print("IN MAIN");
@@ -21,8 +20,9 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform, // needs firebase_options.dart from flutterfire configure
   );
-  //Uncomment below line and comment out above line to see weekView + dayView UI
+  // test_tasks();
+  // //Uncomment below line and comment out above line to see weekView + dayView UI
   runApp(GetMaterialApp(home: weekView()));
-  d.setUserTasks("1", t);
+  // d.setUserTask(t);
   // runApp(const MyApp());
 }
