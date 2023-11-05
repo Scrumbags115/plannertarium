@@ -30,6 +30,6 @@ void main() async {
 
   //Uncomment below line and comment out above line to see weekView + dayView UI
   runApp(GetMaterialApp(home: weekView()));
-  d.setUserTasks("4", t);
+  d.setUserTasks("1", t);
   // runApp(const MyApp());
 }

@@ -1,7 +1,12 @@
+import 'package:get/get.dart';
+import 'package:planner/common/recurrence.dart';
+import 'package:planner/models/event.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
+import 'package:planner/models/event.dart';
 
 var auth = FirebaseAuth.instanceFor(
     app: Firebase.app(), persistence: Persistence.LOCAL);
@@ -76,11 +81,11 @@ class MyAppState extends State<MyApp> {
     if (event == "add") {
       final timeStart = DateTime.now();
       final timeEnd = timeStart.add(const Duration(hours: 8));
-      await db.addUniqueUserEvent(
-          eventName: "example_event_name_2",
-          eventTags: {"example_event_tag1"},
+      await db.addUniqueUserEvent(Event(
+          name: "example_event_name_2",
+          tags: {"example_event_tag1"},
           timeStart: timeStart,
-          timeEnd: timeEnd);
+          timeEnd: timeEnd));
       return;
     } else if (event == "get range") {
       final dateStart = DateTime.parse("2023-10-20");
@@ -93,6 +98,17 @@ class MyAppState extends State<MyApp> {
         print(key + value.toString());
       });
       return;
+    } else if (event =="recur") {
+      Recurrence recurrenceRules = Recurrence.requireFields(enabled: true, timeStart: DateTime.parse("2023-11-10"), timeEnd: DateTime.parse("2023-11-30"), dates: [true, false, false, false, false, false, false]);
+      Event e = Event(name: "test_recurrence_event_1", description: "recurrence test", tags: {}, timeStart: DateTime.parse("2023-11-11"), timeEnd: DateTime.parse("2023-11-12"), recurrenceRules: recurrenceRules);
+      await db.setRecurringEvents(e);
+    } else if (event == "delete") {
+      final List<Event> eventList = await db.getListOfUserEventsInDay(date: DateTime.parse("2023-11-20"));
+      if (eventList.isEmpty) {
+        return;
+      }
+      Event e = eventList.first;
+      await db.deleteRecurringEvents(e);
     } else {
       return;
     }
@@ -165,14 +181,14 @@ class MyAppState extends State<MyApp> {
                           hintText: 'Add a event here...',
                           enabledBorder: OutlineInputBorder(
                             borderRadius:
-                            BorderRadius.all(Radius.circular(12.0)),
+                                BorderRadius.all(Radius.circular(12.0)),
                             borderSide: BorderSide(color: Colors.red, width: 2),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius:
-                            BorderRadius.all(Radius.circular(12.0)),
+                                BorderRadius.all(Radius.circular(12.0)),
                             borderSide:
-                            BorderSide(color: Colors.red, width: 1.5),
+                                BorderSide(color: Colors.red, width: 1.5),
                           ),
                         ),
                       ),
