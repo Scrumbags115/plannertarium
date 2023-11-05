@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:planner/common/recurrence.dart';
 
@@ -90,33 +91,36 @@ class Task {
     _completed = map['completed'];
     _location = map['location'];
     _color = map['hex color'];
-    _tags = map['tags'];
+    _tags = [];
+    map['tags'].forEach((tag) {_tags.add(tag.toString());});
     _recurrenceRules = map['recurrence rules'];
-    _timeStart = map['start date'];
-    _timeDue = map['due date'];
-    _timeCurrent = map['current date'];
-    _timeCreated = map['date created'];
-    _timeModified = map['date modified'];
+    _timeStart = map['start date'].runtimeType == Timestamp ? DateTime.fromMillisecondsSinceEpoch(map['start date'].seconds*1000) : map['start date'];
+    _timeDue = map['due date'].runtimeType == Timestamp ? DateTime.fromMillisecondsSinceEpoch(map['due date'].seconds*1000) : map['due date'];
+    _timeCurrent = map['current date'].runtimeType == Timestamp ? DateTime.fromMillisecondsSinceEpoch(map['current date'].seconds*1000) : map['current date'];
+    _timeCreated = map['date created'].runtimeType == Timestamp ? DateTime.fromMillisecondsSinceEpoch(map['date created'].seconds*1000) : map['date created'];
+    _timeModified = map['date modified'].runtimeType == Timestamp ? DateTime.fromMillisecondsSinceEpoch(map['date modified'].seconds*1000) : map['date modified'];
   }
 
   /// returns a mapping with kv pairs corresponding to Firebase's
   /// possibly a better getter
-  Map<String, dynamic> toMap({keepClasses = false}) {
-    return ({
-      'task name': _name,
-      'description': _description,
-      'completed': _completed,
-      'location': _location,
-      'hex color': _color,
-      'recurrence rules':
-          keepClasses ? _recurrenceRules : _recurrenceRules?.toMap(),
-      'tags': keepClasses ? _tags : _tags.toList(),
-      'start date': _timeStart,
-      'due date': _timeDue,
-      'current date': _timeCurrent,
-      'date created': _timeCreated,
-      'date modified': _timeModified
-    });
+  Map<String, dynamic> toMap({keepClasses = false, includeID = false}) {
+    Map<String, dynamic> map = {'task name': _name,
+                                'description': _description,
+                                'completed': _completed,
+                                'location': _location,
+                                'hex color': _color,
+                                'recurrence rules':
+                                    keepClasses ? _recurrenceRules : _recurrenceRules?.toMap(),
+                                'tags': keepClasses ? _tags : _tags.toList(),
+                                'start date': _timeStart,
+                                'due date': _timeDue,
+                                'current date': _timeCurrent,
+                                'date created': _timeCreated,
+                                'date modified': _timeModified
+                              };
+    if (includeID)
+      map['id'] = _id;
+    return map;
   }
 
   set name(String newName) {
@@ -195,6 +199,11 @@ class Task {
   DateTime get timeCreated => _timeCreated; // Do not want to change timeCreated this after the constructor
 
   DateTime get timeModified => _timeModified; // Do not want to change timeModified unless modifying a field
+
+  @override
+  String toString() {
+    return "Task($name, $id)";
+  }
 
   // Override the == operator
   @override
