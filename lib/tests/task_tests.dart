@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/models/task.dart';
 
-mapEquals(Map<DateTime, List<Task>> m1, Map<DateTime, List<Task>> m2) {
+bool mapEquals(Map<DateTime, List<Task>> m1, Map<DateTime, List<Task>> m2) {
   if (m1.keys.length != m2.keys.length) {
     print('case 1');
     return false;
@@ -48,9 +48,6 @@ Future<void> task_new_user() async {
   print("Daily delayed:   $dailyDelayed");
   Map<DateTime, List<Task>> emptyDay = {today: <Task>[]};
   print("Expecting:       $emptyDay");
-  Set<DateTime> set1 = {DateTime(2023, 11, 4), DateTime(2023, 11, 4)};
-  print(set1);
-  print("vals same? " + (emptyDay[DateTime(2023, 11, 4)] == dailyActive[DateTime(2023, 11, 4)]).toString());
   assert (mapEquals(dailyActive, emptyDay));
   assert (mapEquals(dailyCompleted, emptyDay));
   assert (mapEquals(dailyDelayed, emptyDay));
@@ -135,23 +132,57 @@ Future<void> task_new_user() async {
   assert (mapEquals(dailyCompleted, dailyCompExp));
   assert (mapEquals(dailyDelayed, dailyDelayExp));
 
+  // eyeballed the others, seems ok
+  // TODO: fill out the rest of these tests
+
+  await db.users.doc(newUser1).delete().then(
+      (doc) => print("New User deleted"),
+      onError: (e) => print("Error removing user $e"),
+    );
+    // does not fully delete, do it manually
+}
+
+task_existing_user() async {
+  print("-----------------------------TEST TASKS EXISTING USER-----------------------------");
+  String existingUser1 = "taskExistingUser";
+  print("existingUser1 is $existingUser1");
+  DatabaseService db = DatabaseService(uid: existingUser1);
+  // tasks2.forEach((t) {db.setUserTask(t);});
+  // ^ Uncomment above to rewrite database info
+
   // Weekly
+  Map<DateTime, List<Task>> weeklyActive, weeklyCompleted, weeklyDelayed;
   (weeklyActive, weeklyCompleted, weeklyDelayed) = await db.getTaskMaps(DateTime(2023, 11, 6), DateTime(2023, 11, 13));
-  Map<DateTime, List<Task>> weeklyActiveExp = {DateTime(2023, 11, 20):[tasks[22]]};
-  Map<DateTime, List<Task>> weeklyCompExp = {DateTime(2023, 11, 20):[tasks[16], tasks[20]]};
-  Map<DateTime, List<Task>> weeklyDelayExp = {DateTime(2023, 11, 20):[tasks[13], tasks[4]]};
-  print("Weekly active: $weeklyActive");
-  print("Weekly completed: $weeklyCompleted");
-  print("Weekly delayed: $weeklyDelayed");
-  print("expecting $emptyWeek");
+  Map<DateTime, List<Task>> weeklyActiveExp = {DateTime(2023, 11, 6):[],
+                                               DateTime(2023, 11, 7):[],
+                                               DateTime(2023, 11, 8):[],
+                                               DateTime(2023, 11, 9):[],
+                                               DateTime(2023, 11, 10):[],
+                                               DateTime(2023, 11, 11):[],
+                                               DateTime(2023, 11, 12):[tasks2[7]]};
+  Map<DateTime, List<Task>> weeklyCompExp = {DateTime(2023, 11, 6):[],
+                                               DateTime(2023, 11, 7):[tasks2[2]],
+                                               DateTime(2023, 11, 8):[],
+                                               DateTime(2023, 11, 9):[tasks2[3]],
+                                               DateTime(2023, 11, 10):[],
+                                               DateTime(2023, 11, 11):[],
+                                               DateTime(2023, 11, 12):[]};
+  Map<DateTime, List<Task>> weeklyDelayExp = {DateTime(2023, 11, 6):[tasks2[2], tasks2[3], tasks2[7], tasks2[6]],
+                                               DateTime(2023, 11, 7):[tasks2[3], tasks2[7], tasks2[6]],
+                                               DateTime(2023, 11, 8):[tasks2[3], tasks2[7], tasks2[6]],
+                                               DateTime(2023, 11, 9):[tasks2[7], tasks2[4], tasks2[6]],
+                                               DateTime(2023, 11, 10):[tasks2[7], tasks2[4], tasks2[6]],
+                                               DateTime(2023, 11, 11):[tasks2[7], tasks2[4], tasks2[6]],
+                                               DateTime(2023, 11, 12):[tasks2[4], tasks2[6]]};
+  print("Weekly active found   : $weeklyActive");
+  print("Weekly active expected: $weeklyActiveExp");
+  print("Weekly completed found   : $weeklyCompleted");
+  print("Weekly completed expected: $weeklyCompExp");
+  print("Weekly delayed found   : $weeklyDelayed");
+  print("Weekly delayed expected: $weeklyDelayExp");
   assert (mapEquals(weeklyActive, weeklyActiveExp));
   assert (mapEquals(weeklyCompleted, weeklyCompExp));
   assert (mapEquals(weeklyDelayed, weeklyDelayExp));
-  // Assert doesnt pass cuz I never updated it but I added special tests at the end and eyeballed that and it looks correct to me
-}
-
-task_existing_user() {
-
 }
 
 List<Task> tasks = [
@@ -470,10 +501,11 @@ List<Task> tasks = [
     timeCreated: DateTime(2023, 11, 14),
     timeModified: DateTime(2023, 11, 18),
   ),
+];
 
-
-
-    Task(
+List<Task> tasks2 = [
+    Task(),
+    Task( // before window
     name: "MyTask 1",
     id: "MID-1",
     description: "Description for MTask 1",
@@ -488,7 +520,7 @@ List<Task> tasks = [
     timeCreated: DateTime(2023, 11, 8),
     timeModified: DateTime(2023, 11, 12),
   ),
-  Task(
+  Task( // start before window
     name: "MyTask 2",
     id: "MID-2",
     description: "Description for MTask 2",
@@ -503,7 +535,7 @@ List<Task> tasks = [
     timeCreated: DateTime(2023, 11, 8),
     timeModified: DateTime(2023, 11, 12),
   ),
-  Task(
+  Task( // in window
     name: "MyTask 3",
     id: "MID-3",
     description: "Description for MTask 3",
@@ -518,7 +550,7 @@ List<Task> tasks = [
     timeCreated: DateTime(2023, 11, 8),
     timeModified: DateTime(2023, 11, 12),
   ),
-  Task(
+  Task( // current after window
     name: "MyTask 4",
     id: "MID-4",
     description: "Description for MTask 4",
@@ -533,9 +565,9 @@ List<Task> tasks = [
     timeCreated: DateTime(2023, 11, 8),
     timeModified: DateTime(2023, 11, 12),
   ),
-  Task(
+  Task( // after window
     name: "MyTask 5",
-    id: "MID-4",
+    id: "MID-5",
     description: "Description for MTask 5",
     completed: false,
     location: "Location 1",
@@ -548,7 +580,7 @@ List<Task> tasks = [
     timeCreated: DateTime(2023, 11, 8),
     timeModified: DateTime(2023, 11, 12),
   ),
-  Task(
+  Task( // start before end after window
     name: "MyTask 6",
     id: "MID-6",
     description: "Description for MTask 6",
@@ -563,7 +595,7 @@ List<Task> tasks = [
     timeCreated: DateTime(2023, 11, 8),
     timeModified: DateTime(2023, 11, 12),
   ),
-  Task(
+  Task( // spans the window
     name: "MyTask 7",
     id: "MID-7",
     description: "Description for MTask 7",

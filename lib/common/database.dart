@@ -247,7 +247,7 @@ class DatabaseService {
   }
 
   /// All tasks that have a delay in the window [dateStart, dateEnd)
-  /// Returns a list of tasks with delays in the time window in order of ending date
+  /// Returns a list of tasks with delays in the time window in order of current date
   Future<List<Task>> _getTasksDelayed(DateTime dateStart, DateTime dateEnd) async {
     assert (dateStart.isBefore(dateEnd));
     final timestampStart = Timestamp.fromDate(dateStart);
@@ -309,7 +309,7 @@ class DatabaseService {
       loopStart = DateTime(loopStart.year, loopStart.month, loopStart.day);
       loopEnd = DateTime(loopEnd.year, loopEnd.month, loopEnd.day);
       for (int i = 0; i < loopEnd.difference(loopStart).inDays; i++) {
-        DateTime date = DateTime(dateStart.year, dateStart.month, dateStart.day+i);
+        DateTime date = DateTime(loopStart.year, loopStart.month, loopStart.day+i);
         assert (delayedMap[date] != null);
         delayedMap[date]!.add(t);
       }
