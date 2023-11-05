@@ -13,20 +13,23 @@ import 'common/login.dart';
 import 'firebase_options.dart';
 
 Task t = Task(name: "test", tags: {});
-DatabaseService d = DatabaseService(uid: "test_user_1");
 
 void main() async {
   print("IN MAIN");
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform, // needs firebase_options.dart from flutterfire configure
+    options: DefaultFirebaseOptions
+        .currentPlatform, // needs firebase_options.dart from flutterfire configure
   );
-  //Uncomment below line and comment out above line to see weekView + dayView UI
-  //runApp(GetMaterialApp(home: weekView()));
-  d.setUserTasks("1", t);
-  runApp(const MyApp());
 
-  String u = await runAuthFlow();
-  print(u);
-  print("wee");
+  User? u = await runAuthFlow();
+  DatabaseService d = DatabaseService(uid: u!.uid);
+  print(u.displayName);
+  print(u.uid);
+  // print("wee");
+
+  //Uncomment below line and comment out above line to see weekView + dayView UI
+  runApp(GetMaterialApp(home: weekView()));
+  d.setUserTasks("4", t);
+  // runApp(const MyApp());
 }

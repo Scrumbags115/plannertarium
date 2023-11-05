@@ -23,8 +23,6 @@ class SnackBarDemo extends StatelessWidget {
   }
 }
 
-
-
 class SnackBarPage extends StatelessWidget {
   const SnackBarPage({super.key});
 
@@ -126,13 +124,14 @@ Future<User> triggerAuthFlow() async {
   }
 }
 
-Future<String> runAuthFlow() async {
+// changed to return User? intead of just a string so we can get more info like username etc...
+Future<User?> runAuthFlow() async {
   try {
     User u = await triggerAuthFlow();
-    return u.uid;
+    return u;
   } on FirebaseAuthException catch (e) {
     print("Error!$e");
 
-    return "";
+    return null;
   }
 }

@@ -1,0 +1,44 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:planner/temp_frontend.dart';
+import 'main.dart';
+
+class LoginPage extends StatelessWidget {
+  const LoginPage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        body: Center(
+            child: ElevatedButton(
+      onPressed: () {
+        signInWithGoogle();
+      },
+      child: const Text('Googoo Login'),
+    )));
+  }
+
+  signInWithGoogle() async {
+    GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+    GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
+
+    AuthCredential credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth?.accessToken,
+      idToken: googleAuth?.idToken,
+    );
+
+    UserCredential userCreds =
+        await FirebaseAuth.instance.signInWithCredential(credential);
+
+    print(userCreds.user?.displayName);
+
+    if (userCreds.user != null) {
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => MyHomePage(title: "HOME :)")));
+    }
+  }
+}
