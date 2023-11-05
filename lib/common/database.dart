@@ -314,7 +314,6 @@ class DatabaseService {
   Future<List<Task>> _getTasksDelayed(DateTime dateStart, DateTime dateEnd) async {
     assert (dateStart.isBefore(dateEnd));
     final timestampStart = Timestamp.fromDate(dateStart);
-    final timestampEnd = Timestamp.fromDate(dateEnd);
     List<Task> delayedList = [];
     final candidateTasks = await users.doc(uid).collection("tasks")
         .where("current date",

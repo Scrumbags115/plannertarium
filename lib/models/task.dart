@@ -40,7 +40,6 @@ class Task {
     _completed = completed;
     _location = location;
     _color = color;
-    // tags = tags.isEmpty ? Set() : Set.from(tags);
     _tags = tags;
     _recurrenceRules = recurrenceRules;
     _timeStart = timeStart ?? DateTime.now();
