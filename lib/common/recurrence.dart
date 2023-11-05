@@ -32,23 +32,4 @@ class Recurrence {
       'id' : id
     });
   }
-
-  bool get Enabled => enabled;
-  set Enabled(bool e) {
-    enabled = e;
-  }
-
-  DateTime? get TimeStart => timeStart; // it may make more sense to test if enabled is False, if so, always return null, for now, it is implementation dependent
-  DateTime? get TimeEnd => timeEnd;
-
-  set TimeStart(DateTime? ts) {
-    timeStart = ts;
-  }
-  set TimeEnd(DateTime? te) {
-    timeEnd = te;
-  }
-  List<bool>? get Dates => dates;
-  set Dates(List<bool>? d) {
-    dates = d;
-  }
 }
