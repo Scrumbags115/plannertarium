@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:planner/view/dayView.dart';
 
 class weekView extends StatelessWidget {
+  const weekView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
         margin: const EdgeInsets.fromLTRB(0, 0, 10, 10),
         child: ListView(
-          children: List.generate(7, (index) { //This generates 7 MultiDayCard in a vertical list
+          children: List.generate(7, (index) {
+            //This generates 7 MultiDayCard in a vertical list
             return MultiDayCard(index);
           }),
         ),
@@ -17,9 +20,9 @@ class weekView extends StatelessWidget {
   }
 }
 
-//Each one of these is a day in the week view, consisting of the placeholder date and card to its right
+///Each one of these is a day in the week view, consisting of the placeholder date and card to its right
 class MultiDayCard extends StatefulWidget {
-  const MultiDayCard(this.data);
+  const MultiDayCard(this.data, {super.key});
   final int data;
   @override
   State<StatefulWidget> createState() => MultiDayCardState(data);
@@ -39,7 +42,7 @@ class MultiDayCardState extends State<MultiDayCard> {
           flex: 0,
           child: SizedBox(
             width: 70,
-            height: 120,
+            height: 140,
             child: Center(
               child: Text(
                   "${DateTime.now().month}/${DateTime.now().day + data}"), //Doesn't really work to show the current week(October 32nd LMAO), just a placeholder
@@ -48,7 +51,7 @@ class MultiDayCardState extends State<MultiDayCard> {
         ),
         Expanded(
           child: SizedBox(
-            height: 120,
+            height: 140,
             child: Card(
               //Not sure how to connect the backend to this kind of setup, but it looks kind of ok
               clipBehavior: Clip.hardEdge,
@@ -71,7 +74,7 @@ class MultiDayCardState extends State<MultiDayCard> {
                 child: const Center(
                   child: Column(
                     children: [
-                      Text("海阔天空"), //Placeholder text
+                      Text("Placeholder"), //Placeholder text
                     ],
                   ),
                 ),
