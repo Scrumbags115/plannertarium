@@ -80,7 +80,7 @@ class MyAppState extends State<MyApp> {
       final timeEnd = timeStart.add(const Duration(hours: 8));
       await db.addUniqueUserEvent(Event(
           name: "example_event_name_2",
-          tags: {"example_event_tag1"},
+          tags: ["example_event_tag1"],
           timeStart: timeStart,
           timeEnd: timeEnd));
       return;
@@ -96,8 +96,8 @@ class MyAppState extends State<MyApp> {
       });
       return;
     } else if (event =="recur") {
-      Recurrence recurrenceRules = Recurrence.requireFields(enabled: true, timeStart: DateTime.parse("2023-11-10"), timeEnd: DateTime.parse("2023-11-30"), dates: [true, false, false, false, false, false, false]);
-      Event e = Event(name: "test_recurrence_event_1", description: "recurrence test", tags: {}, timeStart: DateTime.parse("2023-11-11"), timeEnd: DateTime.parse("2023-11-12"), recurrenceRules: recurrenceRules);
+      Recurrence recurrenceRules = Recurrence(enabled: true, timeStart: DateTime.parse("2023-11-10"), timeEnd: DateTime.parse("2023-11-30"), dates: [true, false, false, false, false, false, false]);
+      Event e = Event(name: "test_recurrence_event_1", description: "recurrence test", tags: [], timeStart: DateTime.parse("2023-11-11"), timeEnd: DateTime.parse("2023-11-12"), recurrenceRules: recurrenceRules);
       await db.setRecurringEvents(e);
     } else if (event == "delete") {
       final List<Event> eventList = await db.getListOfUserEventsInDay(date: DateTime.parse("2023-11-20"));

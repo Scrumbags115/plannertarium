@@ -71,7 +71,7 @@ class DatabaseService {
     final userEvents =
         await getUserEventsInDateRange(dateStart: dateStart, dateEnd: dateEnd);
     for (var doc in userEvents.docs) {
-      m[doc.id] = mapToEvent(doc.data());
+      m[doc.id] = Event.fromMap(doc.data(), id: doc.id);
     }
 
     return m;
@@ -83,7 +83,7 @@ class DatabaseService {
     List<Event> events = [];
     final userEvents = await getUserEventsInDateRange(dateStart: dateStart, dateEnd: dateEnd);
     for (final doc in userEvents.docs) {
-      events.add(mapToEvent(doc.data()));
+      events.add(Event.fromMap(doc.data(), id: doc.id));
     }
     return events;
   }
@@ -239,7 +239,7 @@ class DatabaseService {
     List<Task> activeList = [];
     List<Task> completedList = [];
     for (var doc in allTasks.docs) {
-      Task t = Task.mapToTask(doc.data(), id: doc.id);
+      Task t = Task.fromMap(doc.data(), id: doc.id);
       if (t.completed) completedList.add(t);
       else activeList.add(t);
     }
@@ -260,7 +260,7 @@ class DatabaseService {
         .get();
     for (var doc in candidateTasks.docs) {
       if (DateTime.fromMillisecondsSinceEpoch(doc['start date'].seconds*1000).isBefore(dateEnd)) {
-        Task t = Task.mapToTask(doc.data(), id: doc.id);
+        Task t = Task.fromMap(doc.data(), id: doc.id);
         DateTime startDay = DateTime(t.timeStart.year, t.timeStart.month, t.timeStart.day);
         DateTime currentDay = DateTime(t.timeCurrent.year, t.timeCurrent.month, t.timeCurrent.day);
         if (startDay.isBefore(currentDay)) 
