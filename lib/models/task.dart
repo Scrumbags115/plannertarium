@@ -93,11 +93,11 @@ class Task {
     _tags = [];
     map['tags'].forEach((tag) {_tags.add(tag.toString());});
     _recurrenceRules = Recurrence.fromMap(map['recurrence rules']);
-    _timeStart = map['start date'] is Timestamp ? (map['start date'] as Timestamp).toDate() : map['start date'];
-    _timeDue = map['due date'] is Timestamp ? (map['due date'] as Timestamp).toDate() : map['due date'];
-    _timeCurrent = map['current date'] is Timestamp ? (map['current date'] as Timestamp).toDate() : map['current date'];
-    _timeCreated = map['date created'] is Timestamp ? (map['date created'] as Timestamp).toDate() : map['date created'];
-    _timeModified = map['date modified'] is Timestamp ? (map['date modified'] as Timestamp).toDate() : map['date modified'];
+    _timeStart = map['start date'] is Timestamp ? map['start date'].toDate() : map['start date'];
+    _timeDue = map['due date'] is Timestamp ? map['due date'].toDate() : map['due date'];
+    _timeCurrent = map['current date'] is Timestamp ? map['current date'].toDate() : map['current date'];
+    _timeCreated = map['date created'] is Timestamp ? map['date created'].toDate() : map['date created'];
+    _timeModified = map['date modified'] is Timestamp ? map['date modified'].toDate() : map['date modified'];
   }
 
   /// returns a mapping with kv pairs corresponding to Firebase's

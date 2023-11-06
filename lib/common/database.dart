@@ -236,13 +236,17 @@ class DatabaseService {
     final allTasks = await users.doc(uid).collection("tasks")
             .where("current date",  isGreaterThanOrEqualTo: timestampStart,
                                     isLessThan: timestampEnd).get();
+    
     List<Task> activeList = [];
     List<Task> completedList = [];
     for (var doc in allTasks.docs) {
       Task t = Task.fromMap(doc.data(), id: doc.id);
-      if (t.completed) completedList.add(t);
-      else activeList.add(t);
+      if (t.completed) 
+        completedList.add(t);
+      else 
+        activeList.add(t);
     }
+
     return (activeList, completedList);
   }
 
@@ -251,18 +255,19 @@ class DatabaseService {
   Future<List<Task>> _getTasksDelayed(DateTime dateStart, DateTime dateEnd) async {
     assert (dateStart.isBefore(dateEnd));
     final timestampStart = Timestamp.fromDate(dateStart);
-    List<Task> delayedList = [];
     final candidateTasks = await users.doc(uid).collection("tasks")
         .where("current date",
                 isGreaterThanOrEqualTo: timestampStart)
         // .where("start date",
-        //         isLessThan: timestampEnd) // stupid internal firebase
+        //         isLessThan: timestampEnd) // firebase cant do 2 field where()'s
         .get();
+
+    List<Task> delayedList = [];
     for (var doc in candidateTasks.docs) {
-      if (DateTime.fromMillisecondsSinceEpoch(doc['start date'].seconds*1000).isBefore(dateEnd)) {
+      if ((doc['start date'] as Timestamp).toDate().isBefore(dateEnd)) {
         Task t = Task.fromMap(doc.data(), id: doc.id);
-        DateTime startDay = DateTime(t.timeStart.year, t.timeStart.month, t.timeStart.day);
-        DateTime currentDay = DateTime(t.timeCurrent.year, t.timeCurrent.month, t.timeCurrent.day);
+        DateTime startDay = _getDateOnly(t.timeStart);
+        DateTime currentDay = _getDateOnly(t.timeCurrent);
         if (startDay.isBefore(currentDay)) 
           delayedList.add(t);
       }
@@ -274,16 +279,17 @@ class DatabaseService {
   /// Returns a 3-tuple of Maps<DateTime, List<Task>> where each map goes from [dateStart, dateEnd)
   /// Values are lists of tasks that are either active, completed, or delayed on a day
   /// Takes the form (ActiveMap, CompletedMap, DelayedMap)
-  Future<(Map<DateTime, List<Task>>, Map<DateTime, List<Task>>, Map<DateTime, List<Task>>)> getTaskMaps(DateTime dateStart, DateTime dateEnd) async {
+  Future<(Map<DateTime, List<Task>>, Map<DateTime, List<Task>>, Map<DateTime, List<Task>>)> 
+      getTaskMaps(DateTime dateStart, DateTime dateEnd) async {
     assert (dateStart.isBefore(dateEnd));
-    assert (dateStart.isAtSameMomentAs(DateTime(dateStart.year, dateStart.month, dateStart.day)));
-    assert (dateEnd.isAtSameMomentAs(DateTime(dateEnd.year, dateEnd.month, dateEnd.day)));
+    assert (dateStart.isAtSameMomentAs(_getDateOnly(dateStart)));
+    assert (dateEnd.isAtSameMomentAs(_getDateOnly(dateEnd)));
 
     Map<DateTime, List<Task>> activeMap = {};
     Map<DateTime, List<Task>> completedMap = {};
-    Map<DateTime, List<Task>> delayedMap = {};
+    Map<DateTime, List<Task>> delayedMap = {}; 
     for (int i = 0; i < dateEnd.difference(dateStart).inDays; i++) {
-      DateTime newDay = DateTime(dateStart.year, dateStart.month, dateStart.day+i);
+      DateTime newDay = _getDateOnly(dateStart, offset: i);
       activeMap[newDay] = [];
       completedMap[newDay] = [];
       delayedMap[newDay] = [];
@@ -292,12 +298,12 @@ class DatabaseService {
     List<Task> activeList, completedList;
     (activeList, completedList) = await _getTasksActiveOrCompleted(dateStart, dateEnd);
     for (Task t in activeList) {
-      DateTime currentDay = DateTime(t.timeCurrent.year, t.timeCurrent.month, t.timeCurrent.day);
+      DateTime currentDay = _getDateOnly(t.timeCurrent);
       assert (activeMap[currentDay] != null);
       activeMap[currentDay]!.add(t);
     }
     for (Task t in completedList) {
-      DateTime currentDay = DateTime(t.timeCurrent.year, t.timeCurrent.month, t.timeCurrent.day);
+      DateTime currentDay = _getDateOnly(t.timeCurrent);
       assert (completedMap[currentDay] != null);
       completedMap[currentDay]!.add(t);
     }
@@ -306,14 +312,18 @@ class DatabaseService {
     for (Task t in delayList) {
       DateTime loopStart = t.timeStart.isBefore(dateStart) ? dateStart : t.timeStart;
       DateTime loopEnd = t.timeCurrent.isBefore(dateEnd) ? t.timeCurrent : dateEnd;
-      loopStart = DateTime(loopStart.year, loopStart.month, loopStart.day);
-      loopEnd = DateTime(loopEnd.year, loopEnd.month, loopEnd.day);
+      loopStart = _getDateOnly(loopStart);
+      loopEnd = _getDateOnly(loopEnd);
       for (int i = 0; i < loopEnd.difference(loopStart).inDays; i++) {
-        DateTime date = DateTime(loopStart.year, loopStart.month, loopStart.day+i);
+        DateTime date = _getDateOnly(loopStart, offset: i);
         assert (delayedMap[date] != null);
         delayedMap[date]!.add(t);
       }
     }
     return (activeMap, completedMap, delayedMap);
+  }
+
+  DateTime _getDateOnly(DateTime dateTime, {int offset = 0}) {
+    return DateTime(dateTime.year, dateTime.month, dateTime.day + offset);
   }
 }

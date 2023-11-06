@@ -82,10 +82,10 @@ Event.fromMap(Map<String, dynamic> m, {String? id}) {
     _tags = [];
     (m['tags'] as List<String>).forEach((tag) {_tags.add(tag.toString());});
     _recurrenceRules = Recurrence.fromMap(m['recurrence rules']);
-    _timeStart = m["event time start"] is Timestamp ? (m["event time start"] as Timestamp).toDate() : m["event time start"];
-    _timeEnd = m["event time end"] is Timestamp ? (m["event time end"] as Timestamp).toDate() : m["event time end"];
-    _timeCreated = m["date created"] is Timestamp ? (m["date created"] as Timestamp).toDate() : m["date created"];
-    _timeModified = m["date modified"] is Timestamp ? (m["date modified"] as Timestamp).toDate() : m["date modified"];
+    _timeStart = m["event time start"] is Timestamp ? m["event time start"].toDate() : m["event time start"];
+    _timeEnd = m["event time end"] is Timestamp ? m["event time end"].toDate() : m["event time end"];
+    _timeCreated = m["date created"] is Timestamp ? m["date created"].toDate() : m["date created"];
+    _timeModified = m["date modified"] is Timestamp ? m["date modified"].toDate() : m["date modified"];
   } catch (e) {
     throw Exception("Given map is malformed!\n$e");
   }
