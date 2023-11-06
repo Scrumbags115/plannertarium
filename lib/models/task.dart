@@ -11,7 +11,7 @@ class Task {
   late String _location = "";
   late String _color = "#919191";
   late List<String> _tags = <String>[];
-  late Recurrence? _recurrenceRules = null;
+  late Recurrence _recurrenceRules;
   late DateTime _timeStart;
   DateTime? _timeDue;
   late DateTime _timeCurrent;
@@ -41,7 +41,7 @@ class Task {
     _location = location;
     _color = color;
     _tags = tags;
-    _recurrenceRules = recurrenceRules;
+    _recurrenceRules = recurrenceRules ?? Recurrence();
     _timeStart = timeStart ?? DateTime.now();
     _timeDue = timeDue;
     _timeCurrent = timeCurrent ?? _timeStart;
@@ -93,11 +93,11 @@ class Task {
     _tags = [];
     map['tags'].forEach((tag) {_tags.add(tag.toString());});
     _recurrenceRules = Recurrence.fromMap(map['recurrence rules']);
-    _timeStart = map['start date'].runtimeType == Timestamp ? (map['start date'] as Timestamp).toDate() : map['start date'];
-    _timeDue = map['due date'].runtimeType == Timestamp ? (map['due date'] as Timestamp).toDate() : map['due date'];
-    _timeCurrent = map['current date'].runtimeType == Timestamp ? (map['current date'] as Timestamp).toDate() : map['current date'];
-    _timeCreated = map['date created'].runtimeType == Timestamp ? (map['date created'] as Timestamp).toDate() : map['date created'];
-    _timeModified = map['date modified'].runtimeType == Timestamp ? (map['date modified'] as Timestamp).toDate() : map['date modified'];
+    _timeStart = map['start date'] is Timestamp ? (map['start date'] as Timestamp).toDate() : map['start date'];
+    _timeDue = map['due date'] is Timestamp ? (map['due date'] as Timestamp).toDate() : map['due date'];
+    _timeCurrent = map['current date'] is Timestamp ? (map['current date'] as Timestamp).toDate() : map['current date'];
+    _timeCreated = map['date created'] is Timestamp ? (map['date created'] as Timestamp).toDate() : map['date created'];
+    _timeModified = map['date modified'] is Timestamp ? (map['date modified'] as Timestamp).toDate() : map['date modified'];
   }
 
   /// returns a mapping with kv pairs corresponding to Firebase's
@@ -166,13 +166,13 @@ class Task {
 
   List<String> get tags => _tags;
 
-  set recurrenceRules(Recurrence? newRecurrence) {
+  set recurrenceRules(Recurrence newRecurrence) {
     // Can't force Recurrence type because it can be null
     _timeModified = DateTime.now();
     _recurrenceRules = newRecurrence;
   }
 
-  Recurrence? get recurrenceRules => _recurrenceRules;
+  Recurrence get recurrenceRules => _recurrenceRules;
 
   set timeCurrent(DateTime newTimeCurrent) {
     _timeModified = DateTime.now();
@@ -201,10 +201,9 @@ class Task {
 
   @override
   String toString() {
-    return "Task($name, $id)";
+    return "Task($name, $id, $recurrenceRules)";
   }
 
-  // Override the == operator
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;

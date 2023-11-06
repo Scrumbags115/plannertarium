@@ -20,7 +20,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform, // needs firebase_options.dart from flutterfire configure
   );
-  // test_tasks();
+  test_tasks();
   // //Uncomment below line and comment out above line to see weekView + dayView UI
   runApp(GetMaterialApp(home: weekView()));
   // d.setUserTask(t);

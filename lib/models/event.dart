@@ -9,7 +9,7 @@ class Event {
   late String _color = "#919191";
   late String _location = "";
   late List<String> _tags = <String>[];
-  late Recurrence? _recurrenceRules = null;
+  late Recurrence _recurrenceRules;
   late DateTime _timeStart;
   late DateTime _timeEnd;
   late DateTime _timeCreated;
@@ -35,7 +35,7 @@ class Event {
     _color = color;
     _location = location;
     _tags = tags;
-    _recurrenceRules = recurrenceRules;
+    _recurrenceRules = recurrenceRules ?? Recurrence();
     _timeStart = timeStart ?? DateTime.now();
     _timeEnd = timeEnd ?? DateTime.now();
     _timeCreated = timeCreated ?? DateTime.now();
@@ -82,10 +82,10 @@ Event.fromMap(Map<String, dynamic> m, {String? id}) {
     _tags = [];
     (m['tags'] as List<String>).forEach((tag) {_tags.add(tag.toString());});
     _recurrenceRules = Recurrence.fromMap(m['recurrence rules']);
-    _timeStart = m["event time start"].runtimeType == Timestamp ? (m["event time start"] as Timestamp).toDate() : m["event time start"];
-    _timeEnd = m["event time end"].runtimeType == Timestamp ? (m["event time end"] as Timestamp).toDate() : m["event time end"];
-    _timeCreated = m["date created"].runtimeType == Timestamp ? (m["date created"] as Timestamp).toDate() : m["date created"];
-    _timeModified = m["date modified"].runtimeType == Timestamp ? (m["date modified"] as Timestamp).toDate() : m["date modified"];
+    _timeStart = m["event time start"] is Timestamp ? (m["event time start"] as Timestamp).toDate() : m["event time start"];
+    _timeEnd = m["event time end"] is Timestamp ? (m["event time end"] as Timestamp).toDate() : m["event time end"];
+    _timeCreated = m["date created"] is Timestamp ? (m["date created"] as Timestamp).toDate() : m["date created"];
+    _timeModified = m["date modified"] is Timestamp ? (m["date modified"] as Timestamp).toDate() : m["date modified"];
   } catch (e) {
     throw Exception("Given map is malformed!\n$e");
   }
@@ -161,12 +161,12 @@ Event.fromMap(Map<String, dynamic> m, {String? id}) {
 
   List<String> get tags => _tags;
 
-  set recurrenceRules(Recurrence? newRecurrence) {
+  set recurrenceRules(Recurrence newRecurrence) {
     _timeModified = DateTime.now();
     _recurrenceRules = newRecurrence;
   }
 
-  Recurrence? get recurrenceRules => _recurrenceRules;
+  Recurrence get recurrenceRules => _recurrenceRules;
 
   set timeStart(DateTime newTimeStart) {
     _timeModified = DateTime.now();
