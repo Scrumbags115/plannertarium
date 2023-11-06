@@ -78,7 +78,7 @@ class MyAppState extends State<MyApp> {
     if (event == "add") {
       final timeStart = DateTime.now();
       final timeEnd = timeStart.add(const Duration(hours: 8));
-      await db.addUniqueUserEvent(Event(
+      await db.addUniqueEvent(Event(
           name: "example_event_name_2",
           tags: ["example_event_tag1"],
           timeStart: timeStart,
@@ -87,7 +87,7 @@ class MyAppState extends State<MyApp> {
     } else if (event == "get range") {
       final dateStart = DateTime.parse("2023-10-20");
       final dateEnd = dateStart.add(const Duration(days: 8));
-      final userEventMap = await db.getMapOfUserEventsInDateRange(
+      final userEventMap = await db.getMapOfEventsInDateRange(
           dateStart: dateStart, dateEnd: dateEnd);
       print(userEventMap);
 
@@ -100,7 +100,7 @@ class MyAppState extends State<MyApp> {
       Event e = Event(name: "test_recurrence_event_1", description: "recurrence test", tags: [], timeStart: DateTime.parse("2023-11-11"), timeEnd: DateTime.parse("2023-11-12"), recurrenceRules: recurrenceRules);
       await db.setRecurringEvents(e);
     } else if (event == "delete") {
-      final List<Event> eventList = await db.getListOfUserEventsInDay(date: DateTime.parse("2023-11-20"));
+      final List<Event> eventList = await db.getListOfEventsInDay(date: DateTime.parse("2023-11-20"));
       if (eventList.isEmpty) {
         return;
       }
@@ -116,7 +116,7 @@ class MyAppState extends State<MyApp> {
     final dateStart = DateTime.parse("2023-10-16");
     final dateEnd = dateStart.add(const Duration(days: 5));
     // final userEvent = await db.getUserEventsInDateRange(dateStart: dateStart, dateEnd: dateEnd);
-    final userEvent = await db.getMapOfUserEventsInDateRange(
+    final userEvent = await db.getMapOfEventsInDateRange(
         dateStart: dateStart, dateEnd: dateEnd);
     print(userEvent);
     // final e = userEvent.docs;

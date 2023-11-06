@@ -115,7 +115,7 @@ Future<void> task_new_user() async {
   assert (mapEquals(monthlyDelayed, emptyMonth));
 
   print("---------------------------------------------Setting db with tasks---------------------------------------------");
-  tasks.forEach((t) {db.setUserTask(t);});
+  tasks.forEach((t) {db.setTask(t);});
 
   // Daily
   (dailyActive, dailyCompleted, dailyDelayed) = await db.getTaskMaps(DateTime(2023, 11, 20), DateTime(2023, 11, 21));

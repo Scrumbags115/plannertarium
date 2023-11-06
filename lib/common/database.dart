@@ -16,7 +16,7 @@ class DatabaseService {
     events = users.doc(uid).collection("events");
   }
 
-  getUserEvents(String eventID) {
+  getEvents(String eventID) {
     return FirebaseFirestore.instance
         .collection('users')
         .doc(uid)
@@ -25,7 +25,7 @@ class DatabaseService {
         .get(); // turn this into a map of eventID to event objects?
   }
 
-  getAllUserEvents() {
+  getAllEvents() {
     return FirebaseFirestore.instance
         .collection('users')
         .doc(uid)
@@ -38,16 +38,16 @@ class DatabaseService {
   /// Should use this over the other add event functions
   /// Won't need to deal with eventIDs
   /// Each event ID is the current creation timestamp
-  Future<void> addUniqueUserEvent(Event event) async {
+  Future<void> addUniqueEvent(Event event) async {
     final now = DateTime.now();
     var eventID = now.toString();
-    addUserEvent(eventID, event);
+    addEvent(eventID, event);
   }
 
   /// Get all events within a date range
   ///
   /// returns a _JsonQueryDocumentSnapshot of all events within the date range
-  Future<QuerySnapshot<Map<String, dynamic>>> getUserEventsInDateRange(
+  Future<QuerySnapshot<Map<String, dynamic>>> getEventsInDateRange(
       {required DateTime dateStart, required DateTime dateEnd}) async {
     final timestampStart = Timestamp.fromDate(dateStart);
     final timestampEnd = Timestamp.fromDate(dateEnd);
@@ -63,13 +63,13 @@ class DatabaseService {
   /// Get all events within a date range as a Map
   ///
   /// Returns a map, with the eventID being the key and value being an Event class
-  Future<Map<String, Event>> getMapOfUserEventsInDateRange(
+  Future<Map<String, Event>> getMapOfEventsInDateRange(
       {required DateTime dateStart, required DateTime dateEnd}) async {
     // Not too sure how to attach a .then function to a future to convert into another future when awaited, so this will just force an await
     Map<String, Event> m = {};
 
     final userEvents =
-        await getUserEventsInDateRange(dateStart: dateStart, dateEnd: dateEnd);
+        await getEventsInDateRange(dateStart: dateStart, dateEnd: dateEnd);
     for (var doc in userEvents.docs) {
       m[doc.id] = Event.fromMap(doc.data(), id: doc.id);
     }
@@ -78,10 +78,10 @@ class DatabaseService {
   }
 
   // Get list of all events within a date range
-  Future<List<Event>> getListOfUserEventsInDateRange({
+  Future<List<Event>> getListOfEventsInDateRange({
       required DateTime dateStart, required DateTime dateEnd}) async {
     List<Event> events = [];
-    final userEvents = await getUserEventsInDateRange(dateStart: dateStart, dateEnd: dateEnd);
+    final userEvents = await getEventsInDateRange(dateStart: dateStart, dateEnd: dateEnd);
     for (final doc in userEvents.docs) {
       events.add(Event.fromMap(doc.data(), id: doc.id));
     }
@@ -91,28 +91,28 @@ class DatabaseService {
   /// Get all events in a day
   ///
   /// returns a QuerySnapshot
-  Future<QuerySnapshot<Map<String, dynamic>>> getUserEventsInDay({required DateTime date}) async {
+  Future<QuerySnapshot<Map<String, dynamic>>> getEventsInDay({required DateTime date}) async {
     DateTime tomorrow = date;
     tomorrow.add(const Duration(days: 1));
-    return getUserEventsInDateRange(dateStart: date, dateEnd: tomorrow);
+    return getEventsInDateRange(dateStart: date, dateEnd: tomorrow);
   }
 
   /// Get all events in a day as a Map
-  Future<Map<String, Event>> getMapOfUserEventsInDay({required DateTime date}) async {
+  Future<Map<String, Event>> getMapOfEventsInDay({required DateTime date}) async {
     DateTime tomorrow = date;
     tomorrow.add(const Duration(days: 1));
-    return getMapOfUserEventsInDateRange(dateStart: date, dateEnd: tomorrow);
+    return getMapOfEventsInDateRange(dateStart: date, dateEnd: tomorrow);
   }
 
   /// Get list of events in a day
-  Future<List<Event>> getListOfUserEventsInDay({
+  Future<List<Event>> getListOfEventsInDay({
     required DateTime date}) async {
     DateTime tomorrow = date;
     tomorrow.add(const Duration(days: 1));
-    return getListOfUserEventsInDateRange(dateStart: date, dateEnd: tomorrow);
+    return getListOfEventsInDateRange(dateStart: date, dateEnd: tomorrow);
   }
 
-  Future<void> addUserEvent(String eventID, Event event) async {
+  Future<void> addEvent(String eventID, Event event) async {
     var doc = await events.doc(eventID).get();
     // can't add an event with the same name
     if (doc.exists) {
@@ -130,10 +130,10 @@ class DatabaseService {
   /// Every possible option to set is an argument
   /// required: String eventID, String eventName, Set<String> eventTags, num timeStart, num timeEnd
   /// optional: String eventDescription,, String, eventLocation, String eventColor, bool recurrenceEnabled, num recurrenceTimeStart, num recurrenceTimeEnd, List<bool> recurrenceDates
-  Future<void> addUserEventArgs(
+  Future<void> addEventArgs(
       {required String eventID,
         required Event event}) async {
-    return await addUserEvent(eventID, event);
+    return await addEvent(eventID, event);
   }
 
   /// Change an option in the event
@@ -174,7 +174,7 @@ class DatabaseService {
   Future<void> setRecurringEvents(Event e) async {
     List<Event> recurringEvents = e.generateRecurringEvents();
     for (final e in recurringEvents) {
-      await addUniqueUserEvent(e);
+      await addUniqueEvent(e);
     }
   }
 
@@ -188,7 +188,7 @@ class DatabaseService {
     final parentID = e.recurrenceRules!.id;
     for (final dt in dts) {
       // search the database for event on this date
-      final Map<String, Event> eventList = await getMapOfUserEventsInDay(date: dt);
+      final Map<String, Event> eventList = await getMapOfEventsInDay(date: dt);
       // search the corresponding events on that day for the right recurrence ID
       eventList.forEach((docID, event) {
         if (event.recurrenceRules!.id == parentID) {
@@ -223,7 +223,7 @@ class DatabaseService {
   }
 
   /// Saves a task into the database
-  Future<void> setUserTask(Task t) async {
+  Future<void> setTask(Task t) async {
     return await users.doc(uid).collection('tasks').doc(t.id).set(t.toMap());
   }
 
