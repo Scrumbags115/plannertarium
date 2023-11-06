@@ -9,7 +9,7 @@ class Task {
   late String _description = "";
   late bool _completed = false;
   late String _location = "";
-  late String _color = "";
+  late String _color = "#919191";
   late List<String> _tags = <String>[];
   late Recurrence? _recurrenceRules = null;
   late DateTime _timeStart;

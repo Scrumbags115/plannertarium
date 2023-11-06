@@ -6,7 +6,7 @@ class Event {
   late String _name = "";
   late final String _id;
   late String _description = "";
-  late String _color = "";
+  late String _color = "#919191";
   late String _location = "";
   late List<String> _tags = <String>[];
   late Recurrence? _recurrenceRules = null;
@@ -73,8 +73,6 @@ class Event {
 /// Turn a properly formatted map into an Event class
 /// the map must have all the proper fields
 Event.fromMap(Map<String, dynamic> m, {String? id}) {
-  // Kinda messy, but dealing with types are very annoying
-  // ex: why does Set() make a _HashSet??
   try {
     _name = m["event name"];
     _id = id ?? m['id'];
