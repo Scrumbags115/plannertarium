@@ -28,10 +28,11 @@ class MultiDayCard extends StatefulWidget {
   State<StatefulWidget> createState() => MultiDayCardState(data);
 }
 
-//being stateful doesn't really do anything right now, but I'm pretty sure we need it later on
 class MultiDayCardState extends State<MultiDayCard> {
   MultiDayCardState(this.data);
   int data;
+  var day = dayView();
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -68,7 +69,7 @@ class MultiDayCardState extends State<MultiDayCard> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => dayView()),
+                    MaterialPageRoute(builder: (context) => day),
                   );
                 },
                 child: const Center(

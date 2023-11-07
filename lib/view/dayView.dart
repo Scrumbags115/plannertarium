@@ -14,19 +14,19 @@ class dayView extends StatelessWidget {
     return Scaffold(
       body: Container(
           margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-          child: SingleDayCard()), //Creates one SingleDayCard
+          child: SingleDay()), //Creates one SingleDay
     );
   }
 }
 
-//The entirety of the dayView is one SingleDayCard
-class SingleDayCard extends StatefulWidget {
-  const SingleDayCard({super.key});
+//The entirety of the dayView is one SingleDay
+class SingleDay extends StatefulWidget {
+  const SingleDay({super.key});
   @override
-  State<StatefulWidget> createState() => SingleDayCardState();
+  State<StatefulWidget> createState() => SingleDayState();
 }
 
-class SingleDayCardState extends State<SingleDayCard> {
+class SingleDayState extends State<SingleDay> {
   Future<
       (
         Map<DateTime, List<Task>>,
@@ -39,44 +39,79 @@ class SingleDayCardState extends State<SingleDayCard> {
         DateTime.now().add(Duration(days: 1)));
   }
 
-  List<Task>? tempdataval = [];
+  List<Task>? currentTasks = [];
   DateTime n =
       DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
-  SingleDayCardState() {
+  SingleDayState() {
     getCurrentTasks().then((value) => setState(() {
-          tempdataval = value.$1[n];
-          for (int i = 0; i < tempdataval!.length; i++) {
-            print(tempdataval![i].name);
-          }
-        }));
+          currentTasks = value.$1[n];
+        }
+      )
+    );
   }
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        TextButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => createTaskPage()),
-            );
-          },
-          child: Container(
-            color: Colors.black,
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-            child: const Text(
-              'Add Task',
-              style: TextStyle(color: Colors.white, fontSize: 15.0),
+        SizedBox(
+          height: 80,
+          child: Card(
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    children: [
+                      Text(style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18), "Tasks for today!"),
+                      Expanded(
+                        child: ListView(
+                          scrollDirection: Axis.horizontal,
+                          children: List.generate(currentTasks!.length, (index) {
+                            return Row(
+                              children: [
+                                SizedBox(height: 40,
+                                  child: Card(color: Colors.amber,
+                                    child: InkWell(
+                                      splashColor: Colors.blue.withAlpha(30),
+                                        onTap: () {
+                                        /*Navigator.push(
+                                          context,
+                                          MaterialPageRoute(builder: (context) => dayView()),
+                                        );*/
+                                      },
+                                      child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15), currentTasks![index].name),
+                                      ),
+                                    )
+                                  )
+                                ),
+                              ],
+                            );
+                          })
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => createTaskPage()),
+                    );
+                  },
+                  child: Container(
+                    color: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                    child: const Text(
+                      'Add Task',
+                      style: TextStyle(color: Colors.white, fontSize: 15.0),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
-        SizedBox(
-          height: 40,
-          child: ListView(
-              children: List.generate(tempdataval!.length, (index) {
-            print(tempdataval!.length);
-            return Text(tempdataval![index].name);
-          })),
         ),
         Expanded(
           child: ListView(
