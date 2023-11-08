@@ -7,14 +7,11 @@ class weekView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        margin: const EdgeInsets.fromLTRB(0, 0, 10, 10),
-        child: ListView(
-          children: List.generate(7, (index) {
-            //This generates 7 MultiDayCard in a vertical list
-            return MultiDayCard(index);
-          }),
-        ),
+      body: ListView(
+        children: List.generate(7, (index) {
+          //This generates 7 MultiDayCard in a vertical list
+          return MultiDayCard(index);
+        }),
       ),
     );
   }
@@ -22,21 +19,22 @@ class weekView extends StatelessWidget {
 
 ///Each one of these is a day in the week view, consisting of the placeholder date and card to its right
 class MultiDayCard extends StatefulWidget {
-  const MultiDayCard(this.data, {super.key});
-  final int data;
+  MultiDayCard(this.index, {super.key});
+  final int index;
   @override
-  State<StatefulWidget> createState() => MultiDayCardState(data);
+  State<StatefulWidget> createState() => MultiDayCardState(index);
 }
 
 class MultiDayCardState extends State<MultiDayCard> {
-  MultiDayCardState(this.data);
-  int data;
-  var day = dayView();
+  MultiDayCardState(this.index);
+  int index;
 
   @override
   Widget build(BuildContext context) {
+    var dateToDisplay = DateTime.now().add(Duration(days: index));
+    String monthDayDisplayed = "${dateToDisplay.month}/${dateToDisplay.day}";
     return Row(
-      //This row contains: date placeholder, card
+      //This row contains: date, card
       children: [
         Flexible(
           //This widget and Expanded work together to make the card on the right stretch to fill space, works on mobile and web
@@ -45,8 +43,7 @@ class MultiDayCardState extends State<MultiDayCard> {
             width: 70,
             height: 140,
             child: Center(
-              child: Text(
-                  "${DateTime.now().month}/${DateTime.now().day + data}"), //Doesn't really work to show the current week(October 32nd LMAO), just a placeholder
+              child: Text(monthDayDisplayed),
             ),
           ),
         ),
@@ -69,13 +66,14 @@ class MultiDayCardState extends State<MultiDayCard> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => day),
+                    MaterialPageRoute(
+                        builder: (context) => SingleDay(dateToDisplay)),
                   );
                 },
                 child: const Center(
                   child: Column(
                     children: [
-                      Text("Placeholder"), //Placeholder text
+                      //Text("Placeholder"), //Placeholder text
                     ],
                   ),
                 ),
