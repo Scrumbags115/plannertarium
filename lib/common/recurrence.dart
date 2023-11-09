@@ -63,7 +63,7 @@ class Recurrence {
     }
   }
 
-  /// Sets the start and end dates for recurrence
+  /// Sets the start and end dates for recurrence. Optionally can enable recurrence for Task/Event
   setTimeWindow(DateTime startDate, DateTime endDate, {bool enableRecurrence = false}) {
     timeStart = startDate;
     timeEnd = endDate;
@@ -71,6 +71,7 @@ class Recurrence {
       enabled = true;
   }
 
+  /// Sets the days with recurrence. Optionally can enable recurrence for Task/Event
   setRecurrenceDatesFromList(List<bool> recurrenceDates, {bool enableRecurrence = false}) {
     dates = recurrenceDates;
     if (enableRecurrence)
