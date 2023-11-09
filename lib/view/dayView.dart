@@ -16,21 +16,20 @@ class SingleDay extends StatefulWidget {
 class SingleDayState extends State<SingleDay> {
   DateTime date;
   List<Task>? currentTasks = [];
-  DateTime n =
-      DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+  List<Task>? currentdayTasks = [];
   SingleDayState(this.date) {
-    Future<
-        (
-          Map<DateTime, List<Task>>,
-          Map<DateTime, List<Task>>,
-          Map<DateTime, List<Task>>
-        )> getCurrentTasks() async {
-      return await dayta.getTaskMaps(
-          date.subtract(Duration(days: 1)), date.add(Duration(days: 1)));
+    getCurrentTasks() {
+      return dayta.getTaskMaps(date, date.add(const Duration(days: 1)));
     }
-
     getCurrentTasks().then((value) => setState(() {
           currentTasks = value.$1[date];
+          //print(currentTasks);
+          for (int i = 0; i < currentTasks!.length; i++) {
+            if (currentTasks![i].timeDue!.isAtSameMomentAs(date) &
+                currentTasks![i].timeDue!.isBefore(date.add(const Duration(days: 1)))) {
+              currentdayTasks!.add(currentTasks![i]);
+            }
+          }
         }));
   }
 
@@ -48,14 +47,11 @@ class SingleDayState extends State<SingleDay> {
                     child: Column(
                       children: [
                         const Text(
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 18),
-                            "Tasks for today!"),
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),"Tasks for today!"),
                         Expanded(
                           child: ListView(
                               scrollDirection: Axis.horizontal,
-                              children:
-                                  List.generate(currentTasks!.length, (index) {
+                              children: List.generate(currentTasks!.length, (index) {
                                 return Row(
                                   children: [
                                     SizedBox(
@@ -66,10 +62,12 @@ class SingleDayState extends State<SingleDay> {
                                               splashColor:
                                                   Colors.blue.withAlpha(30),
                                               onTap: () {
-                                                /*Navigator.push(
-                                            context,
-                                            MaterialPageRoute(builder: (context) => dayView()),
-                                          );*/
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          singleTask(currentTasks![index].name, currentTasks![index].description)),
+                                                );
                                               },
                                               child: Padding(
                                                 padding:
@@ -79,7 +77,8 @@ class SingleDayState extends State<SingleDay> {
                                                         fontWeight:
                                                             FontWeight.bold,
                                                         fontSize: 15),
-                                                    currentTasks![index].name),
+                                                    currentdayTasks![index]
+                                                        .name),
                                               ),
                                             ))),
                                   ],
@@ -92,9 +91,9 @@ class SingleDayState extends State<SingleDay> {
                   TextButton(
                     onPressed: () {
                       Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => addTaskPage()),
-                      );
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => AddTask(date)));
                     },
                     child: Container(
                       color: Colors.black,
@@ -198,117 +197,82 @@ class SingleDayState extends State<SingleDay> {
         ],
       );
     } else {
-      return Row();
+      return const Row();
     }
   }
 }
 
-class addTaskPage extends StatelessWidget {
-  const addTaskPage({super.key});
+class AddTask extends StatelessWidget {
+  final DateTime date;
+  AddTask(this.date, {super.key});
+
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController taskNameController = TextEditingController();
+  final TextEditingController taskDescriptionController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Add Task')),
-      body: const addTask(),
-    );
-  }
-}
-
-class addTask extends StatefulWidget {
-  const addTask({super.key});
-
-  @override
-  State<addTask> createState() => _addTask();
-}
-
-class _addTask extends State<addTask> {
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController taskNameController = TextEditingController();
-  final TextEditingController taskDescriptionController =
-      TextEditingController();
-  final TextEditingController dueDateController = TextEditingController();
-  @override
-  Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          TextFormField(
-            decoration: const InputDecoration(
-              hintText: 'Enter task name',
-            ),
-            /*validator: (String? value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter some text';
-              }
-              return null;
-            },*/
-            controller: taskNameController,
-            onSaved: (value) {
-              taskNameController.text = value!;
-            },
-          ),
-          TextFormField(
-            decoration: const InputDecoration(
-              hintText: 'Enter task description',
-            ),
-            /*validator: (String? value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter some text';
-              }
-              return null;
-            },*/
-            controller: taskDescriptionController,
-            onSaved: (value) {
-              taskDescriptionController.text = value!;
-            },
-          ),
-          TextFormField(
+      body: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            TextFormField(
               decoration: const InputDecoration(
-                hintText: 'Enter task due date',
+                hintText: 'Enter task name',
               ),
               validator: (String? value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter some text';
+                  return 'Please enter a name for this task';
                 }
                 return null;
               },
-              controller: dueDateController,
+              controller: taskNameController,
               onSaved: (value) {
-                dueDateController.text = value!;
-              }),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
-            child: ElevatedButton(
-              onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  var testtask = Task(
-                      name: taskNameController.text,
-                      description: taskDescriptionController.text,
-                      timeDue: DateTime.parse(dueDateController.text));
-                  dayta.setUserTask(testtask);
-                  Navigator.pop(context);
-                }
+                taskNameController.text = value!;
               },
-              child: const Text('Save'),
             ),
-          ),
-        ],
+            TextFormField(
+              decoration: const InputDecoration(
+                hintText: 'Enter task description',
+              ),
+              controller: taskDescriptionController,
+              onSaved: (value) {
+                taskDescriptionController.text = value!;
+              },
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    dayta.setUserTask(Task(
+                        name: taskNameController.text,
+                        description: taskDescriptionController.text,
+                        timeDue: date));
+                    Navigator.pop(context);
+                  }
+                },
+                child: const Text('Save'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
 class singleTask extends StatelessWidget {
-  const singleTask({super.key});
-
+  String name;
+  String description;
+  singleTask(this.name, this.description, {super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Task')),
-      body: const addTask(),
-    );
+        appBar: AppBar(title: Text(name)),
+        body: Card(child: Text(description)));
   }
 }

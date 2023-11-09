@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:planner/view/dayView.dart';
+import 'package:planner/common/database.dart';
+import 'package:planner/models/task.dart';
+DatabaseService dayta = DatabaseService(uid: "userid1");
 
 class weekView extends StatelessWidget {
   const weekView({super.key});
@@ -31,7 +34,7 @@ class MultiDayCardState extends State<MultiDayCard> {
 
   @override
   Widget build(BuildContext context) {
-    var dateToDisplay = DateTime.now().add(Duration(days: index));
+    DateTime dateToDisplay = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day).add(Duration(days: index));
     String monthDayDisplayed = "${dateToDisplay.month}/${dateToDisplay.day}";
     return Row(
       //This row contains: date, card
