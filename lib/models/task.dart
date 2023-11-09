@@ -4,14 +4,14 @@ import 'package:planner/common/recurrence.dart';
 
 /// Class to hold information about a task
 class Task {
-  late String _name;
+  late String _name = "";
   late final String _id;
-  late String _description;
-  late bool _completed;
-  late String _location;
-  late String _color;
-  late List<String> _tags;
-  late Recurrence? _recurrenceRules;
+  late String _description = "";
+  late bool _completed = false;
+  late String _location = "";
+  late String _color = "#919191";
+  late List<String> _tags = <String>[];
+  late Recurrence _recurrenceRules;
   late DateTime _timeStart;
   DateTime? _timeDue;
   late DateTime _timeCurrent;
@@ -41,7 +41,7 @@ class Task {
     _location = location;
     _color = color;
     _tags = tags;
-    _recurrenceRules = recurrenceRules;
+    _recurrenceRules = recurrenceRules ?? Recurrence();
     _timeStart = timeStart ?? DateTime.now();
     _timeDue = timeDue;
     _timeCurrent = timeCurrent ?? _timeStart;
@@ -83,21 +83,21 @@ class Task {
   /// Alternate constructor to get a task obj from some valid map
   /// Can have ID as a separate parameter if not in the map
   /// Good for reading from database
-  Task.mapToTask(Map<String, dynamic> map, {String? id}) {
+  Task.fromMap(Map<String, dynamic> map, {String? id}) {
     _name = map['task name'];
-    _description = map['description'];
     _id = id ?? map['id'];
+    _description = map['description'];
     _completed = map['completed'];
     _location = map['location'];
     _color = map['hex color'];
     _tags = [];
     map['tags'].forEach((tag) {_tags.add(tag.toString());});
-    _recurrenceRules = map['recurrence rules'];
-    _timeStart = map['start date'].runtimeType == Timestamp ? DateTime.fromMillisecondsSinceEpoch(map['start date'].seconds*1000) : map['start date'];
-    _timeDue = map['due date'].runtimeType == Timestamp ? DateTime.fromMillisecondsSinceEpoch(map['due date'].seconds*1000) : map['due date'];
-    _timeCurrent = map['current date'].runtimeType == Timestamp ? DateTime.fromMillisecondsSinceEpoch(map['current date'].seconds*1000) : map['current date'];
-    _timeCreated = map['date created'].runtimeType == Timestamp ? DateTime.fromMillisecondsSinceEpoch(map['date created'].seconds*1000) : map['date created'];
-    _timeModified = map['date modified'].runtimeType == Timestamp ? DateTime.fromMillisecondsSinceEpoch(map['date modified'].seconds*1000) : map['date modified'];
+    _recurrenceRules = Recurrence.fromMap(map['recurrence rules']);
+    _timeStart = map['start date'] is Timestamp ? map['start date'].toDate() : map['start date'];
+    _timeDue = map['due date'] is Timestamp ? map['due date'].toDate() : map['due date'];
+    _timeCurrent = map['current date'] is Timestamp ? map['current date'].toDate() : map['current date'];
+    _timeCreated = map['date created'] is Timestamp ? map['date created'].toDate() : map['date created'];
+    _timeModified = map['date modified'] is Timestamp ? map['date modified'].toDate() : map['date modified'];
   }
 
   /// returns a mapping with kv pairs corresponding to Firebase's
@@ -166,13 +166,13 @@ class Task {
 
   List<String> get tags => _tags;
 
-  set recurrenceRules(Recurrence? newRecurrence) {
+  set recurrenceRules(Recurrence newRecurrence) {
     // Can't force Recurrence type because it can be null
     _timeModified = DateTime.now();
     _recurrenceRules = newRecurrence;
   }
 
-  Recurrence? get recurrenceRules => _recurrenceRules;
+  Recurrence get recurrenceRules => _recurrenceRules;
 
   set timeCurrent(DateTime newTimeCurrent) {
     _timeModified = DateTime.now();
@@ -201,10 +201,9 @@ class Task {
 
   @override
   String toString() {
-    return "Task($name, $id)";
+    return "Task($name, $id, $recurrenceRules)";
   }
 
-  // Override the == operator
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;

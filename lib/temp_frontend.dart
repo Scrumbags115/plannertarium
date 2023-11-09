@@ -71,7 +71,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _counter++;
     });
     t.name = '${t.name}1';
-    d.setUserTask(t);
+    d.setTask(t);
     print("UPDATED NAME");
   }
 
