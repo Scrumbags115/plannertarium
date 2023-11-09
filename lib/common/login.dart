@@ -1,5 +1,3 @@
-import 'dart:js';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/material.dart';
@@ -62,7 +60,7 @@ Future<User> triggerAuthFlowWeb() async {
 }
 
 Future<User> triggerAuthFlowAndroid() async {
-  UserCredential u = await signInWithGoogleWeb();
+  UserCredential u = await signInWithGoogleMobile();
   User? user = u.user;
   if (user == null) {
 // sign in did not work or cancelled
