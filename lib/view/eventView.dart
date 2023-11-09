@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
 import 'package:planner/view/weekView.dart';
+import 'package:planner/models/task.dart';
 
 class eventView extends StatefulWidget {
   const eventView({Key? key}) : super(key: key);
@@ -23,7 +24,7 @@ class eventViewState extends State<eventView> {
   final User? user = FirebaseAuth.instance.currentUser;
   String userName = '';
   List<TaskEvent> events = [];
-  DatabaseService db = DatabaseService(uid: "test_user_1");
+  DatabaseService db = DatabaseService(uid: "ian");
 
   @override
   void initState() {
@@ -104,7 +105,6 @@ class eventViewState extends State<eventView> {
 
   void showSearchBar(BuildContext context) {
     TextEditingController searchController = TextEditingController();
-
     showDialog(
       context: context,
       builder: (context) {
@@ -141,7 +141,7 @@ class eventViewState extends State<eventView> {
   var scaffoldKey = GlobalKey<ScaffoldState>();
   Widget build(BuildContext context) {
     return Scaffold(
-      key: scaffoldKey,
+        key: scaffoldKey,
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.menu),
@@ -154,81 +154,81 @@ class eventViewState extends State<eventView> {
             IconButton(
               icon: const Icon(Icons.search),
               onPressed: () {
-                  showSearchBar(context);
+                showSearchBar(context);
               },
             ),
           ],
         ),
-      drawer: Drawer(
-        child: ListView(
-          padding: const EdgeInsets.all(0),
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.green,
-              ), //BoxDecoration
-              child: UserAccountsDrawerHeader(
-                decoration: BoxDecoration(color: Colors.green),
-                accountName: Text(
-                  "Abhishek Mishra",
-                  style: TextStyle(fontSize: 18),
-                ),
-                accountEmail: Text("abhishekm977@gmail.com"),
-                currentAccountPictureSize: Size.square(50),
-                currentAccountPicture: CircleAvatar(
-                  backgroundColor: Color.fromARGB(255, 165, 255, 137),
-                  child: Text(
-                    "A",
-                    style: TextStyle(fontSize: 30.0, color: Colors.blue),
-                  ), //Text
-                ), //circleAvatar
-              ), //UserAccountDrawerHeader
-            ), //DrawerHeader
-            ListTile(
-              leading: const Icon(Icons.person),
-              title: const Text(' My Profile '),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.book),
-              title: const Text(' My Course '),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.workspace_premium),
-              title: const Text(' Go Premium '),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.video_label),
-              title: const Text(' Saved Videos '),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.edit),
-              title: const Text(' Edit Profile '),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.logout),
-              title: const Text('LogOut'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-          ],
+        drawer: Drawer(
+          child: ListView(
+            padding: const EdgeInsets.all(0),
+            children: [
+              const DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Colors.green,
+                ), //BoxDecoration
+                child: UserAccountsDrawerHeader(
+                  decoration: BoxDecoration(color: Colors.green),
+                  accountName: Text(
+                    "Abhishek Mishra",
+                    style: TextStyle(fontSize: 18),
+                  ),
+                  accountEmail: Text("abhishekm977@gmail.com"),
+                  currentAccountPictureSize: Size.square(50),
+                  currentAccountPicture: CircleAvatar(
+                    backgroundColor: Color.fromARGB(255, 165, 255, 137),
+                    child: Text(
+                      "A",
+                      style: TextStyle(fontSize: 30.0, color: Colors.blue),
+                    ), //Text
+                  ), //circleAvatar
+                ), //UserAccountDrawerHeader
+              ), //DrawerHeader
+              ListTile(
+                leading: const Icon(Icons.person),
+                title: const Text(' My Profile '),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.book),
+                title: const Text(' My Course '),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.workspace_premium),
+                title: const Text(' Go Premium '),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.video_label),
+                title: const Text(' Saved Videos '),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.edit),
+                title: const Text(' Edit Profile '),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.logout),
+                title: const Text('LogOut'),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
         ),
-      ),
         body: ListView(
           children: [
             Expanded(
@@ -273,8 +273,7 @@ class eventViewState extends State<eventView> {
               ),
             ),
           ],
-        )
-    );
+        ));
   }
 }
 
@@ -351,25 +350,26 @@ class _TaskEventCardState extends State<TaskEventCard> {
       context: context,
       builder: (context) {
         return AlertDialog(
-            title: const Text('Task Details'),
-            content: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Title: ${widget.event.title}'),
-                Text('Description: ${widget.event.description}'),
-                Text(
-                  'Time: ${widget.event.startTime.hour}:${widget.event.startTime.minute} - ${widget.event.endTime.hour}:${widget.event.endTime.minute}',
-                ),
-              ],
-            ),
-            actions: [
+          title: const Text('Task Details'),
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Title: ${widget.event.title}'),
+              Text('Description: ${widget.event.description}'),
+              Text(
+                'Time: ${widget.event.startTime.hour}:${widget.event.startTime.minute} - ${widget.event.endTime.hour}:${widget.event.endTime.minute}',
+              ),
+            ],
+          ),
+          actions: [
             TextButton(
-            onPressed: () {
-          Navigator.of(context).pop();
-        },
-        child: const Text('Close'),
-            )],
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Close'),
+            )
+          ],
         );
       },
     );

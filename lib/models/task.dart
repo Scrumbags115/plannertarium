@@ -1,151 +1,246 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:planner/common/recurrence.dart';
 
 /// Class to hold information about a task
 class Task {
-  String name;
-  String description;
-  bool completed;
-  DateTime? timeCurrent;
-  DateTime? timeStart;
-  DateTime? timeDue;
-  String location;
-  String color;
-  Set<String> tags;
-  Recurrence? recurrenceRules;
-  DateTime? timeCreated;
-  DateTime? timeModified;
+  late String _name;
+  late final String _id;
+  late String _description;
+  late bool _completed;
+  late String _location;
+  late String _color;
+  late List<String> _tags;
+  late Recurrence? _recurrenceRules;
+  late DateTime _timeStart;
+  DateTime? _timeDue;
+  late DateTime _timeCurrent;
+  late final DateTime _timeCreated;
+  late DateTime _timeModified;
 
-  /// Default constructor
-  /// Good for if you want to add a new task from user
+  /// Default constructor with minimum required info
+  /// Good for if you want to add a new task from user with missing fields
   Task(
-      {required this.name,
-      this.description = "",
-      this.completed = false,
-      this.timeStart,
-      this.timeDue,
-      this.location = "",
-      this.color = "#919191",
-      required this.tags,
-      this.recurrenceRules,
-      this.timeCreated}) {
-    timeCreated = timeCreated ?? DateTime.now();
-    timeModified = DateTime.now();
-    timeCurrent = timeStart;
+      {String name = "",
+      String? id,
+      String description = "",
+      bool completed = false,
+      String location = "",
+      String color = "#919191",
+      List<String> tags = const <String>[], // const will be eliminated?
+      Recurrence? recurrenceRules,
+      DateTime? timeStart,
+      DateTime? timeDue,
+      DateTime? timeCurrent,
+      DateTime? timeCreated,
+      DateTime? timeModified}) {
+    _name = name;
+    _id = id ?? DateTime.now().millisecondsSinceEpoch.toString();
+    _description = description;
+    _completed = completed;
+    _location = location;
+    _color = color;
+    _tags = tags;
+    _recurrenceRules = recurrenceRules;
+    _timeStart = timeStart ?? DateTime.now();
+    _timeDue = timeDue;
+    _timeCurrent = timeCurrent ?? _timeStart;
+    _timeCreated = timeCreated ?? DateTime.now();
+    _timeModified = timeModified ?? _timeCreated;
   }
-
-  set Name(String newName) {
-    timeModified = DateTime.now();
-    name = newName;
-  }
-
-  String get Name => name;
-
-  set Description(String newDescription) {
-    timeModified = DateTime.now();
-    description = newDescription;
-  }
-
-  String get Description => description;
-
-  set Completed(bool newCompleted) {
-    timeModified = DateTime.now();
-    completed = newCompleted;
-  }
-
-  bool get Completed => completed;
-
-  set TimeCurrent(newTimeCurrent) {
-    // Can't force DateTime type because it can be null
-    timeModified = DateTime.now();
-    timeCurrent = newTimeCurrent;
-  }
-
-  get TimeCurrent => timeCurrent;
-
-  set TimeStart(newTimeStart) {
-    // Can't force DateTime type because it can be null
-    timeModified = DateTime.now();
-    timeStart = newTimeStart;
-  }
-
-  get TimeStart => timeStart;
-
-  set TimeDue(newTimeDue) {
-    // Can't force DateTime type because it can be null
-    timeModified = DateTime.now();
-    timeDue = newTimeDue;
-  }
-
-  get TimeDue => timeDue;
-
-  set Location(String newLocation) {
-    timeModified = DateTime.now();
-    location = newLocation;
-  }
-
-  String get Location => location;
-
-  set Color(String newColor) {
-    timeModified = DateTime.now();
-    location = newColor;
-  }
-
-  String get Color => color;
-
-  set Tags(Set<String> newTags) {
-    timeModified = DateTime.now();
-    tags = newTags;
-  }
-
-  Set<String> get Tags => tags;
-
-  set RecurrenceRules(newRecurrence) {
-    // Can't force Recurrence type because it can be null
-    timeModified = DateTime.now();
-    recurrenceRules = newRecurrence;
-  }
-
-  get RecurrenceRules => recurrenceRules;
-
-  get TimeCreated =>
-      timeCreated; // Do not want to change timeCreated this after the constructor
-
-  get TimeModified =>
-      timeModified; // Do not want to change timeModified unless modifying a field
 
   /// Alternate constructor so VSCode autogenerates all fields
   /// Good for reading from database
   Task.requireFields(
-      {required this.name,
-      required this.description,
-      required this.completed,
-      required this.timeCurrent,
-      required this.timeStart,
-      required this.timeDue,
-      required this.location,
-      required this.color,
-      required this.tags,
-      required this.recurrenceRules,
-      required this.timeCreated,
-      required this.timeModified});
+      {required String name,
+      required String id,
+      required String description,
+      required bool completed,
+      required String location,
+      required String color,
+      required List<String> tags,
+      required Recurrence recurrenceRules,
+      required DateTime timeStart,
+      required DateTime timeDue,
+      required DateTime timeCurrent,
+      required DateTime timeCreated,
+      required DateTime timeModified}) {
+    _name = name;
+    _id = id;
+    _description = description;
+    _completed = completed;
+    _location = location;
+    _color = color;
+    _tags = tags;
+    _recurrenceRules = recurrenceRules;
+    _timeStart = timeStart;
+    _timeDue = timeDue;
+    _timeCurrent = timeCurrent;
+    _timeCreated = timeCreated;
+    _timeModified = timeModified;
+  }
+
+  /// Alternate constructor to get a task obj from some valid map
+  /// Can have ID as a separate parameter if not in the map
+  /// Good for reading from database
+  Task.mapToTask(Map<String, dynamic> map, {String? id}) {
+    _name = map['task name'];
+    _description = map['description'];
+    _id = id ?? map['id'];
+    _completed = map['completed'];
+    _location = map['location'];
+    _color = map['hex color'];
+    _tags = [];
+    map['tags'].forEach((tag) {_tags.add(tag.toString());});
+    _recurrenceRules = map['recurrence rules'];
+    _timeStart = map['start date'].runtimeType == Timestamp ? DateTime.fromMillisecondsSinceEpoch(map['start date'].seconds*1000) : map['start date'];
+    _timeDue = map['due date'].runtimeType == Timestamp ? DateTime.fromMillisecondsSinceEpoch(map['due date'].seconds*1000) : map['due date'];
+    _timeCurrent = map['current date'].runtimeType == Timestamp ? DateTime.fromMillisecondsSinceEpoch(map['current date'].seconds*1000) : map['current date'];
+    _timeCreated = map['date created'].runtimeType == Timestamp ? DateTime.fromMillisecondsSinceEpoch(map['date created'].seconds*1000) : map['date created'];
+    _timeModified = map['date modified'].runtimeType == Timestamp ? DateTime.fromMillisecondsSinceEpoch(map['date modified'].seconds*1000) : map['date modified'];
+  }
 
   /// returns a mapping with kv pairs corresponding to Firebase's
   /// possibly a better getter
-  Map<String, dynamic> toMap({keepClasses = false}) {
-    return ({
-      'date created': timeCreated,
-      'date modified': timeModified,
-      'completed' : completed,
-      'current date' : timeCurrent,
-      'description': description,
-      'start date' : timeStart,
-      'due date': timeDue,
-      'hex color': color,
-      'location': location,
-      'recurrence rules':
-          keepClasses ? recurrenceRules : recurrenceRules?.toMap(),
-      'tags': keepClasses ? tags : tags.toList(),
-      'task name': name
-    });
+  Map<String, dynamic> toMap({keepClasses = false, includeID = false}) {
+    Map<String, dynamic> map = {'task name': _name,
+                                'description': _description,
+                                'completed': _completed,
+                                'location': _location,
+                                'hex color': _color,
+                                'recurrence rules':
+                                    keepClasses ? _recurrenceRules : _recurrenceRules?.toMap(),
+                                'tags': keepClasses ? _tags : _tags.toList(),
+                                'start date': _timeStart,
+                                'due date': _timeDue,
+                                'current date': _timeCurrent,
+                                'date created': _timeCreated,
+                                'date modified': _timeModified
+                              };
+    if (includeID)
+      map['id'] = _id;
+    return map;
+  }
+
+  set name(String newName) {
+    _timeModified = DateTime.now();
+    _name = newName;
+  }
+
+  String get name => _name;
+
+  set description(String newDescription) {
+    _timeModified = DateTime.now();
+    _description = newDescription;
+  }
+
+  String get description => _description;
+
+  set completed(bool newCompleted) {
+    _timeModified = DateTime.now();
+    _completed = newCompleted;
+  }
+
+  String get id => _id;
+
+  bool get completed => _completed;
+
+  set location(String newLocation) {
+    _timeModified = DateTime.now();
+    _location = newLocation;
+  }
+
+  String get location => _location;
+
+  set color(String newColor) {
+    _timeModified = DateTime.now();
+    _color = newColor;
+  }
+
+  String get color => _color;
+
+  set tags(List<String> newTags) {
+    _timeModified = DateTime.now();
+    _tags = newTags;
+  }
+
+  List<String> get tags => _tags;
+
+  set recurrenceRules(Recurrence? newRecurrence) {
+    // Can't force Recurrence type because it can be null
+    _timeModified = DateTime.now();
+    _recurrenceRules = newRecurrence;
+  }
+
+  Recurrence? get recurrenceRules => _recurrenceRules;
+
+  set timeCurrent(DateTime newTimeCurrent) {
+    _timeModified = DateTime.now();
+    _timeCurrent = newTimeCurrent;
+  }
+
+  DateTime get timeCurrent => _timeCurrent;
+
+  set timeStart(DateTime newTimeStart) {
+    _timeModified = DateTime.now();
+    _timeStart = newTimeStart;
+  }
+
+  DateTime get timeStart => _timeStart;
+
+  set timeDue(DateTime? newTimeDue) {
+    _timeModified = DateTime.now();
+    _timeDue = newTimeDue;
+  }
+
+  DateTime? get timeDue => _timeDue;
+
+  DateTime get timeCreated => _timeCreated; // Do not want to change timeCreated this after the constructor
+
+  DateTime get timeModified => _timeModified; // Do not want to change timeModified unless modifying a field
+
+  @override
+  String toString() {
+    return "Task($name, $id)";
+  }
+
+  // Override the == operator
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is Task &&
+        _name == other._name &&
+        _id == other._id &&
+        _description == other._description &&
+        _completed == other._completed &&
+        _location == other._location &&
+        _color == other._color &&
+        listEquals(_tags, other._tags) &&
+        _recurrenceRules == other._recurrenceRules &&
+        _timeStart == other._timeStart &&
+        _timeDue == other._timeDue &&
+        _timeCurrent == other._timeCurrent &&
+        _timeCreated == other._timeCreated &&
+        _timeModified == other._timeModified;
+  }
+
+  @override
+  int get hashCode {
+    return Object.hash(
+      _name,
+      _id,
+      _description,
+      _completed,
+      _location,
+      _color,
+      _tags,
+      _recurrenceRules,
+      _timeStart,
+      _timeDue,
+      _timeCurrent,
+      _timeCreated,
+      _timeModified,
+    );
   }
 }
