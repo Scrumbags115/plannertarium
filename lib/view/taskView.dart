@@ -3,10 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:get/get.dart';
-import 'package:planner/view/weekView.dart';
 import 'package:planner/models/task.dart';
-import 'package:planner/models/task.dart';
+import 'package:planner/tests/task_tests.dart';
+import 'dart:async';
 
 class taskView extends StatefulWidget {
   const taskView({Key? key}) : super(key: key);
@@ -20,10 +19,12 @@ class _taskViewState extends State<taskView> {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final User? user = FirebaseAuth.instance.currentUser;
   DatabaseService db = DatabaseService(uid: "ian");
+  List<Task> todayTasks = [];
 
   @override
   void initState() {
     super.initState();
+    fetchTodayTasks();
   }
 
   void fetchTodayTasks() async {
@@ -33,9 +34,17 @@ class _taskViewState extends State<taskView> {
     Map<DateTime, List<Task>> activeMap, delayedMap, completedMap;
     (activeMap, delayedMap, completedMap) =
         await db.getTaskMaps(dateStart, dateEnd);
+
+    todayTasks = []
+      ..addAll(activeMap[dateStart] ?? [])
+      ..addAll(delayedMap[dateStart] ?? [])
+      ..addAll(completedMap[dateStart] ?? []);
+
+    setState(() {});
+    print(todayTasks);
   }
-  
-  void _showTaskDetailsDialog(Task task) {
+
+  void _showTaskDetailsDialog(List<Task> tasks) {
     showDialog(
       context: scaffoldKey.currentState!.context,
       builder: (BuildContext context) {
@@ -43,16 +52,22 @@ class _taskViewState extends State<taskView> {
           title: Text('Task Details'),
           content: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Name: ${task.name}'),
-              Text('Description: ${task.description}'),
-              // Add more details as needed
-            ],
+            children: tasks.map((task) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Task ID: ${task.id}'),
+                  Text('Name: ${task.name}'),
+                  Text('Description: ${task.description}'),
+                  Divider(),
+                ],
+              );
+            }).toList(),
           ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close the alert box
+                Navigator.of(context).pop();
               },
               child: Text('Close'),
             ),
@@ -81,6 +96,68 @@ class _taskViewState extends State<taskView> {
       },
     );
   }
+
+  Future<Task?> addButtonForm(BuildContext context) async {
+    DatabaseService db = DatabaseService(uid: 'ian');
+    TextEditingController nameController = TextEditingController();
+    TextEditingController descriptionController = TextEditingController();
+
+    Completer<Task?> completer = Completer<Task?>();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Add Task'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(labelText: 'Task Name'),
+              ),
+              TextField(
+                controller: descriptionController,
+                decoration: InputDecoration(labelText: 'Description'),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                completer.complete(null); // Complete with null if canceled
+              },
+            ),
+            TextButton(
+              child: Text('Submit'),
+              onPressed: () {
+                String name = nameController.text;
+                String description = descriptionController.text;
+
+                Task newTask = Task(
+                    name: name,
+                    description: description,
+                    timeStart: DateTime.now());
+
+                db.setTask(newTask);
+
+                // Complete with the new task
+                completer.complete(newTask);
+
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+
+    // Return the Future that completes with the new task
+    return completer.future;
+  }
+
   void showSearchBar(BuildContext context) {
     TextEditingController searchController = TextEditingController();
 
@@ -104,13 +181,11 @@ class _taskViewState extends State<taskView> {
               child: Text('Search'),
               onPressed: () async {
                 String searchQuery = searchController.text;
-                Task task = await db.getTask(searchQuery);
+                List<Task> searchTask = await db.getTasksOfName(searchQuery);
 
-                if (task.id != null) {
-                  // If the task is found, show an alert box with its details
-                  _showTaskDetailsDialog(task);
+                if (searchTask != null) {
+                  _showTaskDetailsDialog(searchTask);
                 } else {
-                  // If the task is not found, show an alert box indicating it
                   _showTaskNotFoundDialog();
                 }
               },
@@ -149,10 +224,10 @@ class _taskViewState extends State<taskView> {
           children: [
             const DrawerHeader(
               decoration: BoxDecoration(
-                color: Colors.green,
+                color: Colors.blue,
               ), //BoxDecoration
               child: UserAccountsDrawerHeader(
-                decoration: BoxDecoration(color: Colors.green),
+                decoration: BoxDecoration(color: Colors.blue),
                 accountName: Text(
                   "Cheng Wai",
                   style: TextStyle(fontSize: 18),
@@ -160,7 +235,7 @@ class _taskViewState extends State<taskView> {
                 accountEmail: Text("cchong10@ucsc.edu"),
                 currentAccountPictureSize: Size.square(50),
                 currentAccountPicture: CircleAvatar(
-                  backgroundColor: Color.fromARGB(255, 165, 255, 137),
+                  backgroundColor: Color.fromARGB(255, 137, 192, 255),
                   child: Text(
                     "A",
                     style: TextStyle(fontSize: 30.0, color: Colors.blue),
@@ -193,51 +268,61 @@ class _taskViewState extends State<taskView> {
               leading: const Icon(Icons.logout),
               title: const Text('LogOut'),
               onTap: () {
-                Navigator.pop(context);
+                // Navigator.pop(context);
+                fetchTodayTasks();
               },
             ),
           ],
         ),
       ),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: todayTasks.length,
+              itemBuilder: (context, index) {
+                Task task = todayTasks[index];
+                return TaskCard(task: task);
+              },
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: ClipOval(
+              child: ElevatedButton(
+                onPressed: () async {
+                  Task? newTask = await addButtonForm(context);
+
+                  if (newTask != null) {
+                    setState(() {
+                      todayTasks.add(newTask);
+                    });
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(75, 75),
+                ),
+                child: const Icon(Icons.add_outlined),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-class TaskEvent {
-  final String title;
-  final String description;
-  final DateTime startTime;
-  final DateTime endTime;
+class TaskCard extends StatefulWidget {
+  final Task task;
 
-  TaskEvent({
-    required this.title,
-    required this.description,
-    required this.startTime,
-    required this.endTime,
-  });
-
-  factory TaskEvent.fromMap(Map<String, dynamic> data) {
-    return TaskEvent(
-      title: data['title'],
-      description: data['description'],
-      startTime: (data['event time start'] as Timestamp).toDate(),
-      endTime: (data['event time end'] as Timestamp).toDate(),
-    );
-  }
-}
-
-class TaskEventCard extends StatefulWidget {
-  final TaskEvent event;
-
-  TaskEventCard({required this.event});
+  TaskCard({required this.task});
 
   @override
-  _TaskEventCardState createState() => _TaskEventCardState();
+  _TaskCardState createState() => _TaskCardState();
 }
 
-class _TaskEventCardState extends State<TaskEventCard> {
-  bool isCompleted = false;
-
+class _TaskCardState extends State<TaskCard> {
+  DatabaseService db = DatabaseService(uid: 'ian');
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -251,21 +336,21 @@ class _TaskEventCardState extends State<TaskEventCard> {
           leading: InkWell(
             onTap: () {
               setState(() {
-                isCompleted = !isCompleted;
+                widget.task.completed = !widget.task.completed;
+                db.setTask(widget.task);
               });
             },
             child: CircleAvatar(
-              backgroundColor: isCompleted ? Colors.green : Colors.blue,
-              child: isCompleted
+              backgroundColor:
+                  widget.task.completed ? Colors.green : Colors.blue,
+              child: widget.task.completed
                   ? const Icon(Icons.check, color: Colors.white)
                   : const Icon(Icons.circle, color: Colors.white),
             ),
           ),
-          title: Text(widget.event.title),
-          subtitle: Text(widget.event.description),
-          trailing: Text(
-            '${widget.event.startTime.hour}:${widget.event.startTime.minute} - ${widget.event.endTime.hour}:${widget.event.endTime.minute}',
-          ),
+          title: Text(widget.task.name),
+          subtitle: Text(widget.task.description),
+          // Add more ListTile content based on your Task class properties
         ),
       ),
     );
@@ -281,10 +366,10 @@ class _TaskEventCardState extends State<TaskEventCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Title: ${widget.event.title}'),
-              Text('Description: ${widget.event.description}'),
+              Text('Title: ${widget.task.name}'),
+              Text('Description: ${widget.task.description}'),
               Text(
-                'Time: ${widget.event.startTime.hour}:${widget.event.startTime.minute} - ${widget.event.endTime.hour}:${widget.event.endTime.minute}',
+                'Time: ${widget.task.timeStart}- ${widget.task.timeDue}',
               ),
             ],
           ),

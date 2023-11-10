@@ -30,7 +30,7 @@ class eventViewState extends State<eventView> {
   void initState() {
     super.initState();
     fetchUserName();
-    fetchTodayEvents();
+    //fetchTodayEvents();
   }
 
   void fetchUserName() {
@@ -47,23 +47,23 @@ class eventViewState extends State<eventView> {
     });
   }
 
-  void fetchTodayEvents() {
-    final now = DateTime.now();
-    final startOfDay = DateTime(now.year, now.month, now.day, 0, 0, 0);
-    final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59);
+  // void fetchTodayEvents() {
+  //   final now = DateTime.now();
+  //   final startOfDay = DateTime(now.year, now.month, now.day, 0, 0, 0);
+  //   final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59);
 
-    db
-        .getUserEventsInDateRange(dateStart: startOfDay, dateEnd: endOfDay)
-        .then((QuerySnapshot<Map<String, dynamic>> querySnapshot) {
-      final List<TaskEvent> todayEvents = [];
-      querySnapshot.docs.forEach((doc) {
-        todayEvents.add(TaskEvent.fromMap(doc.data()));
-      });
-      setState(() {
-        events = todayEvents;
-      });
-    });
-  }
+  //   db
+  //       .getUserEventsInDateRange(dateStart: startOfDay, dateEnd: endOfDay)
+  //       .then((QuerySnapshot<Map<String, dynamic>> querySnapshot) {
+  //     final List<TaskEvent> todayEvents = [];
+  //     querySnapshot.docs.forEach((doc) {
+  //       todayEvents.add(TaskEvent.fromMap(doc.data()));
+  //     });
+  //     setState(() {
+  //       events = todayEvents;
+  //     });
+  //   });
+  // }
 
   void addButtonForm(BuildContext context) {
     TextEditingController textController = TextEditingController();
