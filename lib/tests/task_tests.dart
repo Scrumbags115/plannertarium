@@ -13,8 +13,10 @@ bool mapEquals(Map<DateTime, List<Task>> m1, Map<DateTime, List<Task>> m2) {
       print("     " + key.toString());
       print("     " + m1.keys.toString());
       print("     " + m2.keys.toString());
-      print("     " + m1[key].toString());
-      print("     " + m2[key].toString());
+      // print("     " + m1[key].toString());
+      // print("     " + m2[key].toString());
+      print(m1[key]![0].toDetailedString());
+      print(m2[key]![0].toDetailedString());
       print(listEquals(m1[key], m2[key]));
       return false;
     }
@@ -28,6 +30,8 @@ test_tasks() async {
   await task_new_user();
   
   await task_existing_user();
+
+  await task_due_date();
 
   print("passed test_tasks :D");
 }
@@ -147,7 +151,7 @@ task_existing_user() async {
   String existingUser1 = "taskExistingUser";
   print("existingUser1 is $existingUser1");
   DatabaseService db = DatabaseService(uid: existingUser1);
-  // tasks2.forEach((t) {db.setUserTask(t);});
+  // tasks2.forEach((t) {db.setTask(t);});
   // ^ Uncomment above to rewrite database info
 
   // Weekly
@@ -183,6 +187,22 @@ task_existing_user() async {
   assert (mapEquals(weeklyActive, weeklyActiveExp));
   assert (mapEquals(weeklyCompleted, weeklyCompExp));
   assert (mapEquals(weeklyDelayed, weeklyDelayExp));
+}
+
+task_due_date() async {
+  String existingUser2 = "taskExistingUser2";
+  print("existingUser2 is $existingUser2");
+  DatabaseService db = DatabaseService(uid: existingUser2);
+  tasksDue.forEach((t) {db.setTask(t);});
+  // ^ Uncomment above to rewrite database info
+
+  // Daily (11/9/2023)
+  Map<DateTime, List<Task>> dailyTasksDue = await db.getTasksDue(DateTime(2023, 11, 9), DateTime(2023, 11, 10));
+  Map<DateTime, List<Task>> dailyTasksDueExpected = {DateTime(2023, 11, 9):[tasksDue[0], tasksDue[1]],};
+  print("Daily tasks due found   : $dailyTasksDue");
+  print("Daily tasks due expected: $dailyTasksDueExpected");         
+
+  assert (mapEquals(dailyTasksDue, dailyTasksDueExpected));                                
 }
 
 List<Task> tasks = [
@@ -504,8 +524,8 @@ List<Task> tasks = [
 ];
 
 List<Task> tasks2 = [
-    Task(),
-    Task( // before window
+  Task(),
+  Task( // before window
     name: "MyTask 1",
     id: "MID-1",
     description: "Description for MTask 1",
@@ -610,4 +630,15 @@ List<Task> tasks2 = [
     timeCreated: DateTime(2023, 11, 8),
     timeModified: DateTime(2023, 11, 12),
   ),
+];
+
+List<Task> tasksDue = [
+  Task(name: "due1", id:'1', timeDue: DateTime(2023, 11, 9),
+        timeStart: DateTime(2023, 11, 9), timeCreated: DateTime(2023, 11, 8)),  // Due on 9th
+  Task(name: "due2", id:'2', timeDue: DateTime(2023, 11, 9, 23, 59),
+        timeStart: DateTime(2023, 11, 9), timeCreated: DateTime(2023, 11, 8)), // Due 11:59pm on 9th
+  Task(name: "due3", id:'3', timeDue: DateTime(2023, 11, 8, 23, 59),
+        timeStart: DateTime(2023, 11, 9), timeCreated: DateTime(2023, 11, 8)), // Just before 9th
+  Task(name: "due4", id:'4', timeDue: DateTime(2023, 11, 10),
+        timeStart: DateTime(2023, 11, 9), timeCreated: DateTime(2023, 11, 8)), // Just after 9th
 ];
