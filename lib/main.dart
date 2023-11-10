@@ -22,17 +22,17 @@ void main() async {
         .currentPlatform, // needs firebase_options.dart from flutterfire configure
   );
 
-//   User? u = await runAuthFlow();
-//   DatabaseService d = DatabaseService(uid: u!.uid);
-//   print(u.displayName);
-//   print(u.uid);
-//   print("wee");
+  // User? u = await runAuthFlow();
+  // DatabaseService d = DatabaseService(uid: u!.uid);
+  // print(u.displayName);
+  // print(u.uid);
+  // print("wee");
 
-//   // Uncomment below line and comment out above line to see weekView + dayView UI
-//   test_tasks();
-//   //Uncomment below line and comment out above line to see weekView + dayView UI
+  // Uncomment below line and comment out above line to see weekView + dayView UI
+  // test_tasks();
+  //Uncomment below line and comment out above line to see weekView + dayView UI
 
   runApp(GetMaterialApp(home: weekView()));
-//   d.setUserTask(t);
-//   runApp(const MyApp());
+  // d.setUserTask(t);
+  // runApp(const MyApp());
 }
