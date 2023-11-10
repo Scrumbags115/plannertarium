@@ -216,42 +216,42 @@ class Task {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    if (other is Task &&
-        _name == other._name &&
-        _id == other._id &&
-        _description == other._description &&
-        _completed == other._completed &&
-        _location == other._location &&
-        _color == other._color) {
-          // print("Strings are all equal");
-        } else {
-          print("Strings are not equal");
-        }
+    // if (other is Task &&
+    //     _name == other._name &&
+    //     _id == other._id &&
+    //     _description == other._description &&
+    //     _completed == other._completed &&
+    //     _location == other._location &&
+    //     _color == other._color) {
+    //       // print("Strings are all equal");
+    //     } else {
+    //       print("Strings are not equal");
+    //     }
 
-    if (other is Task &&
-        _timeStart == other._timeStart &&
-        _timeDue == other._timeDue &&
-        _timeCurrent == other._timeCurrent &&
-        _timeCreated == other._timeCreated &&
-        _timeModified == other._timeModified) {
-          // print("Times are all equal");
-        } else {
-          print("Times are not equal");
-        }
+    // if (other is Task &&
+    //     _timeStart == other._timeStart &&
+    //     _timeDue == other._timeDue &&
+    //     _timeCurrent == other._timeCurrent &&
+    //     _timeCreated == other._timeCreated &&
+    //     _timeModified == other._timeModified) {
+    //       // print("Times are all equal");
+    //     } else {
+    //       print("Times are not equal");
+    //     }
 
-    if (other is Task &&
-        listEquals(_tags, other._tags)) {
-          // print("Tags are equal");
-        } else{
-          print("Tags are not equal");
-        }
+    // if (other is Task &&
+    //     listEquals(_tags, other._tags)) {
+    //       // print("Tags are equal");
+    //     } else{
+    //       print("Tags are not equal");
+    //     }
 
-    if (other is Task &&
-        _recurrenceRules == other._recurrenceRules) {
-          // print("Recurrence rules are equal");
-        } else {
-          print("Recurrence rules are not equal");
-        }
+    // if (other is Task &&
+    //     _recurrenceRules == other._recurrenceRules) {
+    //       // print("Recurrence rules are equal");
+    //     } else {
+    //       print("Recurrence rules are not equal");
+    //     }
 
     return other is Task &&
         _name == other._name &&
