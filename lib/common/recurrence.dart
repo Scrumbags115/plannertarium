@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 List<bool> NO_RECURRENCE_ANY_DAY = [
   false,
   false,
@@ -43,7 +41,7 @@ class Recurrence {
       required this.timeEnd,
       required this.dates,
       required String? nullOrId}) {
-    this.id = nullOrId ?? _getIdFromTime();
+    id = nullOrId ?? _getIdFromTime();
   }
 
   /// Initialize a Recurrence object's fields from a map
@@ -66,7 +64,7 @@ class Recurrence {
       dates = [];
       // recurrenceRulesMap!['dates'].forEach((tag) {dates.add(tag as bool);}); // List<dynamic> bullshit
       if (recurrenceRulesMap["repeat on days"] != null) {
-        for (var b in recurrenceRulesMap!["repeat on days"]) {
+        for (var b in recurrenceRulesMap["repeat on days"]) {
           dates.add(b as bool);
         }
       } else {

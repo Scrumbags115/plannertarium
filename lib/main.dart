@@ -29,7 +29,7 @@ void main() async {
   // print("wee");
 
   // Uncomment below line and comment out above line to see weekView + dayView UI
-  test_tasks();
+  // test_tasks();
   //Uncomment below line and comment out above line to see weekView + dayView UI
 
   runApp(GetMaterialApp(home: weekView()));
