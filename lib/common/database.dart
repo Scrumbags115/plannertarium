@@ -201,30 +201,6 @@ class DatabaseService {
     }
   }
 
-  Future<Task> getTask(String taskID) async {
-    try {
-      var taskDocument =
-          await users.doc(uid).collection('tasks').doc(taskID).get();
-      return Task.requireFields(
-          name: taskDocument['name'],
-          id: taskID,
-          description: taskDocument['description'],
-          completed: taskDocument['completed'],
-          color: taskDocument['hex color'],
-          location: taskDocument['location'],
-          tags: taskDocument['tags'],
-          recurrenceRules: taskDocument['recurrence rules'],
-          timeStart: taskDocument['start date'],
-          timeDue: taskDocument['due date'],
-          timeCurrent: taskDocument['current date'],
-          timeCreated: taskDocument['date created'],
-          timeModified: taskDocument['date modified']);
-    } catch (e) {
-      print("Get Failed");
-      return Task();
-    }
-  }
-
   /// Saves a task into the database
   Future<void> setTask(Task t) async {
     return await users.doc(uid).collection('tasks').doc(t.id).set(t.toMap());
@@ -274,7 +250,7 @@ class DatabaseService {
 
     List<Task> delayedList = [];
     for (var doc in candidateTasks.docs) {
-      if ((doc['start date'] as Timestamp).toDate().isBefore(dateEnd)) {
+      if ((doc['time start'] as Timestamp).toDate().isBefore(dateEnd)) {
         Task t = Task.fromMap(doc.data(), id: doc.id);
         DateTime startDay = getDateOnly(t.timeStart);
         DateTime currentDay = getDateOnly(t.timeCurrent);

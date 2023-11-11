@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:planner/common/recurrence.dart';
 import 'package:planner/common/time_management.dart';
@@ -18,26 +17,26 @@ class Undertaking {
   /// Default constructor with minimum required info
   /// Good for if you want to add a new undertaking from user with missing fields
   Undertaking(
-      {String name = "",
+      {String? name,
       String? id,
-      String description = "",
-      String location = "",
-      String color = "#919191",
-      List<String> tags = const <String>[],
+      String? description,
+      String? location,
+      String? color,
+      List<String>? tags,
       Recurrence? recurrenceRules,
       DateTime? timeStart,
       DateTime? timeCreated,
       DateTime? timeModified}) {
-    _name = name;
+    _name = name ?? "";
     _id = id ?? DateTime.now().millisecondsSinceEpoch.toString();
-    _description = description;
-    _location = location;
-    _color = color;
-    _tags = tags;
+    _description = description ?? "";
+    _location = location ?? "";
+    _color = color ?? "#919191";
+    _tags = tags ?? <String>[];
     _recurrenceRules = recurrenceRules ?? Recurrence();
     _timeStart = timeStart ?? DateTime.now();
     _timeCreated = timeCreated ?? DateTime.now();
-    timeModified = timeModified ?? _timeCreated;
+    this.timeModified = timeModified ?? _timeCreated;
   }
 
   /// Alternate constructor so VSCode autogenerates all fields
@@ -52,7 +51,7 @@ class Undertaking {
       required Recurrence recurrenceRules,
       required DateTime timeStart,
       required DateTime timeCreated,
-      required DateTime timeModified}) {
+      required this.timeModified}) {
     _name = name;
     _id = id;
     _description = description;
@@ -62,7 +61,6 @@ class Undertaking {
     _recurrenceRules = recurrenceRules;
     _timeStart = timeStart;
     _timeCreated = timeCreated;
-    timeModified = timeModified;
   }
 
   /// Alternate constructor to get a task obj from some valid map
@@ -213,5 +211,20 @@ class Undertaking {
         _timeStart == other._timeStart &&
         _timeCreated == other._timeCreated &&
         timeModified == other.timeModified;
+  }
+
+  @override
+  int get hashCode {
+    return Object.hash(
+      _name,
+      _id,
+      _description,
+      _location,
+      _color,
+      _tags,
+      _recurrenceRules,
+      _timeStart,
+      _timeCreated,
+    );
   }
 }

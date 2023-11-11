@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/foundation.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/models/task.dart';
@@ -157,11 +159,11 @@ Future<void> task_new_user() async {
   // eyeballed the others, seems ok
   // TODO: fill out the rest of these tests
 
-  await db.users.doc(newUser1).delete().then(
-        (doc) => print("New User deleted"),
-        onError: (e) => print("Error removing user $e"),
-      );
-  // does not fully delete, do it manually
+  // Delete the new user
+  for (int i = 1; i <= tasks.length; i++) {
+    await db.users.doc(newUser1).collection('tasks').doc("ID-$i").delete();
+  }
+  await db.users.doc(newUser1).delete();
 }
 
 task_existing_user() async {
@@ -170,7 +172,9 @@ task_existing_user() async {
   String existingUser1 = "taskExistingUser";
   print("existingUser1 is $existingUser1");
   DatabaseService db = DatabaseService(uid: existingUser1);
-  // tasks2.forEach((t) {db.setTask(t);});
+  // tasks2.forEach((t) {
+  //   db.setTask(t);
+  // });
   // ^ Uncomment above to rewrite database info
 
   // Weekly
@@ -219,9 +223,9 @@ task_due_date() async {
   String existingUser2 = "taskExistingUser2";
   print("existingUser2 is $existingUser2");
   DatabaseService db = DatabaseService(uid: existingUser2);
-  tasksDue.forEach((t) {
-    db.setTask(t);
-  });
+  // tasksDue.forEach((t) {
+  //   db.setTask(t);
+  // });
   // ^ Uncomment above to rewrite database info
 
   // Daily (11/9/2023)
@@ -555,7 +559,22 @@ List<Task> tasks = [
 ];
 
 List<Task> tasks2 = [
-  Task(),
+  Task(
+    // long before window
+    name: "MyTask 0",
+    id: "MID-0",
+    description: "Description for MTask 0",
+    completed: false,
+    location: "Location 0",
+    color: "#FF5733",
+    tags: ["Tag0", "Tag2"],
+    recurrenceRules: null,
+    timeStart: DateTime(1970),
+    timeDue: DateTime(1970),
+    timeCurrent: DateTime(1970),
+    timeCreated: DateTime(1970),
+    timeModified: DateTime(1970),
+  ),
   Task(
     // before window
     name: "MyTask 1",

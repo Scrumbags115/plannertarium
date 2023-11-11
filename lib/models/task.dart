@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:planner/common/recurrence.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/models/undertaking.dart';
@@ -12,20 +11,30 @@ class Task extends Undertaking {
   /// Default constructor with minimum required info
   /// Good for if you want to add a new task from user with missing fields
   Task(
-      {String name = "",
+      {String? name,
       String? id,
-      String description = "",
+      String? description,
       bool completed = false,
-      String location = "",
-      String color = "#919191",
-      List<String> tags = const <String>[],
+      String? location,
+      String? color,
+      List<String>? tags,
       Recurrence? recurrenceRules,
       DateTime? timeStart,
       DateTime? timeDue,
       DateTime? timeCurrent,
       DateTime? timeCreated,
       DateTime? timeModified})
-      : super() {
+      : super(
+            name: name,
+            id: id,
+            description: description,
+            location: location,
+            color: color,
+            tags: tags,
+            recurrenceRules: recurrenceRules,
+            timeStart: timeStart,
+            timeCreated: timeCreated,
+            timeModified: timeModified) {
     _completed = completed;
     _timeDue = timeDue;
     _timeCurrent = timeCurrent ?? this.timeStart;
@@ -69,7 +78,11 @@ class Task extends Undertaking {
   Task.fromMap(Map<String, dynamic> map, {String? id})
       : super.fromMap(map, id: id) {
     _completed = map['completed'];
-    _timeDue = toDateIfTimestamp(map['time due']);
+    try {
+      _timeDue = toDateIfTimestamp(map['time due']);
+    } catch (e) {
+      _timeDue = null;
+    }
     _timeCurrent = toDateIfTimestamp(map['current date']);
   }
 
@@ -112,7 +125,7 @@ class Task extends Undertaking {
 
   @override
   String toString() {
-    return "Task($name, $id, $recurrenceRules)";
+    return "Task($name, $id)";
   }
 
   String toDetailedString() {

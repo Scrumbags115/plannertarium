@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:planner/common/recurrence.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/models/undertaking.dart';
@@ -10,18 +9,28 @@ class Event extends Undertaking {
   /// Default constructor with minimum required info
   /// Good for if you want to add a new task from user with missing fields
   Event(
-      {String name = "",
+      {String? name,
       String? id,
-      String description = "",
-      String color = "#919191",
-      String location = "",
-      List<String> tags = const <String>[],
+      String? description,
+      String? color,
+      String? location,
+      List<String>? tags,
       Recurrence? recurrenceRules,
       DateTime? timeStart,
       DateTime? timeEnd,
       DateTime? timeCreated,
       DateTime? timeModified})
-      : super() {
+      : super(
+            name: name,
+            id: id,
+            description: description,
+            color: color,
+            location: location,
+            tags: tags,
+            recurrenceRules: recurrenceRules,
+            timeStart: timeStart,
+            timeCreated: timeCreated,
+            timeModified: timeModified) {
     _timeEnd = timeEnd ?? DateTime.now();
   }
 
