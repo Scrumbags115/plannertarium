@@ -13,9 +13,10 @@ DateTime toDateIfTimestamp(dynamic t) {
   } else if (t.runtimeType is DateTime) {
     return t;
   }
-  throw Exception("Trying to get timestamp out of something that is not a time");
+  throw Exception(
+      "Trying to get timestamp out of something that is not a time");
 }
 
 DateTime getDateOnly(DateTime dateTime, {int offset = 0}) {
-    return DateTime(dateTime.year, dateTime.month, dateTime.day + offset);
-  }
+  return DateTime(dateTime.year, dateTime.month, dateTime.day + offset);
+}

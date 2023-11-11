@@ -28,7 +28,7 @@ test_tasks() async {
   print("IN test_tasks");
 
   await task_new_user();
-  
+
   await task_existing_user();
 
   await task_due_date();
@@ -37,117 +37,136 @@ test_tasks() async {
 }
 
 Future<void> task_new_user() async {
-  print("-----------------------------TEST TASKS NEW USER-----------------------------");
+  print(
+      "-----------------------------TEST TASKS NEW USER-----------------------------");
   DateTime today = DateTime(2023, 11, 4);
-  String newUser1 = "taskUser"+DateTime.now().millisecondsSinceEpoch.toString();
+  String newUser1 =
+      "taskUser" + DateTime.now().millisecondsSinceEpoch.toString();
   print("newUser1 is $newUser1");
   DatabaseService db = DatabaseService(uid: newUser1);
 
   // Daily view test
   DateTime tomorrow = DateTime(2023, 11, 5);
   Map<DateTime, List<Task>> dailyActive, dailyCompleted, dailyDelayed;
-  (dailyActive, dailyCompleted, dailyDelayed) = await db.getTaskMaps(today, tomorrow);
+  (dailyActive, dailyCompleted, dailyDelayed) =
+      await db.getTaskMaps(today, tomorrow);
   print("Daily active:    $dailyActive");
   print("Daily completed: $dailyCompleted");
   print("Daily delayed:   $dailyDelayed");
   Map<DateTime, List<Task>> emptyDay = {today: <Task>[]};
   print("Expecting:       $emptyDay");
-  assert (mapEquals(dailyActive, emptyDay));
-  assert (mapEquals(dailyCompleted, emptyDay));
-  assert (mapEquals(dailyDelayed, emptyDay));
+  assert(mapEquals(dailyActive, emptyDay));
+  assert(mapEquals(dailyCompleted, emptyDay));
+  assert(mapEquals(dailyDelayed, emptyDay));
 
   // Weekly view test
-  DateTime nextWeek =  DateTime(2023, 11, 11);
+  DateTime nextWeek = DateTime(2023, 11, 11);
   Map<DateTime, List<Task>> weeklyActive, weeklyCompleted, weeklyDelayed;
-  (weeklyActive, weeklyCompleted, weeklyDelayed) = await db.getTaskMaps(today, nextWeek);
+  (weeklyActive, weeklyCompleted, weeklyDelayed) =
+      await db.getTaskMaps(today, nextWeek);
   print("Weekly active: $weeklyActive");
   print("Weekly completed: $weeklyCompleted");
   print("Weekly delayed: $weeklyDelayed");
   Map<DateTime, List<Task>> emptyWeek = {
-                   DateTime(2023, 11, 4):[],
-                   DateTime(2023, 11, 5):[], 
-                   DateTime(2023, 11, 6):[], 
-                   DateTime(2023, 11, 7):[], 
-                   DateTime(2023, 11, 8):[], 
-                   DateTime(2023, 11, 9):[], 
-                   DateTime(2023, 11, 10):[]};
+    DateTime(2023, 11, 4): [],
+    DateTime(2023, 11, 5): [],
+    DateTime(2023, 11, 6): [],
+    DateTime(2023, 11, 7): [],
+    DateTime(2023, 11, 8): [],
+    DateTime(2023, 11, 9): [],
+    DateTime(2023, 11, 10): []
+  };
   print("expecting $emptyWeek");
-  assert (mapEquals(weeklyActive, emptyWeek));
-  assert (mapEquals(weeklyCompleted, emptyWeek));
-  assert (mapEquals(weeklyDelayed, emptyWeek));
+  assert(mapEquals(weeklyActive, emptyWeek));
+  assert(mapEquals(weeklyCompleted, emptyWeek));
+  assert(mapEquals(weeklyDelayed, emptyWeek));
 
   // Weekly view test
-  DateTime nextMonth =  DateTime(2023, 12, 4);
+  DateTime nextMonth = DateTime(2023, 12, 4);
   Map<DateTime, List<Task>> monthlyActive, monthlyCompleted, monthlyDelayed;
-  (monthlyActive, monthlyCompleted, monthlyDelayed) = await db.getTaskMaps(today, nextMonth);
+  (monthlyActive, monthlyCompleted, monthlyDelayed) =
+      await db.getTaskMaps(today, nextMonth);
   print("Monthly active: $monthlyActive");
   print("Monthly completed: $monthlyCompleted");
   print("Monthly delayed: $monthlyDelayed");
-  Map<DateTime, List<Task>> emptyMonth = {DateTime(2023, 11, 4): [],
-                    DateTime(2023, 11, 5): [],
-                    DateTime(2023, 11, 6): [],
-                    DateTime(2023, 11, 7): [],
-                    DateTime(2023, 11, 8): [],
-                    DateTime(2023, 11, 9): [],
-                    DateTime(2023, 11, 10): [],
-                    DateTime(2023, 11, 11): [],
-                    DateTime(2023, 11, 12): [],
-                    DateTime(2023, 11, 13): [],
-                    DateTime(2023, 11, 14): [],
-                    DateTime(2023, 11, 15): [],
-                    DateTime(2023, 11, 16): [],
-                    DateTime(2023, 11, 17): [],
-                    DateTime(2023, 11, 18): [],
-                    DateTime(2023, 11, 19): [],
-                    DateTime(2023, 11, 20): [],
-                    DateTime(2023, 11, 21): [],
-                    DateTime(2023, 11, 22): [],
-                    DateTime(2023, 11, 23): [],
-                    DateTime(2023, 11, 24): [],
-                    DateTime(2023, 11, 25): [],
-                    DateTime(2023, 11, 26): [],
-                    DateTime(2023, 11, 27): [],
-                    DateTime(2023, 11, 28): [],
-                    DateTime(2023, 11, 29): [],
-                    DateTime(2023, 11, 30): [],
-                    DateTime(2023, 12, 1): [],
-                    DateTime(2023, 12, 2): [],
-                    DateTime(2023, 12, 3): []};
+  Map<DateTime, List<Task>> emptyMonth = {
+    DateTime(2023, 11, 4): [],
+    DateTime(2023, 11, 5): [],
+    DateTime(2023, 11, 6): [],
+    DateTime(2023, 11, 7): [],
+    DateTime(2023, 11, 8): [],
+    DateTime(2023, 11, 9): [],
+    DateTime(2023, 11, 10): [],
+    DateTime(2023, 11, 11): [],
+    DateTime(2023, 11, 12): [],
+    DateTime(2023, 11, 13): [],
+    DateTime(2023, 11, 14): [],
+    DateTime(2023, 11, 15): [],
+    DateTime(2023, 11, 16): [],
+    DateTime(2023, 11, 17): [],
+    DateTime(2023, 11, 18): [],
+    DateTime(2023, 11, 19): [],
+    DateTime(2023, 11, 20): [],
+    DateTime(2023, 11, 21): [],
+    DateTime(2023, 11, 22): [],
+    DateTime(2023, 11, 23): [],
+    DateTime(2023, 11, 24): [],
+    DateTime(2023, 11, 25): [],
+    DateTime(2023, 11, 26): [],
+    DateTime(2023, 11, 27): [],
+    DateTime(2023, 11, 28): [],
+    DateTime(2023, 11, 29): [],
+    DateTime(2023, 11, 30): [],
+    DateTime(2023, 12, 1): [],
+    DateTime(2023, 12, 2): [],
+    DateTime(2023, 12, 3): []
+  };
   print("expecting $emptyMonth");
-  assert (mapEquals(monthlyActive, emptyMonth));
-  assert (mapEquals(monthlyCompleted, emptyMonth));
-  assert (mapEquals(monthlyDelayed, emptyMonth));
+  assert(mapEquals(monthlyActive, emptyMonth));
+  assert(mapEquals(monthlyCompleted, emptyMonth));
+  assert(mapEquals(monthlyDelayed, emptyMonth));
 
-  print("---------------------------------------------Setting db with tasks---------------------------------------------");
-  tasks.forEach((t) {db.setTask(t);});
+  print(
+      "---------------------------------------------Setting db with tasks---------------------------------------------");
+  tasks.forEach((t) {
+    db.setTask(t);
+  });
 
   // Daily
-  (dailyActive, dailyCompleted, dailyDelayed) = await db.getTaskMaps(DateTime(2023, 11, 20), DateTime(2023, 11, 21));
-  Map<DateTime, List<Task>> dailyActiveExp = {DateTime(2023, 11, 20):[tasks[18]]};
-  Map<DateTime, List<Task>> dailyCompExp = {DateTime(2023, 11, 20):[tasks[16], tasks[20]]};
-  Map<DateTime, List<Task>> dailyDelayExp = {DateTime(2023, 11, 20):[tasks[13], tasks[4]]};
+  (dailyActive, dailyCompleted, dailyDelayed) =
+      await db.getTaskMaps(DateTime(2023, 11, 20), DateTime(2023, 11, 21));
+  Map<DateTime, List<Task>> dailyActiveExp = {
+    DateTime(2023, 11, 20): [tasks[18]]
+  };
+  Map<DateTime, List<Task>> dailyCompExp = {
+    DateTime(2023, 11, 20): [tasks[16], tasks[20]]
+  };
+  Map<DateTime, List<Task>> dailyDelayExp = {
+    DateTime(2023, 11, 20): [tasks[13], tasks[4]]
+  };
   print("Daily active found   : $dailyActive");
   print("Daily active expected: $dailyActiveExp");
   print("Daily completed found   : $dailyCompleted");
   print("Daily completed expected: $dailyCompExp");
   print("Daily delayed found   : $dailyDelayed");
   print("Daily delayed expected: $dailyDelayExp");
-  assert (mapEquals(dailyActive, dailyActiveExp));
-  assert (mapEquals(dailyCompleted, dailyCompExp));
-  assert (mapEquals(dailyDelayed, dailyDelayExp));
+  assert(mapEquals(dailyActive, dailyActiveExp));
+  assert(mapEquals(dailyCompleted, dailyCompExp));
+  assert(mapEquals(dailyDelayed, dailyDelayExp));
 
   // eyeballed the others, seems ok
   // TODO: fill out the rest of these tests
 
   await db.users.doc(newUser1).delete().then(
-      (doc) => print("New User deleted"),
-      onError: (e) => print("Error removing user $e"),
-    );
-    // does not fully delete, do it manually
+        (doc) => print("New User deleted"),
+        onError: (e) => print("Error removing user $e"),
+      );
+  // does not fully delete, do it manually
 }
 
 task_existing_user() async {
-  print("-----------------------------TEST TASKS EXISTING USER-----------------------------");
+  print(
+      "-----------------------------TEST TASKS EXISTING USER-----------------------------");
   String existingUser1 = "taskExistingUser";
   print("existingUser1 is $existingUser1");
   DatabaseService db = DatabaseService(uid: existingUser1);
@@ -156,53 +175,65 @@ task_existing_user() async {
 
   // Weekly
   Map<DateTime, List<Task>> weeklyActive, weeklyCompleted, weeklyDelayed;
-  (weeklyActive, weeklyCompleted, weeklyDelayed) = await db.getTaskMaps(DateTime(2023, 11, 6), DateTime(2023, 11, 13));
-  Map<DateTime, List<Task>> weeklyActiveExp = {DateTime(2023, 11, 6):[],
-                                               DateTime(2023, 11, 7):[],
-                                               DateTime(2023, 11, 8):[],
-                                               DateTime(2023, 11, 9):[],
-                                               DateTime(2023, 11, 10):[],
-                                               DateTime(2023, 11, 11):[],
-                                               DateTime(2023, 11, 12):[tasks2[7]]};
-  Map<DateTime, List<Task>> weeklyCompExp = {DateTime(2023, 11, 6):[],
-                                               DateTime(2023, 11, 7):[tasks2[2]],
-                                               DateTime(2023, 11, 8):[],
-                                               DateTime(2023, 11, 9):[tasks2[3]],
-                                               DateTime(2023, 11, 10):[],
-                                               DateTime(2023, 11, 11):[],
-                                               DateTime(2023, 11, 12):[]};
-  Map<DateTime, List<Task>> weeklyDelayExp = {DateTime(2023, 11, 6):[tasks2[2], tasks2[3], tasks2[7], tasks2[6]],
-                                               DateTime(2023, 11, 7):[tasks2[3], tasks2[7], tasks2[6]],
-                                               DateTime(2023, 11, 8):[tasks2[3], tasks2[7], tasks2[6]],
-                                               DateTime(2023, 11, 9):[tasks2[7], tasks2[4], tasks2[6]],
-                                               DateTime(2023, 11, 10):[tasks2[7], tasks2[4], tasks2[6]],
-                                               DateTime(2023, 11, 11):[tasks2[7], tasks2[4], tasks2[6]],
-                                               DateTime(2023, 11, 12):[tasks2[4], tasks2[6]]};
+  (weeklyActive, weeklyCompleted, weeklyDelayed) =
+      await db.getTaskMaps(DateTime(2023, 11, 6), DateTime(2023, 11, 13));
+  Map<DateTime, List<Task>> weeklyActiveExp = {
+    DateTime(2023, 11, 6): [],
+    DateTime(2023, 11, 7): [],
+    DateTime(2023, 11, 8): [],
+    DateTime(2023, 11, 9): [],
+    DateTime(2023, 11, 10): [],
+    DateTime(2023, 11, 11): [],
+    DateTime(2023, 11, 12): [tasks2[7]]
+  };
+  Map<DateTime, List<Task>> weeklyCompExp = {
+    DateTime(2023, 11, 6): [],
+    DateTime(2023, 11, 7): [tasks2[2]],
+    DateTime(2023, 11, 8): [],
+    DateTime(2023, 11, 9): [tasks2[3]],
+    DateTime(2023, 11, 10): [],
+    DateTime(2023, 11, 11): [],
+    DateTime(2023, 11, 12): []
+  };
+  Map<DateTime, List<Task>> weeklyDelayExp = {
+    DateTime(2023, 11, 6): [tasks2[2], tasks2[3], tasks2[7], tasks2[6]],
+    DateTime(2023, 11, 7): [tasks2[3], tasks2[7], tasks2[6]],
+    DateTime(2023, 11, 8): [tasks2[3], tasks2[7], tasks2[6]],
+    DateTime(2023, 11, 9): [tasks2[7], tasks2[4], tasks2[6]],
+    DateTime(2023, 11, 10): [tasks2[7], tasks2[4], tasks2[6]],
+    DateTime(2023, 11, 11): [tasks2[7], tasks2[4], tasks2[6]],
+    DateTime(2023, 11, 12): [tasks2[4], tasks2[6]]
+  };
   print("Weekly active found   : $weeklyActive");
   print("Weekly active expected: $weeklyActiveExp");
   print("Weekly completed found   : $weeklyCompleted");
   print("Weekly completed expected: $weeklyCompExp");
   print("Weekly delayed found   : $weeklyDelayed");
   print("Weekly delayed expected: $weeklyDelayExp");
-  assert (mapEquals(weeklyActive, weeklyActiveExp));
-  assert (mapEquals(weeklyCompleted, weeklyCompExp));
-  assert (mapEquals(weeklyDelayed, weeklyDelayExp));
+  assert(mapEquals(weeklyActive, weeklyActiveExp));
+  assert(mapEquals(weeklyCompleted, weeklyCompExp));
+  assert(mapEquals(weeklyDelayed, weeklyDelayExp));
 }
 
 task_due_date() async {
   String existingUser2 = "taskExistingUser2";
   print("existingUser2 is $existingUser2");
   DatabaseService db = DatabaseService(uid: existingUser2);
-  tasksDue.forEach((t) {db.setTask(t);});
+  tasksDue.forEach((t) {
+    db.setTask(t);
+  });
   // ^ Uncomment above to rewrite database info
 
   // Daily (11/9/2023)
-  Map<DateTime, List<Task>> dailyTasksDue = await db.getTasksDue(DateTime(2023, 11, 9), DateTime(2023, 11, 10));
-  Map<DateTime, List<Task>> dailyTasksDueExpected = {DateTime(2023, 11, 9):[tasksDue[0], tasksDue[1]],};
+  Map<DateTime, List<Task>> dailyTasksDue =
+      await db.getTasksDue(DateTime(2023, 11, 9), DateTime(2023, 11, 10));
+  Map<DateTime, List<Task>> dailyTasksDueExpected = {
+    DateTime(2023, 11, 9): [tasksDue[0], tasksDue[1]],
+  };
   print("Daily tasks due found   : $dailyTasksDue");
-  print("Daily tasks due expected: $dailyTasksDueExpected");         
+  print("Daily tasks due expected: $dailyTasksDueExpected");
 
-  assert (mapEquals(dailyTasksDue, dailyTasksDueExpected));                                
+  assert(mapEquals(dailyTasksDue, dailyTasksDueExpected));
 }
 
 List<Task> tasks = [
@@ -297,20 +328,20 @@ List<Task> tasks = [
     timeModified: DateTime(2023, 12, 13),
   ),
   Task(
-      name: "Task 7",
-      id: "ID-7",
-      description: "Description for Task 7",
-      completed: false,
-      location: "Location 7",
-      color: "#FF5733",
-      tags: ["Tag1", "Tag2"],
-      recurrenceRules: null,
-      timeStart: DateTime(2023, 10, 20),
-      timeDue: DateTime(2023, 10, 25),
-      timeCurrent: DateTime(2023, 10, 22),
-      timeCreated: DateTime(2023, 10, 18),
-      timeModified: DateTime(2023, 10, 22),
-    ),
+    name: "Task 7",
+    id: "ID-7",
+    description: "Description for Task 7",
+    completed: false,
+    location: "Location 7",
+    color: "#FF5733",
+    tags: ["Tag1", "Tag2"],
+    recurrenceRules: null,
+    timeStart: DateTime(2023, 10, 20),
+    timeDue: DateTime(2023, 10, 25),
+    timeCurrent: DateTime(2023, 10, 22),
+    timeCreated: DateTime(2023, 10, 18),
+    timeModified: DateTime(2023, 10, 22),
+  ),
   Task(
     name: "Task 8",
     id: "ID-8",
@@ -525,7 +556,8 @@ List<Task> tasks = [
 
 List<Task> tasks2 = [
   Task(),
-  Task( // before window
+  Task(
+    // before window
     name: "MyTask 1",
     id: "MID-1",
     description: "Description for MTask 1",
@@ -540,7 +572,8 @@ List<Task> tasks2 = [
     timeCreated: DateTime(2023, 11, 8),
     timeModified: DateTime(2023, 11, 12),
   ),
-  Task( // start before window
+  Task(
+    // start before window
     name: "MyTask 2",
     id: "MID-2",
     description: "Description for MTask 2",
@@ -555,7 +588,8 @@ List<Task> tasks2 = [
     timeCreated: DateTime(2023, 11, 8),
     timeModified: DateTime(2023, 11, 12),
   ),
-  Task( // in window
+  Task(
+    // in window
     name: "MyTask 3",
     id: "MID-3",
     description: "Description for MTask 3",
@@ -570,7 +604,8 @@ List<Task> tasks2 = [
     timeCreated: DateTime(2023, 11, 8),
     timeModified: DateTime(2023, 11, 12),
   ),
-  Task( // current after window
+  Task(
+    // current after window
     name: "MyTask 4",
     id: "MID-4",
     description: "Description for MTask 4",
@@ -585,7 +620,8 @@ List<Task> tasks2 = [
     timeCreated: DateTime(2023, 11, 8),
     timeModified: DateTime(2023, 11, 12),
   ),
-  Task( // after window
+  Task(
+    // after window
     name: "MyTask 5",
     id: "MID-5",
     description: "Description for MTask 5",
@@ -600,7 +636,8 @@ List<Task> tasks2 = [
     timeCreated: DateTime(2023, 11, 8),
     timeModified: DateTime(2023, 11, 12),
   ),
-  Task( // start before end after window
+  Task(
+    // start before end after window
     name: "MyTask 6",
     id: "MID-6",
     description: "Description for MTask 6",
@@ -615,7 +652,8 @@ List<Task> tasks2 = [
     timeCreated: DateTime(2023, 11, 8),
     timeModified: DateTime(2023, 11, 12),
   ),
-  Task( // spans the window
+  Task(
+    // spans the window
     name: "MyTask 7",
     id: "MID-7",
     description: "Description for MTask 7",
@@ -633,12 +671,28 @@ List<Task> tasks2 = [
 ];
 
 List<Task> tasksDue = [
-  Task(name: "due1", id:'1', timeDue: DateTime(2023, 11, 9),
-        timeStart: DateTime(2023, 11, 9), timeCreated: DateTime(2023, 11, 8)),  // Due on 9th
-  Task(name: "due2", id:'2', timeDue: DateTime(2023, 11, 9, 23, 59),
-        timeStart: DateTime(2023, 11, 9), timeCreated: DateTime(2023, 11, 8)), // Due 11:59pm on 9th
-  Task(name: "due3", id:'3', timeDue: DateTime(2023, 11, 8, 23, 59),
-        timeStart: DateTime(2023, 11, 9), timeCreated: DateTime(2023, 11, 8)), // Just before 9th
-  Task(name: "due4", id:'4', timeDue: DateTime(2023, 11, 10),
-        timeStart: DateTime(2023, 11, 9), timeCreated: DateTime(2023, 11, 8)), // Just after 9th
+  Task(
+      name: "due1",
+      id: '1',
+      timeDue: DateTime(2023, 11, 9),
+      timeStart: DateTime(2023, 11, 9),
+      timeCreated: DateTime(2023, 11, 8)), // Due on 9th
+  Task(
+      name: "due2",
+      id: '2',
+      timeDue: DateTime(2023, 11, 9, 23, 59),
+      timeStart: DateTime(2023, 11, 9),
+      timeCreated: DateTime(2023, 11, 8)), // Due 11:59pm on 9th
+  Task(
+      name: "due3",
+      id: '3',
+      timeDue: DateTime(2023, 11, 8, 23, 59),
+      timeStart: DateTime(2023, 11, 9),
+      timeCreated: DateTime(2023, 11, 8)), // Just before 9th
+  Task(
+      name: "due4",
+      id: '4',
+      timeDue: DateTime(2023, 11, 10),
+      timeStart: DateTime(2023, 11, 9),
+      timeCreated: DateTime(2023, 11, 8)), // Just after 9th
 ];

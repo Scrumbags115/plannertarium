@@ -66,7 +66,8 @@ class Task extends Undertaking {
   /// Alternate constructor to get a task obj from some valid map
   /// Can have ID as a separate parameter if not in the map
   /// Good for reading from database
-  Task.fromMap(Map<String, dynamic> map, {String? id}) :super.fromMap(map, id: id) {
+  Task.fromMap(Map<String, dynamic> map, {String? id})
+      : super.fromMap(map, id: id) {
     _completed = map['completed'];
     _timeDue = toDateIfTimestamp(map['time due']);
     _timeCurrent = toDateIfTimestamp(map['current date']);
@@ -123,9 +124,9 @@ class Task extends Undertaking {
     if (identical(this, other)) return true;
     if (other is! Task) return false;
 
-    bool taskVariablesEqual = completed == other._completed && 
-                              timeDue == other.timeDue && 
-                              timeCurrent == other.timeCurrent;
+    bool taskVariablesEqual = completed == other._completed &&
+        timeDue == other.timeDue &&
+        timeCurrent == other.timeCurrent;
     if (!taskVariablesEqual) {
       // print("task variables are not equal")
       return false;

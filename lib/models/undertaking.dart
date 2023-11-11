@@ -111,7 +111,6 @@ class Undertaking {
     return map;
   }
 
-  
   set name(String newName) {
     timeModified = DateTime.now();
     _name = newName;
@@ -156,14 +155,13 @@ class Undertaking {
 
   Recurrence get recurrenceRules => _recurrenceRules;
 
-  
   set timeStart(DateTime newTimeStart) {
     timeModified = DateTime.now();
     _timeStart = newTimeStart;
   }
 
   DateTime get timeStart => _timeStart;
-  
+
   DateTime get timeCreated => _timeCreated;
 
   @override

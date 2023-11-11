@@ -4,13 +4,13 @@ import 'package:planner/common/time_management.dart';
 import 'package:planner/models/undertaking.dart';
 
 // import recurrence class here
-class Event extends Undertaking{
+class Event extends Undertaking {
   late DateTime _timeEnd;
 
   /// Default constructor with minimum required info
   /// Good for if you want to add a new task from user with missing fields
   Event(
-      {String name="",
+      {String name = "",
       String? id,
       String description = "",
       String color = "#919191",
@@ -53,25 +53,26 @@ class Event extends Undertaking{
     _timeEnd = timeEnd;
   }
 
-  
   /// Turn a properly formatted map into an Event class
   /// the map must have all the proper fields
-  Event.fromMap(Map<String, dynamic> map, {String? id}) :super.fromMap(map, id: id) {
+  Event.fromMap(Map<String, dynamic> map, {String? id})
+      : super.fromMap(map, id: id) {
     _timeEnd = toDateIfTimestamp(map["time end"]);
   }
 
-  Event.clone(Event e): this(
-    name: e.name, 
-    id: e.id, 
-    description: e.description, 
-    color: e.color, 
-    location: e.location, 
-    tags: e.tags, 
-    recurrenceRules: e.recurrenceRules,
-    timeStart: e.timeStart, 
-    timeEnd: e.timeEnd, 
-    timeCreated: e.timeCreated, 
-    timeModified: e.timeModified);
+  Event.clone(Event e)
+      : this(
+            name: e.name,
+            id: e.id,
+            description: e.description,
+            color: e.color,
+            location: e.location,
+            tags: e.tags,
+            recurrenceRules: e.recurrenceRules,
+            timeStart: e.timeStart,
+            timeEnd: e.timeEnd,
+            timeCreated: e.timeCreated,
+            timeModified: e.timeModified);
 
   /// returns a mapping with kv pairs corresponding to Firebase's
   /// possibly a better getter
@@ -92,18 +93,21 @@ class Event extends Undertaking{
   /// Some checks to make sure the event object is valid with recurrence and crash with a more useful error message if caught
   /// used internally to run some basic checks before I assume things aren't null/are valid classes
   bool _validEventWithRecurrence() {
-
     // event fields must be valid, crash since something has probably gone very wrong
     if (timeStart == null || timeEnd == null) {
       throw Exception("Event is malformed? No timeStart/timeEnd value is set!");
     }
 
     // recurrence must have its fields be populated
-    if (recurrenceRules!.timeStart == null || recurrenceRules!.timeEnd == null || recurrenceRules!.dates == null) {
+    if (recurrenceRules!.timeStart == null ||
+        recurrenceRules!.timeEnd == null ||
+        recurrenceRules!.dates == null) {
       return false;
     }
-    if (recurrenceRules?.timeStart == null || recurrenceRules?.timeEnd == null) {
-      throw Exception("Event recurrence rules are enabled and not null, but the rest of the recurrence rules fields are unset!"); // I think this should be enforced
+    if (recurrenceRules?.timeStart == null ||
+        recurrenceRules?.timeEnd == null) {
+      throw Exception(
+          "Event recurrence rules are enabled and not null, but the rest of the recurrence rules fields are unset!"); // I think this should be enforced
     }
     return true;
   }
@@ -135,7 +139,6 @@ class Event extends Undertaking{
 
     DateTime eventDateStart = timeStart!;
     DateTime eventDateEnd = timeEnd!;
-
 
     int diff = daysBetween(recurrenceDateStart, recurrenceDateEnd);
     // While this function is expected to be called when the earliest event is created, in case that is not the case, iterate both ways
@@ -203,7 +206,6 @@ class Event extends Undertaking{
     DateTime recurrenceDateEnd = recurrence.timeEnd!;
 
     DateTime eventDateStart = timeStart!;
-
 
     int diff = daysBetween(recurrenceDateStart, recurrenceDateEnd);
 
