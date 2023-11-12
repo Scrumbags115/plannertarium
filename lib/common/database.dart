@@ -200,6 +200,18 @@ class DatabaseService {
     }
   }
 
+  Future<Task> getTask(String taskID) async {
+    try {
+      DocumentSnapshot<Map<String, dynamic>> taskDocument = await users.doc(uid).collection('tasks').doc(taskID).get();
+      if (taskDocument.exists) {
+        return Task.fromMap(taskDocument.data() ?? {"getTask Error":1}, id: taskDocument.id);
+      }
+    } catch (e) {
+      print("Get Failed");
+    }
+    return Task();
+  }
+
   /// Saves a task into the database
   Future<void> setTask(Task t) async {
     return await users.doc(uid).collection('tasks').doc(t.id).set(t.toMap());
