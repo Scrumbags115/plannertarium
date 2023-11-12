@@ -247,9 +247,9 @@ class DatabaseService {
   /// where task.timeCureent is in a date range [dateStart, dateEnd) for all tasks in either list
   Future<(List<Task>, List<Task>)> _getTasksActiveOrCompleted(DateTime dateStart, DateTime dateEnd) async {
     assert (dateStart.isBefore(dateEnd));
-    final timestampStart = Timestamp.fromDate(dateStart);
-    final timestampEnd = Timestamp.fromDate(dateEnd);
-    final allTasks = await users.doc(uid).collection("tasks")
+    Timestamp timestampStart = Timestamp.fromDate(dateStart);
+    Timestamp timestampEnd = Timestamp.fromDate(dateEnd);
+    QuerySnapshot<Map<String, dynamic>> allTasks = await users.doc(uid).collection("tasks")
             .where("current date",  isGreaterThanOrEqualTo: timestampStart,
                                     isLessThan: timestampEnd).get();
     
@@ -270,8 +270,8 @@ class DatabaseService {
   /// Returns a list of tasks with delays in the time window in order of current date
   Future<List<Task>> _getTasksDelayed(DateTime dateStart, DateTime dateEnd) async {
     assert (dateStart.isBefore(dateEnd));
-    final timestampStart = Timestamp.fromDate(dateStart);
-    final candidateTasks = await users.doc(uid).collection("tasks")
+    Timestamp timestampStart = Timestamp.fromDate(dateStart);
+    QuerySnapshot<Map<String, dynamic>> candidateTasks = await users.doc(uid).collection("tasks")
         .where("current date",
                 isGreaterThanOrEqualTo: timestampStart)
         // .where("start date",
@@ -337,6 +337,38 @@ class DatabaseService {
       }
     }
     return (activeMap, completedMap, delayedMap);
+  }
+
+  /// All tasks that are due in the time window [dateStart, dateEnd)
+  /// Returns a map from each day in the window to a list of tasks due that day
+  Future<Map<DateTime, List<Task>>> getTasksDue(DateTime dateStart, DateTime dateEnd) async {
+    assert (dateStart.isBefore(dateEnd));
+    assert (dateStart.isAtSameMomentAs(_getDateOnly(dateStart)));
+    assert (dateEnd.isAtSameMomentAs(_getDateOnly(dateEnd)));
+
+    Timestamp timestampStart = Timestamp.fromDate(dateStart);
+    Timestamp timestampEnd = Timestamp.fromDate(dateEnd);
+    QuerySnapshot<Map<String, dynamic>> allTasksDue = await users.doc(uid).collection("tasks")
+        .where("due date",
+                isGreaterThanOrEqualTo: timestampStart,
+                isLessThan: timestampEnd)
+        .get();
+
+    Map<DateTime, List<Task>> dueDateMap = {}; 
+    for (int i = 0; i < dateEnd.difference(dateStart).inDays; i++) {
+      DateTime newDay = _getDateOnly(dateStart, offset: i);
+      dueDateMap[newDay] = [];
+    }
+
+    for (var doc in allTasksDue.docs) {
+      Task t = Task.fromMap(doc.data(), id: doc.id);
+      if (t.timeDue == null)
+        continue;
+      DateTime dueDate = _getDateOnly(t.timeDue ?? dateStart); // ?? datestart forced by dart
+      dueDateMap[dueDate]?.add(t);
+    }
+
+    return dueDateMap;
   }
 
   DateTime _getDateOnly(DateTime dateTime, {int offset = 0}) {

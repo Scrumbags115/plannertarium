@@ -325,32 +325,86 @@ class _TaskCardState extends State<TaskCard> {
   DatabaseService db = DatabaseService(uid: 'ian');
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      margin: const EdgeInsets.all(1.0),
-      child: InkWell(
-        onTap: () {
-          _showDetailPopup(context);
-        },
-        child: ListTile(
-          leading: InkWell(
-            onTap: () {
-              setState(() {
-                widget.task.completed = !widget.task.completed;
-                db.setTask(widget.task);
-              });
+    return Dismissible(
+      key: UniqueKey(),
+      onDismissed: (direction) {
+        if (direction == DismissDirection.startToEnd) {
+          setState(() {
+            widget.task.completed = true;
+            db.setTask(widget.task);
+          });
+        } else if (direction == DismissDirection.endToStart) {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: const Text('Confirm Deletion'),
+                content:
+                    const Text('Are you sure you want to delete this task?'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      // Delete the task and close the dialog
+                      //db.deleteTask(widget.task);
+                      print('swipe right!');
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Delete'),
+                  ),
+                ],
+              );
             },
-            child: CircleAvatar(
-              backgroundColor:
-                  widget.task.completed ? Colors.green : Colors.blue,
-              child: widget.task.completed
-                  ? const Icon(Icons.check, color: Colors.white)
-                  : const Icon(Icons.circle, color: Colors.white),
+          );
+        }
+      },
+      background: Container(
+        color: Colors.green, // Swipe right background color
+        alignment: Alignment.centerLeft,
+        child: Icon(
+          Icons.check,
+          color: Colors.white,
+        ),
+      ),
+      secondaryBackground: Container(
+        color: Colors.red, // Swipe left background color
+        alignment: Alignment.centerRight,
+        child: Icon(
+          Icons.delete,
+          color: Colors.white,
+        ),
+      ),
+      child: Card(
+        elevation: 0,
+        margin: const EdgeInsets.all(1.0),
+        child: InkWell(
+          onTap: () {
+            _showDetailPopup(context);
+          },
+          child: ListTile(
+            leading: InkWell(
+              onTap: () {
+                setState(() {
+                  widget.task.completed = !widget.task.completed;
+                  db.setTask(widget.task);
+                });
+              },
+              child: CircleAvatar(
+                backgroundColor:
+                    widget.task.completed ? Colors.green : Colors.blue,
+                child: widget.task.completed
+                    ? const Icon(Icons.check, color: Colors.white)
+                    : const Icon(Icons.circle, color: Colors.white),
+              ),
             ),
+            title: Text(widget.task.name),
+            subtitle: Text(widget.task.description),
           ),
-          title: Text(widget.task.name),
-          subtitle: Text(widget.task.description),
-          // Add more ListTile content based on your Task class properties
         ),
       ),
     );

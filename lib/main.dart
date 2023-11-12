@@ -31,6 +31,17 @@ void main() async {
   // test_tasks();
   // //Uncomment below line and comment out above line to see weekView + dayView UI
   runApp(GetMaterialApp(home: taskView()));
+  // User? u = await runAuthFlow();
+  // DatabaseService d = DatabaseService(uid: u!.uid);
+  // print(u.displayName);
+  // print(u.uid);
+  // print("wee");
+
+  // Uncomment below line and comment out above line to see weekView + dayView UI
+  // test_tasks();
+  //Uncomment below line and comment out above line to see weekView + dayView UI
+
+  //runApp(GetMaterialApp(home: weekView()));
   // d.setUserTask(t);
   // runApp(const MyApp());
 }
