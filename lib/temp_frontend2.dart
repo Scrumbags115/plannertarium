@@ -1,4 +1,5 @@
 
+import 'package:planner/common/login.dart';
 import 'package:planner/common/recurrence.dart';
 import 'package:planner/models/event.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -76,7 +77,11 @@ class MyAppState extends State<MyApp> {
       }
     });
     DatabaseService db = DatabaseService();
-    if (event == "run") {
+    if (event == "login") {
+      await runAuthFlow();
+    } else if (event == "logout") {
+      await logout();
+    } else if (event == "run") {
       print(db);
       print("do crap");
       db.initUID("random test string");
@@ -85,8 +90,7 @@ class MyAppState extends State<MyApp> {
 
       print(db);
       print("done doing crap");
-    }
-    if (event == "add") {
+    } else if (event == "add") {
       final timeStart = DateTime.now();
       final timeEnd = timeStart.add(const Duration(hours: 8));
       await db.addUniqueEvent(Event(
@@ -118,19 +122,19 @@ class MyAppState extends State<MyApp> {
       Event e = eventList.first;
       await db.deleteRecurringEvents(e);
     } else {
+      // final current_user = auth.currentUser;
+      // final current_uid = current_user!.uid;
+      // await db.addUserEvent(eventID: "example_event_id_$event", eventName: "example_event_name", eventTags: {"example_event_tag1", "example_event_tag2"}, timeStart: 10, timeEnd: 20);
+      final dateStart = DateTime.parse("2023-10-16");
+      final dateEnd = dateStart.add(const Duration(days: 5));
+      // final userEvent = await db.getUserEventsInDateRange(dateStart: dateStart, dateEnd: dateEnd);
+      final userEvent = await db.getEventsInDateRange(
+          dateStart: dateStart, dateEnd: dateEnd);
+      print(userEvent);
+      // final e = userEvent.docs;
       return;
     }
 
-    // final current_user = auth.currentUser;
-    // final current_uid = current_user!.uid;
-    // await db.addUserEvent(eventID: "example_event_id_$event", eventName: "example_event_name", eventTags: {"example_event_tag1", "example_event_tag2"}, timeStart: 10, timeEnd: 20);
-    final dateStart = DateTime.parse("2023-10-16");
-    final dateEnd = dateStart.add(const Duration(days: 5));
-    // final userEvent = await db.getUserEventsInDateRange(dateStart: dateStart, dateEnd: dateEnd);
-    final userEvent = await db.getEventsInDateRange(
-        dateStart: dateStart, dateEnd: dateEnd);
-    print(userEvent);
-    // final e = userEvent.docs;
     return;
   }
 

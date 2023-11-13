@@ -1,9 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:planner/common/database.dart';
-import 'package:planner/firebase_options.dart';
 import 'package:planner/models/event.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
@@ -286,35 +281,17 @@ List<Event> events = [
   ),
 ];
 
-class mockDatabaseService extends DatabaseService {
-  @override
-  final CollectionReference<Map<String, dynamic>> users = FakeFirebaseFirestore().collection("users");
-  @override
-  late CollectionReference events;
-
-  mockDatabaseService({required super.uid, required mockInstance}) {
-    events = users.doc(uid).collection("events");
-  }
-}
-
-void test_tasks() async {
-  DatabaseService db = DatabaseService(uid: "test_user_1000");
-
-
-}
-
 void main() async {
-  final mockInstance = FakeFirebaseFirestore();
-  late mockDatabaseService db;
+  late DatabaseService db;
   setUp(() async {
-    db = mockDatabaseService(uid: "test_user_1000", mockInstance: mockInstance);
+    db = DatabaseService.forTest(uid: "test_user_1", firestoreObject: FakeFirebaseFirestore());
   });
 
   group("Test creating a bunch of events works", () {
     test("Test creating an event works", () async {
       final Event e = events[0];
       const exampleEventID = "test_event_id_1";
-      db.addEvent(exampleEventID, e);
+      await db.addEvent(exampleEventID, e);
       final result = await db.getEvents(exampleEventID);
       final eventData = result.data()!;
       final Event e2 = Event.fromMap(eventData);

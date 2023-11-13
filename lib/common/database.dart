@@ -7,35 +7,38 @@ import 'package:planner/models/task.dart';
 
 class DatabaseService {
   static final DatabaseService _singleton = DatabaseService._internal();
+  static late String userid;
+
+  // TODO: Add caching layer here if time permits
+
+  // users collection reference
+  late CollectionReference users =
+  FirebaseFirestore.instance.collection('users');
 
   factory DatabaseService({String? uid}) {
     if (uid != null) {
-      uid = uid;
+      userid = uid;
     }
     return _singleton;
   }
 
   DatabaseService._internal();
 
-  late String userid;
-  // TODO: Add caching layer here if time permits
-
-  // users collection reference
-  final CollectionReference users =
-      FirebaseFirestore.instance.collection('users');
-  late CollectionReference events;
+  /// constructor for testing, firestoreObject should be the replacement mocking firestore object
+  DatabaseService.forTest({required String uid, required firestoreObject}) {
+    userid = uid;
+    users = firestoreObject.collection('users');
+  }
 
   /// Assign UID. This must be ran before any other database function is called else it will crash
   /// 
   /// takes the string ID
   initUID(String uid) {
     userid = uid;
-    events = users.doc(userid).collection("events");
   }
 
   Future<DocumentSnapshot<Map<String, dynamic>>> getEvents(String eventID) {
-    return FirebaseFirestore.instance
-        .collection('users')
+    return users
         .doc(userid)
         .collection("events")
         .doc(eventID)
@@ -43,8 +46,7 @@ class DatabaseService {
   }
 
   Future<QuerySnapshot<Map<String, dynamic>>> getAllEvents() {
-    return FirebaseFirestore.instance
-        .collection('users')
+    return users
         .doc(userid)
         .collection("events")
         .get();
@@ -175,7 +177,7 @@ class DatabaseService {
   }
 
   Future<void> addEvent(String eventID, Event event) async {
-    var doc = await events.doc(eventID).get();
+    var doc = await users.doc(userid).collection("events").doc(eventID).get();
     // can't add an event with the same name
     if (doc.exists) {
       throw Future.error("Event ID already exists!");
@@ -203,7 +205,7 @@ class DatabaseService {
   /// map ex: {"optionName": "optionValue"}
   Future<void> updateEventOption(
       String eventID, Map<String, dynamic> newOptions) async {
-    return events.doc(eventID).update(newOptions);
+    return users.doc(userid).collection("events").doc(eventID).update(newOptions);
   }
 
   Future<void> updateEventName(String oldEventID, String newEventID) async {
@@ -213,8 +215,8 @@ class DatabaseService {
       if (doc.data() != null) {
         data = doc.data()!;
       }
-      events.doc(newEventID).set(data);
-      events.doc(oldEventID).delete();
+      users.doc(userid).collection("events").doc(newEventID).set(data);
+      users.doc(userid).collection("events").doc(oldEventID).delete();
     } catch (e) {
       return;
     }
@@ -224,7 +226,7 @@ class DatabaseService {
   Future<bool> checkIfEventExists(String eventID) async {
     // firestore doesn't have a built in function? are we expected to maintain this locally?
     try {
-      final event = await events.doc(eventID).get();
+      final event = await users.doc(userid).collection("events").doc(eventID).get();
       return event.exists;
     } catch (e) {
       return false;
@@ -254,7 +256,7 @@ class DatabaseService {
       eventList.forEach((docID, event) {
         if (event.recurrenceRules.id == parentID) {
           // if the recurrence ID matches, delete
-          events.doc(docID).delete();
+          users.doc(userid).collection("events").doc(docID).delete();
         }
       });
     }
@@ -316,9 +318,9 @@ class DatabaseService {
     List<Task> completedList = [];
     for (var doc in allTasks.docs) {
       Task t = Task.fromMap(doc.data(), id: doc.id);
-      if (t.completed)
+      if (t.completed) {
         completedList.add(t);
-      else
+      } else
       if (t.completed) {
         completedList.add(t);
       } else {
