@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "86325497409-a58c093vfcmjs3juft31k60449h7ko08.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.planner",
+            "certificate_hash": "d1d15bb88a69226bab805272aa9d1762d4c87cd9"
+          }
+        },
+        {
           "client_id": "86325497409-ndqtuo7ujg2q5vr5vi32unr3bv28ahbd.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
@@ -79,6 +87,14 @@
           "android_info": {
             "package_name": "com.example.plannertarium_backend",
             "certificate_hash": "b1c1bbb0fb8037b993c09110f064a0fd3495431c"
+          }
+        },
+        {
+          "client_id": "86325497409-rtbj6gb3se45ejvnf9htvnb84vq2d4ak.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.plannertarium_backend",
+            "certificate_hash": "d1d15bb88a69226bab805272aa9d1762d4c87cd9"
           }
         },
         {
