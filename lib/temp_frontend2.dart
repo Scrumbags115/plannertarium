@@ -90,7 +90,7 @@ class MyAppState extends State<MyApp> {
     } else if (event == "get range") {
       final dateStart = DateTime.parse("2023-10-20");
       final dateEnd = dateStart.add(const Duration(days: 8));
-      final userEventMap = await db.getMapOfEventsInDateRange(
+      final userEventMap = await db.getEventsInDateRange(
           dateStart: dateStart, dateEnd: dateEnd);
       print(userEventMap);
 
@@ -119,7 +119,7 @@ class MyAppState extends State<MyApp> {
     final dateStart = DateTime.parse("2023-10-16");
     final dateEnd = dateStart.add(const Duration(days: 5));
     // final userEvent = await db.getUserEventsInDateRange(dateStart: dateStart, dateEnd: dateEnd);
-    final userEvent = await db.getMapOfEventsInDateRange(
+    final userEvent = await db.getEventsInDateRange(
         dateStart: dateStart, dateEnd: dateEnd);
     print(userEvent);
     // final e = userEvent.docs;

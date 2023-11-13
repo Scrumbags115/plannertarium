@@ -148,14 +148,6 @@ class DatabaseService {
     return getEventsInDateRange(dateStart: date, dateEnd: tomorrow);
   }
 
-  /// Get all events in a day as a Map
-  Future<Map<String, Event>> getMapOfEventsInDay(
-      {required DateTime date}) async {
-    DateTime tomorrow = date;
-    tomorrow.add(const Duration(days: 1));
-    return getEventsInDateRange(dateStart: date, dateEnd: tomorrow);
-  }
-
   /// Get list of events in a day
   Future<List<Event>> getListOfEventsInDay({required DateTime date}) async {
     DateTime tomorrow = date;
@@ -238,7 +230,7 @@ class DatabaseService {
     final parentID = e.recurrenceRules.id;
     for (final dt in dts) {
       // search the database for event on this date
-      final Map<String, Event> eventList = await getMapOfEventsInDay(date: dt);
+      final Map<String, Event> eventList = await getEventsInDay(date: dt);
       // search the corresponding events on that day for the right recurrence ID
       eventList.forEach((docID, event) {
         if (event.recurrenceRules.id == parentID) {
