@@ -9,7 +9,7 @@ import 'dart:async';
 import 'package:planner/view/weekView.dart';
 
 class taskView extends StatefulWidget {
-  const taskView({Key? key}) : super(key: key);
+  const taskView({super.key});
 
   @override
   _taskViewState createState() => _taskViewState();

@@ -9,56 +9,35 @@ class Event extends Undertaking {
   /// Default constructor with minimum required info
   /// Good for if you want to add a new task from user with missing fields
   Event(
-      {String? name,
-      String? id,
-      String? description,
-      String? color,
-      String? location,
-      List<String>? tags,
-      Recurrence? recurrenceRules,
-      DateTime? timeStart,
+      {super.name,
+      super.id,
+      super.description,
+      super.color,
+      super.location,
+      super.tags,
+      super.recurrenceRules,
+      super.timeStart,
       DateTime? timeEnd,
-      DateTime? timeCreated,
-      DateTime? timeModified})
-      : super(
-            name: name,
-            id: id,
-            description: description,
-            color: color,
-            location: location,
-            tags: tags,
-            recurrenceRules: recurrenceRules,
-            timeStart: timeStart,
-            timeCreated: timeCreated,
-            timeModified: timeModified) {
+      super.timeCreated,
+      super.timeModified}) {
     _timeEnd = timeEnd ?? DateTime.now();
   }
 
   /// Alternate constructor so VSCode autogenerates all fields
   /// Good for reading from database
   Event.requireFields(
-      {required String name,
-      required String id,
-      required String description,
-      required String color,
-      required String location,
-      required List<String> tags,
-      required Recurrence recurrenceRules,
-      required DateTime timeStart,
+      {required super.name,
+      required super.id,
+      required super.description,
+      required super.color,
+      required super.location,
+      required super.tags,
+      required super.recurrenceRules,
+      required super.timeStart,
       required DateTime timeEnd,
-      required DateTime timeCreated,
-      required DateTime timeModified})
-      : super.requireFields(
-            name: name,
-            id: id,
-            description: description,
-            location: location,
-            color: color,
-            tags: tags,
-            recurrenceRules: recurrenceRules,
-            timeStart: timeStart,
-            timeCreated: timeCreated,
-            timeModified: timeModified) {
+      required super.timeCreated,
+      required super.timeModified})
+      : super.requireFields() {
     _timeEnd = timeEnd;
   }
 
@@ -94,7 +73,7 @@ class Event extends Undertaking {
 
   set timeEnd(DateTime newTimeEnd) {
     timeModified = DateTime.now();
-    timeEnd = newTimeEnd;
+    _timeEnd = newTimeEnd;
   }
 
   DateTime get timeEnd => _timeEnd;
@@ -201,10 +180,7 @@ class Event extends Undertaking {
   /// to not include the current event, set excludeMyself to true
   List<DateTime> getDatesOfRelatedRecurringEvents({excludeMyself = false}) {
     List<DateTime> dt = [];
-    // run checks to make sure i can use this object
-    if (!_validEventWithRecurrence()) {
-      return dt;
-    }
+    // according to IDE's dart analysis, class members now no longer can be null so null checks are no longer necessary
 
     Recurrence recurrence = recurrenceRules;
 
