@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:planner/view/dayView.dart';
 import 'package:planner/common/database.dart';
-import 'package:planner/models/task.dart';
 DatabaseService dayta = DatabaseService(uid: "userid1");
 
 class weekView extends StatelessWidget {
@@ -22,7 +21,7 @@ class weekView extends StatelessWidget {
 
 ///Each one of these is a day in the week view, consisting of the placeholder date and card to its right
 class MultiDayCard extends StatefulWidget {
-  MultiDayCard(this.index, {super.key});
+  const MultiDayCard(this.index, {super.key});
   final int index;
   @override
   State<StatefulWidget> createState() => MultiDayCardState(index);

@@ -197,17 +197,17 @@ class DatabaseService {
   // delete all recurring events in the database given a base event
   Future<void> deleteRecurringEvents(Event e) async {
     // guard case, no recurrence then don't do anything
-    if (e.recurrenceRules == null || e.recurrenceRules?.enabled == false) {
+    if (e.recurrenceRules.enabled == false) {
       return;
     }
     List<DateTime> dts = e.getDatesOfRelatedRecurringEvents();
-    final parentID = e.recurrenceRules!.id;
+    final parentID = e.recurrenceRules.id;
     for (final dt in dts) {
       // search the database for event on this date
       final Map<String, Event> eventList = await getMapOfEventsInDay(date: dt);
       // search the corresponding events on that day for the right recurrence ID
       eventList.forEach((docID, event) {
-        if (event.recurrenceRules!.id == parentID) {
+        if (event.recurrenceRules.id == parentID) {
           // if the recurrence ID matches, delete
           events.doc(docID).delete();
         }
@@ -250,7 +250,7 @@ class DatabaseService {
 
   /// Deletes a task from the database
   Future<void> deleteTask(Task t) async {
-    return await users.doc(uid).collection('tasks').doc(t.id).delete();
+    return await users.doc(userid).collection('tasks').doc(t.id).delete();
   }
 
   /// Returns a pair of lists of the form (active tasks, completed tasks)

@@ -103,18 +103,15 @@ class Event extends Undertaking {
   /// used internally to run some basic checks before I assume things aren't null/are valid classes
   bool _validEventWithRecurrence() {
     // event fields must be valid, crash since something has probably gone very wrong
-    if (timeStart == null || timeEnd == null) {
+    if (timeEnd == null) {
       throw Exception("Event is malformed? No timeStart/timeEnd value is set!");
     }
 
     // recurrence must have its fields be populated
-    if (recurrenceRules!.timeStart == null ||
-        recurrenceRules!.timeEnd == null ||
-        recurrenceRules!.dates == null) {
+    if (recurrenceRules.timeEnd == null) {
       return false;
     }
-    if (recurrenceRules?.timeStart == null ||
-        recurrenceRules?.timeEnd == null) {
+    if (recurrenceRules.timeEnd == null) {
       throw Exception(
           "Event recurrence rules are enabled and not null, but the rest of the recurrence rules fields are unset!"); // I think this should be enforced
     }
@@ -129,11 +126,11 @@ class Event extends Undertaking {
   List<Event> generateRecurringEvents({excludeMyself = false}) {
     List<Event> eventList = [];
     // if recurrence rules are nonexistent or disabled, there are no new events to return
-    if (recurrenceRules == null || recurrenceRules?.enabled == null) {
+    if (recurrenceRules.enabled == null) {
       return eventList;
     }
     // if recurrence is not enabled, there are no events to return
-    if (recurrenceRules!.enabled == false) {
+    if (recurrenceRules.enabled == false) {
       return eventList;
     }
     // run some checks to make sure I can use this object
@@ -141,13 +138,13 @@ class Event extends Undertaking {
       return eventList;
     }
 
-    Recurrence recurrence = recurrenceRules!;
+    Recurrence recurrence = recurrenceRules;
 
-    DateTime recurrenceDateStart = recurrence.timeStart!;
-    DateTime recurrenceDateEnd = recurrence.timeEnd!;
+    DateTime recurrenceDateStart = recurrence.timeStart;
+    DateTime recurrenceDateEnd = recurrence.timeEnd;
 
-    DateTime eventDateStart = timeStart!;
-    DateTime eventDateEnd = timeEnd!;
+    DateTime eventDateStart = timeStart;
+    DateTime eventDateEnd = timeEnd;
 
     int diff = daysBetween(recurrenceDateStart, recurrenceDateEnd);
     // While this function is expected to be called when the earliest event is created, in case that is not the case, iterate both ways
@@ -165,7 +162,7 @@ class Event extends Undertaking {
       }
 
       // now check if the weekday recurrence is right
-      if (recurrence.dates![newEventTimeStartI.weekday - 1]) {
+      if (recurrence.dates[newEventTimeStartI.weekday - 1]) {
         // if yes, create the event
         Event e = Event.clone(this);
         e.timeStart = newEventTimeStartI;
@@ -187,7 +184,7 @@ class Event extends Undertaking {
       }
 
       // now check if the weekday recurrence is right
-      if (recurrence.dates![newEventTimeStartD.weekday - 1]) {
+      if (recurrence.dates[newEventTimeStartD.weekday - 1]) {
         // if yes, create the event
         Event e = Event.clone(this);
         e.timeStart = newEventTimeStartD;
@@ -209,12 +206,12 @@ class Event extends Undertaking {
       return dt;
     }
 
-    Recurrence recurrence = recurrenceRules!;
+    Recurrence recurrence = recurrenceRules;
 
-    DateTime recurrenceDateStart = recurrence.timeStart!;
-    DateTime recurrenceDateEnd = recurrence.timeEnd!;
+    DateTime recurrenceDateStart = recurrence.timeStart;
+    DateTime recurrenceDateEnd = recurrence.timeEnd;
 
-    DateTime eventDateStart = timeStart!;
+    DateTime eventDateStart = timeStart;
 
     int diff = daysBetween(recurrenceDateStart, recurrenceDateEnd);
 
@@ -229,7 +226,7 @@ class Event extends Undertaking {
         // newEventTimeStart is after recurrenceDateEnd
         break;
       }
-      if (recurrence.dates![curr.weekday - 1]) {
+      if (recurrence.dates[curr.weekday - 1]) {
         // valid datetime
         // add
         dt.add(curr);
@@ -247,7 +244,7 @@ class Event extends Undertaking {
         // newEventTimeStart is before recurrenceDateStart
         break;
       }
-      if (recurrence.dates![curr.weekday - 1]) {
+      if (recurrence.dates[curr.weekday - 1]) {
         // valid datetime
         // add
         dt.add(curr);
