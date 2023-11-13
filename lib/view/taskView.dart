@@ -388,7 +388,7 @@ class _TaskCardState extends State<TaskCard> {
                   TextButton(
                     onPressed: () {
                       // Delete the task and close the dialog
-                      //db.deleteTask(widget.task);
+                      db.deleteTask(widget.task);
                       print('swipe right!');
                       Navigator.of(context).pop();
                     },
@@ -436,7 +436,7 @@ class _TaskCardState extends State<TaskCard> {
                     widget.task.completed ? Colors.green : Colors.blue,
                 child: widget.task.completed
                     ? const Icon(Icons.check, color: Colors.white)
-                    : const Icon(Icons.circle, color: Colors.white),
+                    : const Icon(Icons.circle, color: Colors.blue),
               ),
             ),
             title: Text(widget.task.name),
