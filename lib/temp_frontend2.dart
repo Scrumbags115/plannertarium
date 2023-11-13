@@ -35,9 +35,12 @@ class MyAppState extends State<MyApp> {
   final List<String> _toDoItems = [];
   final TextEditingController _controller = TextEditingController();
 
+  final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+
   @override
   void initState() {
     super.initState();
+
 
     // Start listening to changes.
     _controller.addListener(_printLatestValue);
@@ -73,21 +76,30 @@ class MyAppState extends State<MyApp> {
         print('User is signed in!');
       }
     });
-    DatabaseService db = DatabaseService(uid: "test_user_1");
+    DatabaseService db = DatabaseService();
+    if (event == "run") {
+      print(db);
+      print("do crap");
+      db.initUID("random test string");
 
+      DatabaseService db2 = DatabaseService();
+
+      print(db);
+      print("done doing crap");
+    }
     if (event == "add") {
       final timeStart = DateTime.now();
       final timeEnd = timeStart.add(const Duration(hours: 8));
-      await db.addUniqueUserEvent(Event(
+      await db.addUniqueEvent(Event(
           name: "example_event_name_2",
-          tags: {"example_event_tag1"},
+          tags: ["example_event_tag1"],
           timeStart: timeStart,
           timeEnd: timeEnd));
       return;
     } else if (event == "get range") {
       final dateStart = DateTime.parse("2023-10-20");
       final dateEnd = dateStart.add(const Duration(days: 8));
-      final userEventMap = await db.getMapOfUserEventsInDateRange(
+      final userEventMap = await db.getMapOfEventsInDateRange(
           dateStart: dateStart, dateEnd: dateEnd);
       print(userEventMap);
 
@@ -96,11 +108,11 @@ class MyAppState extends State<MyApp> {
       });
       return;
     } else if (event =="recur") {
-      Recurrence recurrenceRules = Recurrence.requireFields(enabled: true, timeStart: DateTime.parse("2023-11-10"), timeEnd: DateTime.parse("2023-11-30"), dates: [true, false, false, false, false, false, false]);
-      Event e = Event(name: "test_recurrence_event_1", description: "recurrence test", tags: {}, timeStart: DateTime.parse("2023-11-11"), timeEnd: DateTime.parse("2023-11-12"), recurrenceRules: recurrenceRules);
+      Recurrence recurrenceRules = Recurrence(enabled: true, timeStart: DateTime.parse("2023-11-10"), timeEnd: DateTime.parse("2023-11-30"), dates: [true, false, false, false, false, false, false]);
+      Event e = Event(name: "test_recurrence_event_1", description: "recurrence test", tags: [], timeStart: DateTime.parse("2023-11-11"), timeEnd: DateTime.parse("2023-11-12"), recurrenceRules: recurrenceRules);
       await db.setRecurringEvents(e);
     } else if (event == "delete") {
-      final List<Event> eventList = await db.getListOfUserEventsInDay(date: DateTime.parse("2023-11-20"));
+      final List<Event> eventList = await db.getListOfEventsInDay(date: DateTime.parse("2023-11-20"));
       if (eventList.isEmpty) {
         return;
       }
@@ -116,7 +128,7 @@ class MyAppState extends State<MyApp> {
     final dateStart = DateTime.parse("2023-10-16");
     final dateEnd = dateStart.add(const Duration(days: 5));
     // final userEvent = await db.getUserEventsInDateRange(dateStart: dateStart, dateEnd: dateEnd);
-    final userEvent = await db.getMapOfUserEventsInDateRange(
+    final userEvent = await db.getMapOfEventsInDateRange(
         dateStart: dateStart, dateEnd: dateEnd);
     print(userEvent);
     // final e = userEvent.docs;
@@ -142,6 +154,7 @@ class MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+
     return MaterialApp(
       home: Scaffold(
         appBar: PreferredSize(
@@ -203,5 +216,8 @@ class MyAppState extends State<MyApp> {
         ),
       ),
     );
+  }
+  void showInSnackBar(String value) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("show in snack bar $value")));
   }
 }
