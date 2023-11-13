@@ -1,10 +1,23 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:planner/common/recurrence.dart';
+import 'package:planner/common/time_management.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/models/task.dart';
 
 class DatabaseService {
-  final String uid;
+  static final DatabaseService _singleton = DatabaseService._internal();
+
+  factory DatabaseService({String? uid}) {
+    if (uid != null) {
+      uid = uid;
+    }
+    return _singleton;
+  }
+
+  DatabaseService._internal();
+
+  late String userid;
   // TODO: Add caching layer here if time permits
 
   // users collection reference
@@ -12,21 +25,27 @@ class DatabaseService {
       FirebaseFirestore.instance.collection('users');
   late CollectionReference events;
 
-  DatabaseService({required this.uid}) {
-    events = users.doc(uid).collection("events");
+  /// Assign UID. This must be ran before any other database function is called else it will crash
+  /// 
+  /// takes the string ID
+  initUID(String uid) {
+    userid = uid;
+    events = users.doc(userid).collection("events");
   }
 
   Future<DocumentSnapshot<Map<String, dynamic>>> getEvents(String eventID) {
-    return users
-        .doc(uid)
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(userid)
         .collection("events")
         .doc(eventID)
         .get(); // turn this into a map of eventID to event objects?
   }
 
   Future<QuerySnapshot<Map<String, dynamic>>> getAllEvents() {
-    return users
-        .doc(uid)
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(userid)
         .collection("events")
         .get();
   }
@@ -53,15 +72,15 @@ class DatabaseService {
     // instead, get two query snapshots
     // one for catching time starts and one for catching time ends
     final QuerySnapshot<Map<String, dynamic>> eventsTimeStartRange = await users
-        .doc(uid)
+        .doc(userid)
         .collection("events")
-        .where("event time start",
+        .where("time start",
             isGreaterThanOrEqualTo: timestampStart,
             isLessThanOrEqualTo: timestampEnd)
         .get();
 
     final QuerySnapshot<Map<String, dynamic>> eventsTimeEndRange = await users
-        .doc(uid)
+        .doc(userid)
         .collection("events")
         .where("event time end",
             isGreaterThanOrEqualTo: timestampStart,
@@ -88,12 +107,12 @@ class DatabaseService {
     // this is probably expensive but I can't think of a better way to do this, so unless someone else
     // has an idea I'll do this for now
     final QuerySnapshot<Map<String, dynamic>> eventsLessThan = await users
-        .doc(uid)
+        .doc(userid)
         .collection("events")
         .where("event time start", isLessThan: timestampStart)
         .get();
     final QuerySnapshot<Map<String, dynamic>> eventsGreaterThan = await users
-        .doc(uid)
+        .doc(userid)
         .collection("events")
         .where("event time start", isGreaterThan: timestampEnd)
         .get();
@@ -162,7 +181,7 @@ class DatabaseService {
       throw Future.error("Event ID already exists!");
     }
     return await users
-        .doc(uid)
+        .doc(userid)
         .collection("events")
         .doc(eventID)
         .set(event.toMap());
@@ -189,7 +208,7 @@ class DatabaseService {
 
   Future<void> updateEventName(String oldEventID, String newEventID) async {
     try {
-      var doc = await users.doc(uid).collection("events").doc(oldEventID).get();
+      var doc = await users.doc(userid).collection("events").doc(oldEventID).get();
       Map<String, dynamic> data = {};
       if (doc.data() != null) {
         data = doc.data()!;
@@ -243,31 +262,40 @@ class DatabaseService {
 
   Future<Task> getTask(String taskID) async {
     try {
-      var taskDocument =
-          await users.doc(uid).collection('tasks').doc(taskID).get();
-      return Task.requireFields(
-          name: taskDocument['name'],
-          id: taskID,
-          description: taskDocument['description'],
-          completed: taskDocument['completed'],
-          color: taskDocument['hex color'],
-          location: taskDocument['location'],
-          tags: taskDocument['tags'],
-          recurrenceRules: taskDocument['recurrence rules'],
-          timeStart: taskDocument['start date'],
-          timeDue: taskDocument['due date'],
-          timeCurrent: taskDocument['current date'],
-          timeCreated: taskDocument['date created'],
-          timeModified: taskDocument['date modified']);
+      DocumentSnapshot<Map<String, dynamic>> taskDocument = await users.doc(userid).collection('tasks').doc(taskID).get();
+      if (taskDocument.exists) {
+        return Task.fromMap(taskDocument.data() ?? {"getTask Error":1}, id: taskDocument.id);
+      }
     } catch (e) {
       print("Get Failed");
-      return Task();
     }
+    return Task();
   }
+  Future<List<Task>> getTasksOfName(String taskName) async {
+    final allTasks = await users.doc(userid).collection("tasks")
+            .where("task name",  isEqualTo: taskName).get();
+    
+    if (allTasks.size == 0) {
+      return [];
+    }
 
+    List<Task> listOfTasks = [];
+    for (var doc in allTasks.docs) {
+      Task t = Task.fromMap(doc.data(), id: doc.id);
+      listOfTasks.add(t);
+    }
+
+    return listOfTasks;
+  }
+  
   /// Saves a task into the database
   Future<void> setTask(Task t) async {
-    return await users.doc(uid).collection('tasks').doc(t.id).set(t.toMap());
+    return await users.doc(userid).collection('tasks').doc(t.id).set(t.toMap());
+  }
+
+  /// Deletes a task from the database
+  Future<void> deleteTask(Task t) async {
+    return await users.doc(userid).collection('tasks').doc(t.id).delete();
   }
 
   /// Returns a pair of lists of the form (active tasks, completed tasks)
@@ -278,7 +306,7 @@ class DatabaseService {
     Timestamp timestampStart = Timestamp.fromDate(dateStart);
     Timestamp timestampEnd = Timestamp.fromDate(dateEnd);
     QuerySnapshot<Map<String, dynamic>> allTasks = await users
-        .doc(uid)
+        .doc(userid)
         .collection("tasks")
         .where("current date",
             isGreaterThanOrEqualTo: timestampStart, isLessThan: timestampEnd)
@@ -291,7 +319,11 @@ class DatabaseService {
       if (t.completed)
         completedList.add(t);
       else
+      if (t.completed) {
+        completedList.add(t);
+      } else {
         activeList.add(t);
+      }
     }
 
     return (activeList, completedList);
@@ -304,20 +336,22 @@ class DatabaseService {
     assert(dateStart.isBefore(dateEnd));
     Timestamp timestampStart = Timestamp.fromDate(dateStart);
     QuerySnapshot<Map<String, dynamic>> candidateTasks = await users
-        .doc(uid)
+        .doc(userid)
         .collection("tasks")
         .where("current date", isGreaterThanOrEqualTo: timestampStart)
-        // .where("start date",
+        // .where("time start",
         //         isLessThan: timestampEnd) // firebase cant do 2 field where()'s
         .get();
 
     List<Task> delayedList = [];
     for (var doc in candidateTasks.docs) {
-      if ((doc['start date'] as Timestamp).toDate().isBefore(dateEnd)) {
+      if ((doc['time start'] as Timestamp).toDate().isBefore(dateEnd)) {
         Task t = Task.fromMap(doc.data(), id: doc.id);
-        DateTime startDay = _getDateOnly(t.timeStart);
-        DateTime currentDay = _getDateOnly(t.timeCurrent);
-        if (startDay.isBefore(currentDay)) delayedList.add(t);
+        DateTime startDay = getDateOnly(t.timeStart);
+        DateTime currentDay = getDateOnly(t.timeCurrent);
+        if (startDay.isBefore(currentDay)) {
+          delayedList.add(t);
+        }
       }
     }
 
@@ -334,14 +368,14 @@ class DatabaseService {
         Map<DateTime, List<Task>>
       )> getTaskMaps(DateTime dateStart, DateTime dateEnd) async {
     assert(dateStart.isBefore(dateEnd));
-    assert(dateStart.isAtSameMomentAs(_getDateOnly(dateStart)));
-    assert(dateEnd.isAtSameMomentAs(_getDateOnly(dateEnd)));
+    assert(dateStart.isAtSameMomentAs(getDateOnly(dateStart)));
+    assert(dateEnd.isAtSameMomentAs(getDateOnly(dateEnd)));
 
     Map<DateTime, List<Task>> activeMap = {};
     Map<DateTime, List<Task>> completedMap = {};
     Map<DateTime, List<Task>> delayedMap = {};
     for (int i = 0; i < dateEnd.difference(dateStart).inDays; i++) {
-      DateTime newDay = _getDateOnly(dateStart, offset: i);
+      DateTime newDay = getDateOnly(dateStart, offset: i);
       activeMap[newDay] = [];
       completedMap[newDay] = [];
       delayedMap[newDay] = [];
@@ -351,12 +385,12 @@ class DatabaseService {
     (activeList, completedList) =
         await _getTasksActiveOrCompleted(dateStart, dateEnd);
     for (Task t in activeList) {
-      DateTime currentDay = _getDateOnly(t.timeCurrent);
+      DateTime currentDay = getDateOnly(t.timeCurrent);
       assert(activeMap[currentDay] != null);
       activeMap[currentDay]!.add(t);
     }
     for (Task t in completedList) {
-      DateTime currentDay = _getDateOnly(t.timeCurrent);
+      DateTime currentDay = getDateOnly(t.timeCurrent);
       assert(completedMap[currentDay] != null);
       completedMap[currentDay]!.add(t);
     }
@@ -367,10 +401,10 @@ class DatabaseService {
           t.timeStart.isBefore(dateStart) ? dateStart : t.timeStart;
       DateTime loopEnd =
           t.timeCurrent.isBefore(dateEnd) ? t.timeCurrent : dateEnd;
-      loopStart = _getDateOnly(loopStart);
-      loopEnd = _getDateOnly(loopEnd);
+      loopStart = getDateOnly(loopStart);
+      loopEnd = getDateOnly(loopEnd);
       for (int i = 0; i < loopEnd.difference(loopStart).inDays; i++) {
-        DateTime date = _getDateOnly(loopStart, offset: i);
+        DateTime date = getDateOnly(loopStart, offset: i);
         assert(delayedMap[date] != null);
         delayedMap[date]!.add(t);
       }
@@ -383,21 +417,21 @@ class DatabaseService {
   Future<Map<DateTime, List<Task>>> getTasksDue(
       DateTime dateStart, DateTime dateEnd) async {
     assert(dateStart.isBefore(dateEnd));
-    assert(dateStart.isAtSameMomentAs(_getDateOnly(dateStart)));
-    assert(dateEnd.isAtSameMomentAs(_getDateOnly(dateEnd)));
+    assert(dateStart.isAtSameMomentAs(getDateOnly(dateStart)));
+    assert(dateEnd.isAtSameMomentAs(getDateOnly(dateEnd)));
 
     Timestamp timestampStart = Timestamp.fromDate(dateStart);
     Timestamp timestampEnd = Timestamp.fromDate(dateEnd);
     QuerySnapshot<Map<String, dynamic>> allTasksDue = await users
-        .doc(uid)
+        .doc(userid)
         .collection("tasks")
-        .where("due date",
+        .where("time due",
             isGreaterThanOrEqualTo: timestampStart, isLessThan: timestampEnd)
         .get();
 
     Map<DateTime, List<Task>> dueDateMap = {};
     for (int i = 0; i < dateEnd.difference(dateStart).inDays; i++) {
-      DateTime newDay = _getDateOnly(dateStart, offset: i);
+      DateTime newDay = getDateOnly(dateStart, offset: i);
       dueDateMap[newDay] = [];
     }
 
@@ -405,14 +439,10 @@ class DatabaseService {
       Task t = Task.fromMap(doc.data(), id: doc.id);
       if (t.timeDue == null) continue;
       DateTime dueDate =
-          _getDateOnly(t.timeDue ?? dateStart); // ?? datestart forced by dart
+          getDateOnly(t.timeDue ?? dateStart); // ?? datestart forced by dart
       dueDateMap[dueDate]?.add(t);
     }
 
     return dueDateMap;
-  }
-
-  DateTime _getDateOnly(DateTime dateTime, {int offset = 0}) {
-    return DateTime(dateTime.year, dateTime.month, dateTime.day + offset);
   }
 }

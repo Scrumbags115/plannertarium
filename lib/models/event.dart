@@ -1,47 +1,37 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:planner/common/recurrence.dart';
+import 'package:planner/common/time_management.dart';
+import 'package:planner/models/undertaking.dart';
 
 // import recurrence class here
-class Event {
-  late String _name = "";
-  late final String _id;
-  late String _description = "";
-  late String _color = "#919191";
-  late String _location = "";
-  late List<String> _tags = <String>[];
-  late Recurrence _recurrenceRules;
-  late DateTime _timeStart;
+class Event extends Undertaking {
   late DateTime _timeEnd;
-  late DateTime _timeCreated;
-  late DateTime _timeModified;
 
   /// Default constructor with minimum required info
   /// Good for if you want to add a new task from user with missing fields
   Event(
-      {String name="",
+      {String? name,
       String? id,
-      String description = "",
-      String color = "#919191",
-      String location = "",
-      List<String> tags = const <String>[],
+      String? description,
+      String? color,
+      String? location,
+      List<String>? tags,
       Recurrence? recurrenceRules,
       DateTime? timeStart,
       DateTime? timeEnd,
       DateTime? timeCreated,
-      DateTime? timeModified}) {
-    _name = name;
-    _id = id ?? DateTime.now().millisecondsSinceEpoch.toString();
-    _description = description;
-    _color = color;
-    _location = location;
-    _tags = tags;
-    _recurrenceRules = recurrenceRules ?? Recurrence();
-    _timeStart = timeStart ?? DateTime.now();
+      DateTime? timeModified})
+      : super(
+            name: name,
+            id: id,
+            description: description,
+            color: color,
+            location: location,
+            tags: tags,
+            recurrenceRules: recurrenceRules,
+            timeStart: timeStart,
+            timeCreated: timeCreated,
+            timeModified: timeModified) {
     _timeEnd = timeEnd ?? DateTime.now();
-    _timeCreated = timeCreated ?? DateTime.now();
-    _timeModified = timeModified ?? _timeCreated;
-    _checkAndMoveTimeEnd();
   }
 
   /// Alternate constructor so VSCode autogenerates all fields
@@ -57,186 +47,75 @@ class Event {
       required DateTime timeStart,
       required DateTime timeEnd,
       required DateTime timeCreated,
-      required DateTime timeModified}) {
-    _name = name;
-    _id = id;
-    _description = description;
-    _color = color;
-    _location = location;
-    _tags = tags;
-    _recurrenceRules = recurrenceRules;
-    _timeStart = timeStart;
+      required DateTime timeModified})
+      : super.requireFields(
+            name: name,
+            id: id,
+            description: description,
+            location: location,
+            color: color,
+            tags: tags,
+            recurrenceRules: recurrenceRules,
+            timeStart: timeStart,
+            timeCreated: timeCreated,
+            timeModified: timeModified) {
     _timeEnd = timeEnd;
-    _timeCreated = timeCreated;
-    _timeModified = timeModified;
-    _checkAndMoveTimeEnd();
   }
 
-  
-/// Turn a properly formatted map into an Event class
-/// the map must have all the proper fields
-Event.fromMap(Map<String, dynamic> m, {String? id}) {
-  try {
-    _name = m["event name"];
-    _id = id ?? m['id'];
-    _description = m["description"];
-    _color = m["hex color"];
-    _location = m["location"];
-    _tags = [];
-    for (var tag in (m['tags'])) {
-      _tags.add(tag.toString());
-    }
-    _recurrenceRules = Recurrence.fromMap(m['recurrence rules']);
-    _timeStart = m["event time start"] is Timestamp ? m["event time start"].toDate() : m["event time start"];
-    _timeEnd = m["event time end"] is Timestamp ? m["event time end"].toDate() : m["event time end"];
-    _timeCreated = m["date created"] is Timestamp ? m["date created"].toDate() : m["date created"];
-    _timeModified = m["date modified"] is Timestamp ? m["date modified"].toDate() : m["date modified"];
-    _checkAndMoveTimeEnd();
-  } catch (e) {
-    throw Exception("Given map is malformed!\n$e");
-  }
-}
-
-  Event.clone(Event e): this(
-    name: e.name, 
-    id: e.id, 
-    description: e.description, 
-    color: e.color, 
-    location: e.location, 
-    tags: e.tags, 
-    recurrenceRules: e.recurrenceRules,
-    timeStart: e.timeStart, 
-    timeEnd: e.timeEnd, 
-    timeCreated: e.timeCreated, 
-    timeModified: e.timeModified);
-
-  Map<String, dynamic> toMap() {
-    return ({
-      'date created': timeCreated,
-      'date modified': timeModified,
-      'description': description,
-      'event time start': timeStart,
-      'event time end': timeEnd,
-      'hex color': color,
-      'location': location,
-      'recurrence rules': recurrenceRules.toMap(),
-      'tags': tags.toList(),
-      'event name': name
-    });
+  /// Turn a properly formatted map into an Event class
+  /// the map must have all the proper fields
+  Event.fromMap(Map<String, dynamic> map, {String? id})
+      : super.fromMap(map, id: id) {
+    _timeEnd = toDateIfTimestamp(map["time end"]);
   }
 
-  set name(String newName) {
-    _timeModified = DateTime.now();
-    _name = newName;
+  Event.clone(Event e)
+      : this(
+            name: e.name,
+            id: e.id,
+            description: e.description,
+            color: e.color,
+            location: e.location,
+            tags: e.tags,
+            recurrenceRules: e.recurrenceRules,
+            timeStart: e.timeStart,
+            timeEnd: e.timeEnd,
+            timeCreated: e.timeCreated,
+            timeModified: e.timeModified);
+
+  /// returns a mapping with kv pairs corresponding to Firebase's
+  /// possibly a better getter
+  @override
+  Map<String, dynamic> toMap({keepClasses = false, includeID = false}) {
+    Map<String, dynamic> map = super.toMap();
+    map['time end'] = timeEnd;
+    return map;
   }
-
-  String get name => _name;
-  
-  set id(String newId) {
-    _timeModified = DateTime.now();
-    _id = newId;
-  }
-
-  String get id => _id;
-
-  set description(String newDescription) {
-    _timeModified = DateTime.now();
-    _description = newDescription;
-  }
-
-  String get description => _description;
-
-  set color(String newColor) {
-    _timeModified = DateTime.now();
-    _color = newColor;
-  }
-
-  String get color => _color;
-
-  set location(String newLocation) {
-    _timeModified = DateTime.now();
-    _location = newLocation;
-  }
-
-  String get location => _location;
-
-  set tags(List<String> newTags) {
-    _timeModified = DateTime.now();
-    _tags = newTags;
-  }
-
-  List<String> get tags => _tags;
-
-  set recurrenceRules(Recurrence newRecurrence) {
-    _timeModified = DateTime.now();
-    _recurrenceRules = newRecurrence;
-  }
-
-  Recurrence get recurrenceRules => _recurrenceRules;
-
-  set timeStart(DateTime newTimeStart) {
-    _timeModified = DateTime.now();
-    _timeStart = newTimeStart;
-    _checkAndMoveTimeEnd();
-  }
-
-  DateTime get timeStart => _timeStart;
 
   set timeEnd(DateTime newTimeEnd) {
-    _timeModified = DateTime.now();
-    _timeEnd = newTimeEnd;
-    _checkAndMoveTimeStart();
+    timeModified = DateTime.now();
+    timeEnd = newTimeEnd;
   }
 
   DateTime get timeEnd => _timeEnd;
 
-  void _checkAndMoveTimeStart() {
-    if (!_checkTimeStartAndEndIsValid()) {
-      timeStart = timeEnd.subtract(const Duration(hours: 1));
+  /// Some checks to make sure the event object is valid with recurrence and crash with a more useful error message if caught
+  /// used internally to run some basic checks before I assume things aren't null/are valid classes
+  bool _validEventWithRecurrence() {
+    // event fields must be valid, crash since something has probably gone very wrong
+    if (timeEnd == null) {
+      throw Exception("Event is malformed? No timeStart/timeEnd value is set!");
     }
-  }
-  
-  void _checkAndMoveTimeEnd() {
-    if (!_checkTimeStartAndEndIsValid()) {
-      timeEnd = timeStart.add(const Duration(hours: 1));
-    }
-  }
 
-  bool _checkTimeStartAndEndIsValid() {
-    if (timeStart.compareTo(timeEnd) >= 0) {
+    // recurrence must have its fields be populated
+    if (recurrenceRules.timeEnd == null) {
       return false;
     }
+    if (recurrenceRules.timeEnd == null) {
+      throw Exception(
+          "Event recurrence rules are enabled and not null, but the rest of the recurrence rules fields are unset!"); // I think this should be enforced
+    }
     return true;
-  }
-
-  // Do not want to timeCreated this after the constructor
-  get timeCreated => _timeCreated; 
-
-  // Do not want to change timeModified unless modifying a field
-  get timeModified => _timeModified;
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is Event &&
-        _name == other._name &&
-        _id == other._id &&
-        _description == other._description &&
-        _location == other._location &&
-        _color == other._color &&
-        listEquals(_tags, other._tags) &&
-        _recurrenceRules == other._recurrenceRules &&
-        _timeStart == other._timeStart &&
-        _timeEnd == other._timeEnd &&
-        _timeCreated == other._timeCreated &&
-        _timeModified == other._timeModified;
-  }
-
-  int _daysBetween(DateTime from, DateTime to) {
-    from = DateTime(from.year, from.month, from.day);
-    to = DateTime(to.year, to.month, to.day);
-    return (to.difference(from).inHours / 24).round();
   }
 
   /// generate recurring events as specified by the recurrence rules in the Event object
@@ -246,8 +125,16 @@ Event.fromMap(Map<String, dynamic> m, {String? id}) {
   /// ex wednesday for event but recurrence is every thursday
   List<Event> generateRecurringEvents({excludeMyself = false}) {
     List<Event> eventList = [];
+    // if recurrence rules are nonexistent or disabled, there are no new events to return
+    if (recurrenceRules.enabled == null) {
+      return eventList;
+    }
     // if recurrence is not enabled, there are no events to return
     if (recurrenceRules.enabled == false) {
+      return eventList;
+    }
+    // run some checks to make sure I can use this object
+    if (!_validEventWithRecurrence()) {
       return eventList;
     }
 
@@ -259,8 +146,7 @@ Event.fromMap(Map<String, dynamic> m, {String? id}) {
     DateTime eventDateStart = timeStart;
     DateTime eventDateEnd = timeEnd;
 
-
-    int diff = _daysBetween(recurrenceDateStart, recurrenceDateEnd);
+    int diff = daysBetween(recurrenceDateStart, recurrenceDateEnd);
     // While this function is expected to be called when the earliest event is created, in case that is not the case, iterate both ways
     // iterate forwards
     for (var i = 0; i < diff; i++) {
@@ -324,8 +210,7 @@ Event.fromMap(Map<String, dynamic> m, {String? id}) {
 
     DateTime eventDateStart = timeStart;
 
-
-    int diff = _daysBetween(recurrenceDateStart, recurrenceDateEnd);
+    int diff = daysBetween(recurrenceDateStart, recurrenceDateEnd);
 
     // iterate incrementally
     for (var i = 0; i < diff; i++) {

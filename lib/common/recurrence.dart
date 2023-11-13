@@ -1,6 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
-List<bool> NO_RECURRENCE_ANY_DAY = [false, false, false, false, false, false, false];
+List<bool> NO_RECURRENCE_ANY_DAY = [
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false
+];
 DateTime EPOCH_TIME = DateTime(1970);
 
 String _getIdFromTime() {
@@ -18,28 +24,29 @@ class Recurrence {
 
   Recurrence(
       {this.enabled = false,
-        DateTime? timeStart,
-        DateTime? timeEnd,
-        List<bool>? dates,
-        String? id}) {
+      DateTime? timeStart,
+      DateTime? timeEnd,
+      List<bool>? dates,
+      String? id}) {
     this.timeStart = timeStart ?? EPOCH_TIME;
     this.timeEnd = timeEnd ?? EPOCH_TIME;
     this.dates = dates ?? NO_RECURRENCE_ANY_DAY;
     this.id = id ?? _getIdFromTime();
   }
-  
+
   /// Set nullOrId: null to set id to auto-generate an id instead
   Recurrence.requireFields(
       {required this.enabled,
-        required this.timeStart,
-        required this.timeEnd,
-        required this.dates,
-        required String? nullOrId}) {
-    this.id = nullOrId ?? _getIdFromTime();
+      required this.timeStart,
+      required this.timeEnd,
+      required this.dates,
+      required String? nullOrId}) {
+    id = nullOrId ?? _getIdFromTime();
   }
 
   /// Initialize a Recurrence object's fields from a map
-  Recurrence.fromMap(Map<String, dynamic>? recurrenceRulesMap, {String? extraId}) {
+  Recurrence.fromMap(Map<String, dynamic>? recurrenceRulesMap,
+      {String? extraId}) {
     if (recurrenceRulesMap == null) {
       enabled = false;
       timeStart = DateTime(2000);
@@ -48,34 +55,41 @@ class Recurrence {
       id = DateTime.now().millisecondsSinceEpoch.toString();
     } else {
       enabled = recurrenceRulesMap['enabled'] ?? false;
-      timeStart = recurrenceRulesMap["starts on"].toDate() ?? recurrenceRulesMap["starts on"] ?? EPOCH_TIME;
-      timeEnd = recurrenceRulesMap["ends on"].toDate() ?? recurrenceRulesMap["ends on"] ?? EPOCH_TIME;
+      timeStart = recurrenceRulesMap["starts on"].toDate() ??
+          recurrenceRulesMap["starts on"] ??
+          EPOCH_TIME;
+      timeEnd = recurrenceRulesMap["ends on"].toDate() ??
+          recurrenceRulesMap["ends on"] ??
+          EPOCH_TIME;
       dates = [];
       // recurrenceRulesMap!['dates'].forEach((tag) {dates.add(tag as bool);}); // List<dynamic> bullshit
-      if (recurrenceRulesMap["repeat on days"]!=null) { 
+      if (recurrenceRulesMap["repeat on days"] != null) {
         for (var b in recurrenceRulesMap["repeat on days"]) {
           dates.add(b as bool);
-      }
+        }
       } else {
-          dates = NO_RECURRENCE_ANY_DAY;
+        dates = NO_RECURRENCE_ANY_DAY;
       }
-      id = extraId ?? (recurrenceRulesMap.containsKey("id") ? recurrenceRulesMap["id"] : _getIdFromTime());
+      id = extraId ??
+          (recurrenceRulesMap.containsKey("id")
+              ? recurrenceRulesMap["id"]
+              : _getIdFromTime());
     }
   }
 
   /// Sets the start and end dates for recurrence. Optionally can enable recurrence for Task/Event
-  setTimeWindow(DateTime startDate, DateTime endDate, {bool enableRecurrence = false}) {
+  setTimeWindow(DateTime startDate, DateTime endDate,
+      {bool enableRecurrence = false}) {
     timeStart = startDate;
     timeEnd = endDate;
-    if (enableRecurrence)
-      enabled = true;
+    if (enableRecurrence) enabled = true;
   }
 
   /// Sets the days with recurrence. Optionally can enable recurrence for Task/Event
-  setRecurrenceDatesFromList(List<bool> recurrenceDates, {bool enableRecurrence = false}) {
+  setRecurrenceDatesFromList(List<bool> recurrenceDates,
+      {bool enableRecurrence = false}) {
     dates = recurrenceDates;
-    if (enableRecurrence)
-      enabled = true;
+    if (enableRecurrence) enabled = true;
   }
 
   enable() => enabled = true;
@@ -84,11 +98,11 @@ class Recurrence {
 
   toMap() {
     return ({
-      'enabled' : enabled,
-      'starts on' : timeStart,
-      'ends on' : timeEnd,
-      'repeat on days' : dates,
-      'id' : id
+      'enabled': enabled,
+      'starts on': timeStart,
+      'ends on': timeEnd,
+      'repeat on days': dates,
+      'id': id
     });
   }
 
@@ -98,7 +112,7 @@ class Recurrence {
 
     if (!enabled && other is Recurrence && !other.enabled) return true;
 
-    if (other == null && !enabled) return true;
+    if (!enabled) return true;
 
     return other is Recurrence &&
         enabled == other.enabled &&
@@ -119,7 +133,8 @@ class Recurrence {
     );
   }
 
-  @override String toString() {
+  @override
+  String toString() {
     return "Recurrence($enabled, $dates)";
   }
 }
