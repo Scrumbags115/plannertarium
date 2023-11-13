@@ -126,6 +126,7 @@ Future<User> triggerAuthFlow() async {
 Future<User?> runAuthFlow() async {
   try {
     User u = await triggerAuthFlow();
+    // print('auth complete');
     return u;
   } on FirebaseAuthException catch (e) {
     print("Error!$e");

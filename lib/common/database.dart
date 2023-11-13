@@ -226,10 +226,31 @@ class DatabaseService {
     }
     return Task();
   }
+  Future<List<Task>> getTasksOfName(String taskName) async {
+    final allTasks = await users.doc(userid).collection("tasks")
+            .where("task name",  isEqualTo: taskName).get();
+    
+    if (allTasks.size == 0) {
+      return [];
+    }
 
+    List<Task> listOfTasks = [];
+    for (var doc in allTasks.docs) {
+      Task t = Task.fromMap(doc.data(), id: doc.id);
+      listOfTasks.add(t);
+    }
+
+    return listOfTasks;
+  }
+  
   /// Saves a task into the database
   Future<void> setTask(Task t) async {
     return await users.doc(userid).collection('tasks').doc(t.id).set(t.toMap());
+  }
+
+  /// Deletes a task from the database
+  Future<void> deleteTask(Task t) async {
+    return await users.doc(uid).collection('tasks').doc(t.id).delete();
   }
 
   /// Returns a pair of lists of the form (active tasks, completed tasks)
