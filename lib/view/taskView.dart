@@ -9,7 +9,7 @@ import 'dart:async';
 import 'package:planner/view/weekView.dart';
 
 class taskView extends StatefulWidget {
-  const taskView({Key? key}) : super(key: key);
+  const taskView({super.key});
 
   @override
   _taskViewState createState() => _taskViewState();
@@ -388,7 +388,7 @@ class _TaskCardState extends State<TaskCard> {
                   TextButton(
                     onPressed: () {
                       // Delete the task and close the dialog
-                      //db.deleteTask(widget.task);
+                      db.deleteTask(widget.task);
                       print('swipe right!');
                       Navigator.of(context).pop();
                     },

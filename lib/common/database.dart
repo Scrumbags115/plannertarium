@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/models/event.dart';
@@ -5,44 +7,46 @@ import 'package:planner/models/task.dart';
 
 class DatabaseService {
   static final DatabaseService _singleton = DatabaseService._internal();
+  static late String userid;
+
+  // TODO: Add caching layer here if time permits
+
+  // users collection reference
+  late CollectionReference users =
+  FirebaseFirestore.instance.collection('users');
 
   factory DatabaseService({String? uid}) {
     if (uid != null) {
-      uid = uid;
+      userid = uid;
     }
     return _singleton;
   }
 
   DatabaseService._internal();
 
-  late String userid;
-  // TODO: Add caching layer here if time permits
-
-  // users collection reference
-  final CollectionReference users =
-      FirebaseFirestore.instance.collection('users');
-  late CollectionReference events;
+  /// constructor for testing, firestoreObject should be the replacement mocking firestore object
+  DatabaseService.forTest({required String uid, required firestoreObject}) {
+    userid = uid;
+    users = firestoreObject.collection('users');
+  }
 
   /// Assign UID. This must be ran before any other database function is called else it will crash
   /// 
   /// takes the string ID
   initUID(String uid) {
     userid = uid;
-    events = users.doc(userid).collection("events");
   }
 
-  getEvents(String eventID) {
-    return FirebaseFirestore.instance
-        .collection('users')
+  Future<DocumentSnapshot<Map<String, dynamic>>> getEvents(String eventID) {
+    return users
         .doc(userid)
         .collection("events")
         .doc(eventID)
         .get(); // turn this into a map of eventID to event objects?
   }
 
-  getAllEvents() {
-    return FirebaseFirestore.instance
-        .collection('users')
+  Future<QuerySnapshot<Map<String, dynamic>>> getAllEvents() {
+    return users
         .doc(userid)
         .collection("events")
         .get();
@@ -59,36 +63,88 @@ class DatabaseService {
     addEvent(eventID, event);
   }
 
-  /// Get all events within a date range
+  /// Get all events within a date range as a Map
   ///
-  /// returns a _JsonQueryDocumentSnapshot of all events within the date range
-  Future<QuerySnapshot<Map<String, dynamic>>> getEventsInDateRange(
+  /// Returns a map, with the eventID being the key and value being an Event class
+  Future<Map<String, Event>> getEventsInDateRange(
       {required DateTime dateStart, required DateTime dateEnd}) async {
     final timestampStart = Timestamp.fromDate(dateStart);
     final timestampEnd = Timestamp.fromDate(dateEnd);
-    return users
+    // i can't do a composite search as it requires a composite index, which is not built automatically and has a limit in firestore
+    // instead, get two query snapshots
+    // one for catching time starts and one for catching time ends
+    final QuerySnapshot<Map<String, dynamic>> eventsTimeStartRange = await users
         .doc(userid)
         .collection("events")
         .where("time start",
             isGreaterThanOrEqualTo: timestampStart,
             isLessThanOrEqualTo: timestampEnd)
         .get();
-  }
 
-  /// Get all events within a date range as a Map
-  ///
-  /// Returns a map, with the eventID being the key and value being an Event class
-  Future<Map<String, Event>> getMapOfEventsInDateRange(
-      {required DateTime dateStart, required DateTime dateEnd}) async {
-    // Not too sure how to attach a .then function to a future to convert into another future when awaited, so this will just force an await
+    final QuerySnapshot<Map<String, dynamic>> eventsTimeEndRange = await users
+        .doc(userid)
+        .collection("events")
+        .where("event time end",
+            isGreaterThanOrEqualTo: timestampStart,
+            isLessThanOrEqualTo: timestampEnd)
+        .get();
+
+    // then merge everything into one single collection
+
     Map<String, Event> m = {};
 
-    final userEvents =
-        await getEventsInDateRange(dateStart: dateStart, dateEnd: dateEnd);
-    for (var doc in userEvents.docs) {
-      m[doc.id] = Event.fromMap(doc.data(), id: doc.id);
+    for (var doc in eventsTimeStartRange.docs) {
+      if (!m.containsKey(doc.id)) {
+        m[doc.id] = Event.fromMap(doc.data(), id: doc.id);
+      }
+    }
+    for (var doc in eventsTimeEndRange.docs) {
+      // this all is duplicate code; is there a way to chain iterables and do var e in (a, b) or something?
+      if (!m.containsKey(doc.id)) {
+        m[doc.id] = Event.fromMap(doc.data(), id: doc.id);
+      }
     }
 
+    // there's also a risk of a super long event not being caught
+    // this is probably expensive but I can't think of a better way to do this, so unless someone else
+    // has an idea I'll do this for now
+    final QuerySnapshot<Map<String, dynamic>> eventsLessThan = await users
+        .doc(userid)
+        .collection("events")
+        .where("event time start", isLessThan: timestampStart)
+        .get();
+    final QuerySnapshot<Map<String, dynamic>> eventsGreaterThan = await users
+        .doc(userid)
+        .collection("events")
+        .where("event time start", isGreaterThan: timestampEnd)
+        .get();
+
+    // add the intersection of the two sets
+    // by converting each into a set of IDs
+    Set<String> setLessThan = {};
+    Set<String> setGreaterThan = {};
+    for (var doc in eventsLessThan.docs) {
+      setLessThan.add(doc.id);
+    }
+    for (var doc in eventsGreaterThan.docs) {
+      setGreaterThan.add(doc.id);
+    }
+
+    // and checking if the event exists in both sets
+    for (var doc in eventsLessThan.docs) {
+      if (!m.containsKey(doc.id) &&
+          setLessThan.contains(doc.id) &&
+          setGreaterThan.contains(doc.id)) {
+        m[doc.id] = Event.fromMap(doc.data(), id: doc.id);
+      }
+    }
+    for (var doc in eventsGreaterThan.docs) {
+      if (!m.containsKey(doc.id) &&
+          setLessThan.contains(doc.id) &&
+          setGreaterThan.contains(doc.id)) {
+        m[doc.id] = Event.fromMap(doc.data(), id: doc.id);
+      }
+    }
     return m;
   }
 
@@ -98,28 +154,19 @@ class DatabaseService {
     List<Event> events = [];
     final userEvents =
         await getEventsInDateRange(dateStart: dateStart, dateEnd: dateEnd);
-    for (final doc in userEvents.docs) {
-      events.add(Event.fromMap(doc.data(), id: doc.id));
+    for (final event in userEvents.values) {
+      events.add(event);
     }
     return events;
   }
 
   /// Get all events in a day
   ///
-  /// returns a QuerySnapshot
-  Future<QuerySnapshot<Map<String, dynamic>>> getEventsInDay(
-      {required DateTime date}) async {
+  /// returns a Map
+  Future<Map<String, Event>> getEventsInDay({required DateTime date}) async {
     DateTime tomorrow = date;
     tomorrow.add(const Duration(days: 1));
     return getEventsInDateRange(dateStart: date, dateEnd: tomorrow);
-  }
-
-  /// Get all events in a day as a Map
-  Future<Map<String, Event>> getMapOfEventsInDay(
-      {required DateTime date}) async {
-    DateTime tomorrow = date;
-    tomorrow.add(const Duration(days: 1));
-    return getMapOfEventsInDateRange(dateStart: date, dateEnd: tomorrow);
   }
 
   /// Get list of events in a day
@@ -130,7 +177,7 @@ class DatabaseService {
   }
 
   Future<void> addEvent(String eventID, Event event) async {
-    var doc = await events.doc(eventID).get();
+    var doc = await users.doc(userid).collection("events").doc(eventID).get();
     // can't add an event with the same name
     if (doc.exists) {
       throw Future.error("Event ID already exists!");
@@ -158,7 +205,7 @@ class DatabaseService {
   /// map ex: {"optionName": "optionValue"}
   Future<void> updateEventOption(
       String eventID, Map<String, dynamic> newOptions) async {
-    return events.doc(eventID).update(newOptions);
+    return users.doc(userid).collection("events").doc(eventID).update(newOptions);
   }
 
   Future<void> updateEventName(String oldEventID, String newEventID) async {
@@ -168,8 +215,8 @@ class DatabaseService {
       if (doc.data() != null) {
         data = doc.data()!;
       }
-      events.doc(newEventID).set(data);
-      events.doc(oldEventID).delete();
+      users.doc(userid).collection("events").doc(newEventID).set(data);
+      users.doc(userid).collection("events").doc(oldEventID).delete();
     } catch (e) {
       return;
     }
@@ -179,7 +226,7 @@ class DatabaseService {
   Future<bool> checkIfEventExists(String eventID) async {
     // firestore doesn't have a built in function? are we expected to maintain this locally?
     try {
-      final event = await events.doc(eventID).get();
+      final event = await users.doc(userid).collection("events").doc(eventID).get();
       return event.exists;
     } catch (e) {
       return false;
@@ -204,12 +251,12 @@ class DatabaseService {
     final parentID = e.recurrenceRules.id;
     for (final dt in dts) {
       // search the database for event on this date
-      final Map<String, Event> eventList = await getMapOfEventsInDay(date: dt);
+      final Map<String, Event> eventList = await getEventsInDay(date: dt);
       // search the corresponding events on that day for the right recurrence ID
       eventList.forEach((docID, event) {
         if (event.recurrenceRules.id == parentID) {
           // if the recurrence ID matches, delete
-          events.doc(docID).delete();
+          users.doc(userid).collection("events").doc(docID).delete();
         }
       });
     }
@@ -271,6 +318,9 @@ class DatabaseService {
     List<Task> completedList = [];
     for (var doc in allTasks.docs) {
       Task t = Task.fromMap(doc.data(), id: doc.id);
+      if (t.completed) {
+        completedList.add(t);
+      } else
       if (t.completed) {
         completedList.add(t);
       } else {

@@ -5,7 +5,7 @@ import 'package:planner/common/login.dart';
 import 'package:planner/view/taskView.dart';
 
 class loginView extends StatefulWidget {
-  const loginView({Key? key}) : super(key: key);
+  const loginView({super.key});
   @override
   _loginViewState createState() => _loginViewState();
 }
