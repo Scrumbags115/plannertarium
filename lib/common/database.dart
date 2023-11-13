@@ -248,6 +248,11 @@ class DatabaseService {
     return await users.doc(userid).collection('tasks').doc(t.id).set(t.toMap());
   }
 
+  /// Deletes a task from the database
+  Future<void> deleteTask(Task t) async {
+    return await users.doc(uid).collection('tasks').doc(t.id).delete();
+  }
+
   /// Returns a pair of lists of the form (active tasks, completed tasks)
   /// where task.timeCureent is in a date range [dateStart, dateEnd) for all tasks in either list
   Future<(List<Task>, List<Task>)> _getTasksActiveOrCompleted(
