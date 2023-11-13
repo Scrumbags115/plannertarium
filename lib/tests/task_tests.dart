@@ -12,9 +12,9 @@ bool mapEquals(Map<DateTime, List<Task>> m1, Map<DateTime, List<Task>> m2) {
   for (DateTime key in m1.keys) {
     if (!listEquals(m1[key], m2[key])) {
       print('case 2');
-      print("     " + key.toString());
-      print("     " + m1.keys.toString());
-      print("     " + m2.keys.toString());
+      print("     $key");
+      print("     ${m1.keys}");
+      print("     ${m2.keys}");
       // print("     " + m1[key].toString());
       // print("     " + m2[key].toString());
       print(m1[key]![0].toDetailedString());
@@ -45,7 +45,7 @@ Future<void> task_new_user() async {
       "-----------------------------TEST TASKS NEW USER-----------------------------");
   DateTime today = DateTime(2023, 11, 4);
   String newUser1 =
-      "taskUser" + DateTime.now().millisecondsSinceEpoch.toString();
+      "taskUser${DateTime.now().millisecondsSinceEpoch}";
   print("newUser1 is $newUser1");
   DatabaseService db = DatabaseService(uid: newUser1);
 
@@ -132,9 +132,9 @@ Future<void> task_new_user() async {
 
   print(
       "---------------------------------------------Setting db with tasks---------------------------------------------");
-  tasks.forEach((t) {
+  for (var t in tasks) {
     db.setTask(t);
-  });
+  }
 
   // Daily
   (dailyActive, dailyCompleted, dailyDelayed) =
@@ -244,13 +244,13 @@ task_due_date() async {
 
 task_delete() async {
   String newUser2 =
-      "taskUser" + DateTime.now().millisecondsSinceEpoch.toString();
+      "taskUser${DateTime.now().millisecondsSinceEpoch}";
   print("newUser1 is $newUser2");
   DatabaseService db = DatabaseService(uid: newUser2);
 
-  tasks.forEach((t) {
+  for (var t in tasks) {
     db.setTask(t);
-  });
+  }
 
   for (Task t in tasks) {
     db.deleteTask(t);

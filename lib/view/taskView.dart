@@ -1,12 +1,9 @@
-import 'dart:developer';
 
 import 'package:planner/common/database.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:planner/models/task.dart';
-import 'package:planner/tests/task_tests.dart';
 import 'dart:async';
 
 import 'package:planner/view/weekView.dart';
@@ -39,10 +36,10 @@ class _taskViewState extends State<taskView> {
     (activeMap, delayedMap, completedMap) =
         await db.getTaskMaps(dateStart, dateEnd);
 
-    todayTasks = []
-      ..addAll(activeMap[dateStart] ?? [])
-      ..addAll(delayedMap[dateStart] ?? [])
-      ..addAll(completedMap[dateStart] ?? []);
+    todayTasks = [...?activeMap[dateStart], ...?delayedMap[dateStart], ...?completedMap[dateStart]]
+      
+      
+      ;
 
     setState(() {});
     print(todayTasks);
@@ -53,7 +50,7 @@ class _taskViewState extends State<taskView> {
       context: scaffoldKey.currentState!.context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Task Details'),
+          title: const Text('Task Details'),
           content: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: tasks.map((task) {
@@ -63,7 +60,7 @@ class _taskViewState extends State<taskView> {
                   Text('Task ID: ${task.id}'),
                   Text('Name: ${task.name}'),
                   Text('Description: ${task.description}'),
-                  Divider(),
+                  const Divider(),
                 ],
               );
             }).toList(),
@@ -73,7 +70,7 @@ class _taskViewState extends State<taskView> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Close'),
+              child: const Text('Close'),
             ),
           ],
         );
@@ -86,14 +83,14 @@ class _taskViewState extends State<taskView> {
       context: scaffoldKey.currentState!.context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Task Not Found'),
-          content: Text('The task with ID was not found.'),
+          title: const Text('Task Not Found'),
+          content: const Text('The task with ID was not found.'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
           ],
         );
@@ -116,25 +113,25 @@ class _taskViewState extends State<taskView> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Add Task'),
+          title: const Text('Add Task'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               TextField(
                 controller: nameController,
-                decoration: InputDecoration(labelText: 'Task Name'),
+                decoration: const InputDecoration(labelText: 'Task Name'),
               ),
               TextField(
                 controller: descriptionController,
-                decoration: InputDecoration(labelText: 'Description'),
+                decoration: const InputDecoration(labelText: 'Description'),
               ),
               TextField(
                 controller: locationController,
-                decoration: InputDecoration(labelText: 'Location'),
+                decoration: const InputDecoration(labelText: 'Location'),
               ),
               TextField(
                 controller: colorController,
-                decoration: InputDecoration(labelText: 'Color'),
+                decoration: const InputDecoration(labelText: 'Color'),
               ),
               // TextField(
               //   controller: tagController,
@@ -146,20 +143,20 @@ class _taskViewState extends State<taskView> {
               // ),
               TextField(
                 controller: dueDateController,
-                decoration: InputDecoration(labelText: 'Due Date'),
+                decoration: const InputDecoration(labelText: 'Due Date'),
               ),
             ],
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
               onPressed: () {
                 Navigator.of(context).pop();
                 completer.complete(null); // Complete with null if canceled
               },
             ),
             TextButton(
-              child: Text('Submit'),
+              child: const Text('Submit'),
               onPressed: () {
                 String name = nameController.text;
                 String description = descriptionController.text;
@@ -193,20 +190,20 @@ class _taskViewState extends State<taskView> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Search Tasks'),
+          title: const Text('Search Tasks'),
           content: TextField(
             controller: searchController,
-            decoration: InputDecoration(),
+            decoration: const InputDecoration(),
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: Text('Search'),
+              child: const Text('Search'),
               onPressed: () async {
                 String searchQuery = searchController.text;
                 List<Task> searchTask = await db.getTasksOfName(searchQuery);
@@ -226,6 +223,7 @@ class _taskViewState extends State<taskView> {
 
   var scaffoldKey = GlobalKey<ScaffoldState>();
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
@@ -236,7 +234,7 @@ class _taskViewState extends State<taskView> {
             scaffoldKey.currentState?.openDrawer();
           },
         ),
-        title: Text('Task'),
+        title: const Text('Task'),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.search),
@@ -308,7 +306,7 @@ class _taskViewState extends State<taskView> {
           print('swipe detected');
           if (details.primaryVelocity! < 0) {
             Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => weekView(),
+              builder: (context) => const weekView(),
             ));
           }
         },
@@ -353,7 +351,7 @@ class _taskViewState extends State<taskView> {
 class TaskCard extends StatefulWidget {
   final Task task;
 
-  TaskCard({required this.task});
+  const TaskCard({super.key, required this.task});
 
   @override
   _TaskCardState createState() => _TaskCardState();
@@ -405,7 +403,7 @@ class _TaskCardState extends State<TaskCard> {
       background: Container(
         color: Colors.green, // Swipe right background color
         alignment: Alignment.centerLeft,
-        child: Icon(
+        child: const Icon(
           Icons.check,
           color: Colors.white,
         ),
@@ -413,7 +411,7 @@ class _TaskCardState extends State<TaskCard> {
       secondaryBackground: Container(
         color: Colors.red, // Swipe left background color
         alignment: Alignment.centerRight,
-        child: Icon(
+        child: const Icon(
           Icons.delete,
           color: Colors.white,
         ),
@@ -507,25 +505,25 @@ class _TaskCardState extends State<TaskCard> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Edit Task'),
+          title: const Text('Edit Task'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               TextField(
                 controller: nameController,
-                decoration: InputDecoration(labelText: 'Task Name'),
+                decoration: const InputDecoration(labelText: 'Task Name'),
               ),
               TextField(
                 controller: descriptionController,
-                decoration: InputDecoration(labelText: 'Description'),
+                decoration: const InputDecoration(labelText: 'Description'),
               ),
               TextField(
                 controller: locationController,
-                decoration: InputDecoration(labelText: 'Location'),
+                decoration: const InputDecoration(labelText: 'Location'),
               ),
               TextField(
                 controller: colorController,
-                decoration: InputDecoration(labelText: 'Color'),
+                decoration: const InputDecoration(labelText: 'Color'),
               ),
               // TextField(
               //   controller: tagController,
@@ -537,20 +535,20 @@ class _TaskCardState extends State<TaskCard> {
               // ),
               TextField(
                 controller: dueDateController,
-                decoration: InputDecoration(labelText: 'Due Date'),
+                decoration: const InputDecoration(labelText: 'Due Date'),
               ),
             ],
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
               onPressed: () {
                 Navigator.of(context).pop();
                 completer.complete(null);
               },
             ),
             TextButton(
-              child: Text('Submit'),
+              child: const Text('Submit'),
               onPressed: () {
                 String name = nameController.text;
                 String description = descriptionController.text;

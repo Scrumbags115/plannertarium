@@ -112,7 +112,7 @@ class Recurrence {
 
     if (!enabled && other is Recurrence && !other.enabled) return true;
 
-    if (other == null && !enabled) return true;
+    if (!enabled) return true;
 
     return other is Recurrence &&
         enabled == other.enabled &&

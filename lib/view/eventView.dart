@@ -2,10 +2,6 @@ import 'package:planner/common/database.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:get/get.dart';
-import 'package:planner/view/weekView.dart';
-import 'package:planner/models/task.dart';
 
 class eventView extends StatefulWidget {
   const eventView({Key? key}) : super(key: key);
@@ -39,11 +35,11 @@ class eventViewState extends State<eventView> {
         .where('email', isEqualTo: user?.email)
         .get()
         .then((QuerySnapshot querySnapshot) {
-      querySnapshot.docs.forEach((doc) {
+      for (var doc in querySnapshot.docs) {
         setState(() {
           userName = doc['name'];
         });
-      });
+      }
     });
   }
 
@@ -72,25 +68,25 @@ class eventViewState extends State<eventView> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Add Text'),
+          title: const Text('Add Text'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               TextField(
                 controller: textController,
-                decoration: InputDecoration(labelText: 'Enter Text'),
+                decoration: const InputDecoration(labelText: 'Enter Text'),
               ),
             ],
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: Text('Submit'),
+              child: const Text('Submit'),
               onPressed: () {
                 String enteredText = textController.text;
                 // Handle the entered text (e.g., save it or use it in your app).
@@ -109,22 +105,22 @@ class eventViewState extends State<eventView> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Search'),
+          title: const Text('Search'),
           content: TextField(
             controller: searchController,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               hintText: 'Enter your search query',
             ),
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: Text('Search'),
+              child: const Text('Search'),
               onPressed: () {
                 String searchQuery = searchController.text;
                 // Handle the search query as needed (e.g., perform a search operation).
@@ -139,6 +135,7 @@ class eventViewState extends State<eventView> {
 
   @override
   var scaffoldKey = GlobalKey<ScaffoldState>();
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         key: scaffoldKey,
@@ -239,7 +236,7 @@ class eventViewState extends State<eventView> {
                     title: 'Sample Task',
                     description: 'This is a sample task description',
                     startTime: DateTime.now(),
-                    endTime: DateTime.now().add(Duration(hours: 1)),
+                    endTime: DateTime.now().add(const Duration(hours: 1)),
                   ),
                 ),
               ),
@@ -251,7 +248,7 @@ class eventViewState extends State<eventView> {
                   title: 'Sample Task',
                   description: 'This is a sample task description',
                   startTime: DateTime.now(),
-                  endTime: DateTime.now().add(Duration(hours: 1)),
+                  endTime: DateTime.now().add(const Duration(hours: 1)),
                 ),
               ),
             ),
@@ -303,7 +300,7 @@ class TaskEvent {
 class TaskEventCard extends StatefulWidget {
   final TaskEvent event;
 
-  TaskEventCard({required this.event});
+  const TaskEventCard({super.key, required this.event});
 
   @override
   _TaskEventCardState createState() => _TaskEventCardState();
