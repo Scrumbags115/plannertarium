@@ -248,7 +248,7 @@ class AddTask extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    dayta.setUserTask(Task(
+                    dayta.setTask(Task(
                         name: taskNameController.text,
                         description: taskDescriptionController.text,
                         timeDue: date));
