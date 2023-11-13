@@ -35,6 +35,8 @@ test_tasks() async {
 
   await task_due_date();
 
+  await task_delete();
+
   print("passed test_tasks :D");
 }
 
@@ -238,6 +240,38 @@ task_due_date() async {
   print("Daily tasks due expected: $dailyTasksDueExpected");
 
   assert(mapEquals(dailyTasksDue, dailyTasksDueExpected));
+}
+
+task_delete() async {
+  String newUser2 =
+      "taskUser" + DateTime.now().millisecondsSinceEpoch.toString();
+  print("newUser1 is $newUser2");
+  DatabaseService db = DatabaseService(uid: newUser2);
+
+  tasks.forEach((t) {
+    db.setTask(t);
+  });
+
+  for (Task t in tasks) {
+    db.deleteTask(t);
+  }
+
+  Map<DateTime, List<Task>> allActive, allCompleted, allDelayed;
+  (allActive, allCompleted, allDelayed) =
+      await db.getTaskMaps(DateTime(2023, 10), DateTime(2024));
+
+  for (DateTime date in allActive.keys) {
+    assert (listEquals(allActive[date], []));
+  }
+  for (DateTime date in allCompleted.keys) {
+    assert (listEquals(allCompleted[date], []));
+  }
+  for (DateTime date in allDelayed.keys) {
+    assert (listEquals(allDelayed[date], []));
+  }
+
+  // Delete the new user
+  await db.users.doc(newUser2).delete();
 }
 
 List<Task> tasks = [
