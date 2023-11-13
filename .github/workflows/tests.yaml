@@ -1,0 +1,20 @@
+name: plannertarium-tests
+on: [push, workflow_dispatch, pull_request]
+jobs:
+  main-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: subosito/flutter-action@v1
+      - run: flutter test
+# todo: add integration tests
+#  integration-tests:
+#    runs-on: windows-latest
+#    steps:
+#      - uses: actions/checkout@v1
+#      - uses: subosito/flutter-action@v1
+#        with:
+#          channel: 'beta'
+#      - run: |
+#          flutter config --enable-windows-desktop
+#          flutter test -d windows integration_test/smoke_test.dart
