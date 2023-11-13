@@ -1,54 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:planner/view/dayView.dart';
+import 'package:planner/common/database.dart';
+import 'package:planner/models/task.dart';
+DatabaseService dayta = DatabaseService(uid: "userid1");
 
 class weekView extends StatelessWidget {
+  const weekView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        margin: const EdgeInsets.fromLTRB(0, 0, 10, 10),
-        child: ListView(
-          children: List.generate(7, (index) { //This generates 7 MultiDayCard in a vertical list
-            return MultiDayCard(index);
-          }),
-        ),
+      body: ListView(
+        children: List.generate(7, (index) {
+          //This generates 7 MultiDayCard in a vertical list
+          return MultiDayCard(index);
+        }),
       ),
     );
   }
 }
 
-//Each one of these is a day in the week view, consisting of the placeholder date and card to its right
+///Each one of these is a day in the week view, consisting of the placeholder date and card to its right
 class MultiDayCard extends StatefulWidget {
-  const MultiDayCard(this.data);
-  final int data;
+  MultiDayCard(this.index, {super.key});
+  final int index;
   @override
-  State<StatefulWidget> createState() => MultiDayCardState(data);
+  State<StatefulWidget> createState() => MultiDayCardState(index);
 }
 
-//being stateful doesn't really do anything right now, but I'm pretty sure we need it later on
 class MultiDayCardState extends State<MultiDayCard> {
-  MultiDayCardState(this.data);
-  int data;
+  MultiDayCardState(this.index);
+  int index;
+
   @override
   Widget build(BuildContext context) {
+    DateTime dateToDisplay = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day).add(Duration(days: index));
+    String monthDayDisplayed = "${dateToDisplay.month}/${dateToDisplay.day}";
     return Row(
-      //This row contains: date placeholder, card
+      //This row contains: date, card
       children: [
         Flexible(
           //This widget and Expanded work together to make the card on the right stretch to fill space, works on mobile and web
           flex: 0,
           child: SizedBox(
             width: 70,
-            height: 120,
+            height: 140,
             child: Center(
-              child: Text(
-                  "${DateTime.now().month}/${DateTime.now().day + data}"), //Doesn't really work to show the current week(October 32nd LMAO), just a placeholder
+              child: Text(monthDayDisplayed),
             ),
           ),
         ),
         Expanded(
           child: SizedBox(
-            height: 120,
+            height: 140,
             child: Card(
               //Not sure how to connect the backend to this kind of setup, but it looks kind of ok
               clipBehavior: Clip.hardEdge,
@@ -65,13 +69,14 @@ class MultiDayCardState extends State<MultiDayCard> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => dayView()),
+                    MaterialPageRoute(
+                        builder: (context) => SingleDay(dateToDisplay)),
                   );
                 },
                 child: const Center(
                   child: Column(
                     children: [
-                      Text("海阔天空"), //Placeholder text
+                      //Text("Placeholder"), //Placeholder text
                     ],
                   ),
                 ),
