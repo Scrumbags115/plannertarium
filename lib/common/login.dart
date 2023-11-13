@@ -134,3 +134,7 @@ Future<User?> runAuthFlow() async {
     return null;
   }
 }
+
+Future<void> logout() async {
+  await GoogleSignIn().signOut();
+}
