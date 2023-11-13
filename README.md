@@ -1,16 +1,17 @@
-# planner
+<div align="center">
+<h1>Plannertarium</h1>
+<h3>Scheduling for scrumbags.</h3>
+<a href="https://github.com/Scrumbags115/plannertarium/actions"><img src="https://github.com/Scrumbags115/plannertarium/workflows/test-my-app/badge.svg" alt="Build Status"></a>
+</div>
 
-Scheduling App
+---
 
-## Getting Started
+## Installation
+The only way to install as of now is by source.
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+After [installing flutter](https://docs.flutter.dev/get-started/install), clone from source:
+```shell
+git clone git@github.com:Scrumbags115/plannertarium.git
+cd plannertarium
+```
+Then run the app with your [method of choice](https://docs.flutter.dev/get-started/test-drive). Current supported platforms are web + android. Android will require a registered SHA1 key with the central Firestore.
