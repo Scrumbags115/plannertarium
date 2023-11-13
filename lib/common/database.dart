@@ -276,8 +276,8 @@ class DatabaseService {
   /// Takes the form (ActiveMap, CompletedMap, DelayedMap)
   Future<(Map<DateTime, List<Task>>, Map<DateTime, List<Task>>, Map<DateTime, List<Task>>)> getTaskMaps(DateTime dateStart, DateTime dateEnd) async {
     assert (dateStart.isBefore(dateEnd));
-    //assert (dateStart.isAtSameMomentAs(DateTime(dateStart.year, dateStart.month, dateStart.day)));
-    //assert (dateEnd.isAtSameMomentAs(DateTime(dateEnd.year, dateEnd.month, dateEnd.day)));
+    assert (dateStart.isAtSameMomentAs(DateTime(dateStart.year, dateStart.month, dateStart.day)));
+    assert (dateEnd.isAtSameMomentAs(DateTime(dateEnd.year, dateEnd.month, dateEnd.day)));
 
     Map<DateTime, List<Task>> activeMap = {};
     Map<DateTime, List<Task>> completedMap = {};
