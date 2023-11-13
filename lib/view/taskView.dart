@@ -22,7 +22,7 @@ class _taskViewState extends State<taskView> {
   final FirebaseAuth auth = FirebaseAuth.instance;
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final User? user = FirebaseAuth.instance.currentUser;
-  DatabaseService db = DatabaseService(uid: "ian");
+  DatabaseService db = DatabaseService();
   List<Task> todayTasks = [];
 
   @override
@@ -102,7 +102,7 @@ class _taskViewState extends State<taskView> {
   }
 
   Future<Task?> addButtonForm(BuildContext context) async {
-    DatabaseService db = DatabaseService(uid: 'ian');
+    DatabaseService db = DatabaseService();
     TextEditingController nameController = TextEditingController();
     TextEditingController descriptionController = TextEditingController();
     TextEditingController locationController = TextEditingController();
@@ -360,7 +360,7 @@ class TaskCard extends StatefulWidget {
 }
 
 class _TaskCardState extends State<TaskCard> {
-  DatabaseService db = DatabaseService(uid: 'ian');
+  DatabaseService db = DatabaseService();
   @override
   Widget build(BuildContext context) {
     return Dismissible(
@@ -492,7 +492,7 @@ class _TaskCardState extends State<TaskCard> {
   }
 
   Future<Task?> _showEditPopup(BuildContext context) async {
-    DatabaseService db = DatabaseService(uid: 'ian');
+    DatabaseService db = DatabaseService();
     TextEditingController nameController = TextEditingController();
     TextEditingController descriptionController = TextEditingController();
     TextEditingController locationController = TextEditingController();

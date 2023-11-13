@@ -4,6 +4,7 @@ import 'package:planner/common/database.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/temp_frontend.dart';
 import 'package:planner/view/eventView.dart';
+import 'package:planner/view/loginView.dart';
 import 'package:planner/view/weekView.dart';
 import 'package:get/get.dart';
 // import 'package:planner/temp_frontend2.dart';
@@ -30,7 +31,7 @@ void main() async {
 
   // test_tasks();
   // //Uncomment below line and comment out above line to see weekView + dayView UI
-  runApp(GetMaterialApp(home: taskView()));
+  runApp(GetMaterialApp(home: loginView()));
   // User? u = await runAuthFlow();
   // DatabaseService d = DatabaseService(uid: u!.uid);
   // print(u.displayName);

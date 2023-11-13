@@ -227,7 +227,7 @@ class DatabaseService {
     return Task();
   }
   Future<List<Task>> getTasksOfName(String taskName) async {
-    final allTasks = await users.doc(uid).collection("tasks")
+    final allTasks = await users.doc(userid).collection("tasks")
             .where("task name",  isEqualTo: taskName).get();
     
     if (allTasks.size == 0) {
