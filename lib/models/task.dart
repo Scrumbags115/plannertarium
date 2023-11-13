@@ -1,4 +1,3 @@
-import 'package:planner/common/recurrence.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/models/undertaking.dart';
 
@@ -11,62 +10,41 @@ class Task extends Undertaking {
   /// Default constructor with minimum required info
   /// Good for if you want to add a new task from user with missing fields
   Task(
-      {String? name,
-      String? id,
-      String? description,
+      {super.name,
+      super.id,
+      super.description,
       bool completed = false,
-      String? location,
-      String? color,
-      List<String>? tags,
-      Recurrence? recurrenceRules,
-      DateTime? timeStart,
+      super.location,
+      super.color,
+      super.tags,
+      super.recurrenceRules,
+      super.timeStart,
       DateTime? timeDue,
       DateTime? timeCurrent,
-      DateTime? timeCreated,
-      DateTime? timeModified})
-      : super(
-            name: name,
-            id: id,
-            description: description,
-            location: location,
-            color: color,
-            tags: tags,
-            recurrenceRules: recurrenceRules,
-            timeStart: timeStart,
-            timeCreated: timeCreated,
-            timeModified: timeModified) {
+      super.timeCreated,
+      super.timeModified}) {
     _completed = completed;
     _timeDue = timeDue;
-    _timeCurrent = timeCurrent ?? this.timeStart;
+    _timeCurrent = timeCurrent ?? timeStart;
   }
 
   /// Alternate constructor so VSCode autogenerates all fields
   /// Good for reading from database
   Task.requireFields(
-      {required String name,
-      required String id,
-      required String description,
+      {required super.name,
+      required super.id,
+      required super.description,
       required bool completed,
-      required String location,
-      required String color,
-      required List<String> tags,
-      required Recurrence recurrenceRules,
-      required DateTime timeStart,
+      required super.location,
+      required super.color,
+      required super.tags,
+      required super.recurrenceRules,
+      required super.timeStart,
       required DateTime timeDue,
       required DateTime timeCurrent,
-      required DateTime timeCreated,
-      required DateTime timeModified})
-      : super.requireFields(
-            name: name,
-            id: id,
-            description: description,
-            location: location,
-            color: color,
-            tags: tags,
-            recurrenceRules: recurrenceRules,
-            timeStart: timeStart,
-            timeCreated: timeCreated,
-            timeModified: timeModified) {
+      required super.timeCreated,
+      required super.timeModified})
+      : super.requireFields() {
     _completed = completed;
     _timeDue = timeDue;
     _timeCurrent = timeCurrent;
