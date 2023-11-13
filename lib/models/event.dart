@@ -73,7 +73,7 @@ class Event extends Undertaking {
 
   set timeEnd(DateTime newTimeEnd) {
     timeModified = DateTime.now();
-    timeEnd = newTimeEnd;
+    _timeEnd = newTimeEnd;
   }
 
   DateTime get timeEnd => _timeEnd;

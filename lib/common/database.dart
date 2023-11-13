@@ -120,9 +120,9 @@ class DatabaseService {
         .get();
 
     // add the intersection of the two sets
+    // by converting each into a set of IDs
     Set<String> setLessThan = {};
     Set<String> setGreaterThan = {};
-    // by convert each into a set of IDs
     for (var doc in eventsLessThan.docs) {
       setLessThan.add(doc.id);
     }

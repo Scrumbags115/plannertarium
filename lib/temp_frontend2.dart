@@ -76,7 +76,8 @@ class MyAppState extends State<MyApp> {
         print('User is signed in!');
       }
     });
-    DatabaseService db = DatabaseService();
+    User? u = await runAuthFlow();
+    DatabaseService db = DatabaseService(uid: u!.uid);
     if (event == "login") {
       await runAuthFlow();
     } else if (event == "logout") {
@@ -100,7 +101,7 @@ class MyAppState extends State<MyApp> {
           timeEnd: timeEnd));
       return;
     } else if (event == "get range") {
-      final dateStart = DateTime.parse("2023-10-20");
+      final dateStart = DateTime.parse("2023-11-20");
       final dateEnd = dateStart.add(const Duration(days: 8));
       final userEventMap = await db.getEventsInDateRange(
           dateStart: dateStart, dateEnd: dateEnd);
