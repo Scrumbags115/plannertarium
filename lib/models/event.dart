@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:planner/common/recurrence.dart';
 
 // import recurrence class here
@@ -40,6 +41,7 @@ class Event {
     _timeEnd = timeEnd ?? DateTime.now();
     _timeCreated = timeCreated ?? DateTime.now();
     _timeModified = timeModified ?? _timeCreated;
+    _checkAndMoveTimeEnd();
   }
 
   /// Alternate constructor so VSCode autogenerates all fields
@@ -67,6 +69,7 @@ class Event {
     _timeEnd = timeEnd;
     _timeCreated = timeCreated;
     _timeModified = timeModified;
+    _checkAndMoveTimeEnd();
   }
 
   
@@ -80,12 +83,15 @@ Event.fromMap(Map<String, dynamic> m, {String? id}) {
     _color = m["hex color"];
     _location = m["location"];
     _tags = [];
-    (m['tags'] as List<String>).forEach((tag) {_tags.add(tag.toString());});
+    for (var tag in (m['tags'])) {
+      _tags.add(tag.toString());
+    }
     _recurrenceRules = Recurrence.fromMap(m['recurrence rules']);
     _timeStart = m["event time start"] is Timestamp ? m["event time start"].toDate() : m["event time start"];
     _timeEnd = m["event time end"] is Timestamp ? m["event time end"].toDate() : m["event time end"];
     _timeCreated = m["date created"] is Timestamp ? m["date created"].toDate() : m["date created"];
     _timeModified = m["date modified"] is Timestamp ? m["date modified"].toDate() : m["date modified"];
+    _checkAndMoveTimeEnd();
   } catch (e) {
     throw Exception("Given map is malformed!\n$e");
   }
@@ -113,7 +119,7 @@ Event.fromMap(Map<String, dynamic> m, {String? id}) {
       'event time end': timeEnd,
       'hex color': color,
       'location': location,
-      'recurrence rules': recurrenceRules?.toMap(),
+      'recurrence rules': recurrenceRules.toMap(),
       'tags': tags.toList(),
       'event name': name
     });
@@ -171,6 +177,7 @@ Event.fromMap(Map<String, dynamic> m, {String? id}) {
   set timeStart(DateTime newTimeStart) {
     _timeModified = DateTime.now();
     _timeStart = newTimeStart;
+    _checkAndMoveTimeEnd();
   }
 
   DateTime get timeStart => _timeStart;
@@ -178,39 +185,58 @@ Event.fromMap(Map<String, dynamic> m, {String? id}) {
   set timeEnd(DateTime newTimeEnd) {
     _timeModified = DateTime.now();
     _timeEnd = newTimeEnd;
+    _checkAndMoveTimeStart();
   }
 
   DateTime get timeEnd => _timeEnd;
+
+  void _checkAndMoveTimeStart() {
+    if (!_checkTimeStartAndEndIsValid()) {
+      timeStart = timeEnd.subtract(const Duration(hours: 1));
+    }
+  }
+  
+  void _checkAndMoveTimeEnd() {
+    if (!_checkTimeStartAndEndIsValid()) {
+      timeEnd = timeStart.add(const Duration(hours: 1));
+    }
+  }
+
+  bool _checkTimeStartAndEndIsValid() {
+    if (timeStart.compareTo(timeEnd) >= 0) {
+      return false;
+    }
+    return true;
+  }
 
   // Do not want to timeCreated this after the constructor
   get timeCreated => _timeCreated; 
 
   // Do not want to change timeModified unless modifying a field
-  get timeModified => _timeModified; 
+  get timeModified => _timeModified;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is Event &&
+        _name == other._name &&
+        _id == other._id &&
+        _description == other._description &&
+        _location == other._location &&
+        _color == other._color &&
+        listEquals(_tags, other._tags) &&
+        _recurrenceRules == other._recurrenceRules &&
+        _timeStart == other._timeStart &&
+        _timeEnd == other._timeEnd &&
+        _timeCreated == other._timeCreated &&
+        _timeModified == other._timeModified;
+  }
 
   int _daysBetween(DateTime from, DateTime to) {
     from = DateTime(from.year, from.month, from.day);
     to = DateTime(to.year, to.month, to.day);
     return (to.difference(from).inHours / 24).round();
-  }
-
-  /// Some checks to make sure the event object is valid with recurrence and crash with a more useful error message if caught
-  /// used internally to run some basic checks before I assume things aren't null/are valid classes
-  bool _validEventWithRecurrence() {
-
-    // event fields must be valid, crash since something has probably gone very wrong
-    if (timeStart == null || timeEnd == null) {
-      throw Exception("Event is malformed? No timeStart/timeEnd value is set!");
-    }
-
-    // recurrence must have its fields be populated
-    if (recurrenceRules!.timeStart == null || recurrenceRules!.timeEnd == null || recurrenceRules!.dates == null) {
-      return false;
-    }
-    if (recurrenceRules?.timeStart == null || recurrenceRules?.timeEnd == null) {
-      throw Exception("Event recurrence rules are enabled and not null, but the rest of the recurrence rules fields are unset!"); // I think this should be enforced
-    }
-    return true;
   }
 
   /// generate recurring events as specified by the recurrence rules in the Event object
@@ -220,26 +246,18 @@ Event.fromMap(Map<String, dynamic> m, {String? id}) {
   /// ex wednesday for event but recurrence is every thursday
   List<Event> generateRecurringEvents({excludeMyself = false}) {
     List<Event> eventList = [];
-    // if recurrence rules are nonexistent or disabled, there are no new events to return
-    if (recurrenceRules == null || recurrenceRules?.enabled == null) {
-      return eventList;
-    }
     // if recurrence is not enabled, there are no events to return
-    if (recurrenceRules!.enabled == false) {
-      return eventList;
-    }
-    // run some checks to make sure I can use this object
-    if (!_validEventWithRecurrence()) {
+    if (recurrenceRules.enabled == false) {
       return eventList;
     }
 
-    Recurrence recurrence = recurrenceRules!;
+    Recurrence recurrence = recurrenceRules;
 
-    DateTime recurrenceDateStart = recurrence.timeStart!;
-    DateTime recurrenceDateEnd = recurrence.timeEnd!;
+    DateTime recurrenceDateStart = recurrence.timeStart;
+    DateTime recurrenceDateEnd = recurrence.timeEnd;
 
-    DateTime eventDateStart = timeStart!;
-    DateTime eventDateEnd = timeEnd!;
+    DateTime eventDateStart = timeStart;
+    DateTime eventDateEnd = timeEnd;
 
 
     int diff = _daysBetween(recurrenceDateStart, recurrenceDateEnd);
@@ -258,7 +276,7 @@ Event.fromMap(Map<String, dynamic> m, {String? id}) {
       }
 
       // now check if the weekday recurrence is right
-      if (recurrence.dates![newEventTimeStartI.weekday - 1]) {
+      if (recurrence.dates[newEventTimeStartI.weekday - 1]) {
         // if yes, create the event
         Event e = Event.clone(this);
         e.timeStart = newEventTimeStartI;
@@ -280,7 +298,7 @@ Event.fromMap(Map<String, dynamic> m, {String? id}) {
       }
 
       // now check if the weekday recurrence is right
-      if (recurrence.dates![newEventTimeStartD.weekday - 1]) {
+      if (recurrence.dates[newEventTimeStartD.weekday - 1]) {
         // if yes, create the event
         Event e = Event.clone(this);
         e.timeStart = newEventTimeStartD;
@@ -297,17 +315,14 @@ Event.fromMap(Map<String, dynamic> m, {String? id}) {
   /// to not include the current event, set excludeMyself to true
   List<DateTime> getDatesOfRelatedRecurringEvents({excludeMyself = false}) {
     List<DateTime> dt = [];
-    // run checks to make sure i can use this object
-    if (!_validEventWithRecurrence()) {
-      return dt;
-    }
+    // according to IDE's dart analysis, class members now no longer can be null so null checks are no longer necessary
 
-    Recurrence recurrence = recurrenceRules!;
+    Recurrence recurrence = recurrenceRules;
 
-    DateTime recurrenceDateStart = recurrence.timeStart!;
-    DateTime recurrenceDateEnd = recurrence.timeEnd!;
+    DateTime recurrenceDateStart = recurrence.timeStart;
+    DateTime recurrenceDateEnd = recurrence.timeEnd;
 
-    DateTime eventDateStart = timeStart!;
+    DateTime eventDateStart = timeStart;
 
 
     int diff = _daysBetween(recurrenceDateStart, recurrenceDateEnd);
@@ -323,7 +338,7 @@ Event.fromMap(Map<String, dynamic> m, {String? id}) {
         // newEventTimeStart is after recurrenceDateEnd
         break;
       }
-      if (recurrence.dates![curr.weekday - 1]) {
+      if (recurrence.dates[curr.weekday - 1]) {
         // valid datetime
         // add
         dt.add(curr);
@@ -341,7 +356,7 @@ Event.fromMap(Map<String, dynamic> m, {String? id}) {
         // newEventTimeStart is before recurrenceDateStart
         break;
       }
-      if (recurrence.dates![curr.weekday - 1]) {
+      if (recurrence.dates[curr.weekday - 1]) {
         // valid datetime
         // add
         dt.add(curr);

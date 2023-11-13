@@ -109,7 +109,7 @@ class Task {
                                 'location': _location,
                                 'hex color': _color,
                                 'recurrence rules':
-                                    keepClasses ? _recurrenceRules : _recurrenceRules?.toMap(),
+                                    keepClasses ? _recurrenceRules : _recurrenceRules.toMap(),
                                 'tags': keepClasses ? _tags : _tags.toList(),
                                 'start date': _timeStart,
                                 'due date': _timeDue,

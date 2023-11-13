@@ -53,7 +53,7 @@ class Recurrence {
       dates = [];
       // recurrenceRulesMap!['dates'].forEach((tag) {dates.add(tag as bool);}); // List<dynamic> bullshit
       if (recurrenceRulesMap["repeat on days"]!=null) { 
-        for (var b in recurrenceRulesMap!["repeat on days"]) {
+        for (var b in recurrenceRulesMap["repeat on days"]) {
           dates.add(b as bool);
       }
       } else {
