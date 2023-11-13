@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:planner/common/database.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -6,6 +8,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/tests/task_tests.dart';
 import 'dart:async';
+
+import 'package:planner/view/weekView.dart';
 
 class taskView extends StatefulWidget {
   const taskView({Key? key}) : super(key: key);
@@ -30,7 +34,7 @@ class _taskViewState extends State<taskView> {
   void fetchTodayTasks() async {
     DateTime today = DateTime.now();
     DateTime dateStart = DateTime(today.year, today.month, today.day);
-    DateTime dateEnd = dateStart.add(Duration(days: 1));
+    DateTime dateEnd = dateStart.add(const Duration(days: 1));
     Map<DateTime, List<Task>> activeMap, delayedMap, completedMap;
     (activeMap, delayedMap, completedMap) =
         await db.getTaskMaps(dateStart, dateEnd);
@@ -101,7 +105,11 @@ class _taskViewState extends State<taskView> {
     DatabaseService db = DatabaseService(uid: 'ian');
     TextEditingController nameController = TextEditingController();
     TextEditingController descriptionController = TextEditingController();
-
+    TextEditingController locationController = TextEditingController();
+    TextEditingController colorController = TextEditingController();
+    TextEditingController tagController = TextEditingController();
+    TextEditingController recRulesController = TextEditingController();
+    TextEditingController dueDateController = TextEditingController();
     Completer<Task?> completer = Completer<Task?>();
 
     showDialog(
@@ -119,6 +127,26 @@ class _taskViewState extends State<taskView> {
               TextField(
                 controller: descriptionController,
                 decoration: InputDecoration(labelText: 'Description'),
+              ),
+              TextField(
+                controller: locationController,
+                decoration: InputDecoration(labelText: 'Location'),
+              ),
+              TextField(
+                controller: colorController,
+                decoration: InputDecoration(labelText: 'Color'),
+              ),
+              // TextField(
+              //   controller: tagController,
+              //   decoration: InputDecoration(labelText: 'Tag'),
+              // ),
+              // TextField(
+              //   controller: recRulesController,
+              //   decoration: InputDecoration(labelText: 'Recurrence Rules'),
+              // ),
+              TextField(
+                controller: dueDateController,
+                decoration: InputDecoration(labelText: 'Due Date'),
               ),
             ],
           ),
@@ -225,7 +253,7 @@ class _taskViewState extends State<taskView> {
             const DrawerHeader(
               decoration: BoxDecoration(
                 color: Colors.blue,
-              ), //BoxDecoration
+              ),
               child: UserAccountsDrawerHeader(
                 decoration: BoxDecoration(color: Colors.blue),
                 accountName: Text(
@@ -239,10 +267,10 @@ class _taskViewState extends State<taskView> {
                   child: Text(
                     "A",
                     style: TextStyle(fontSize: 30.0, color: Colors.blue),
-                  ), //Text
-                ), //circleAvatar
-              ), //UserAccountDrawerHeader
-            ), //DrawerHeader
+                  ),
+                ),
+              ),
+            ),
             ListTile(
               leading: const Icon(Icons.person),
               title: const Text(' My Profile '),
@@ -269,44 +297,54 @@ class _taskViewState extends State<taskView> {
               title: const Text('LogOut'),
               onTap: () {
                 // Navigator.pop(context);
-                fetchTodayTasks();
+                // fetchTodayTasks();
               },
             ),
           ],
         ),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: todayTasks.length,
-              itemBuilder: (context, index) {
-                Task task = todayTasks[index];
-                return TaskCard(task: task);
-              },
-            ),
-          ),
-          Align(
-            alignment: Alignment.bottomRight,
-            child: ClipOval(
-              child: ElevatedButton(
-                onPressed: () async {
-                  Task? newTask = await addButtonForm(context);
-
-                  if (newTask != null) {
-                    setState(() {
-                      todayTasks.add(newTask);
-                    });
-                  }
+      body: GestureDetector(
+        onHorizontalDragEnd: (details) {
+          print('swipe detected');
+          if (details.primaryVelocity! < 0) {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => weekView(),
+            ));
+          }
+        },
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                itemCount: todayTasks.length,
+                itemBuilder: (context, index) {
+                  Task task = todayTasks[index];
+                  return TaskCard(task: task);
                 },
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(75, 75),
-                ),
-                child: const Icon(Icons.add_outlined),
               ),
             ),
-          ),
-        ],
+            Align(
+              alignment: Alignment.bottomRight,
+              child: ClipOval(
+                child: ElevatedButton(
+                  onPressed: () async {
+                    Task? newTask = await addButtonForm(context);
+
+                    if (newTask != null) {
+                      setState(() {
+                        todayTasks.add(newTask);
+                      });
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(75, 75),
+                  ),
+                  child: const Icon(Icons.add_outlined),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -330,8 +368,9 @@ class _TaskCardState extends State<TaskCard> {
       onDismissed: (direction) {
         if (direction == DismissDirection.startToEnd) {
           setState(() {
-            widget.task.completed = true;
+            widget.task.moveToNextDay();
             db.setTask(widget.task);
+            print('move to next day completed');
           });
         } else if (direction == DismissDirection.endToStart) {
           showDialog(
@@ -433,10 +472,113 @@ class _TaskCardState extends State<TaskCard> {
                 Navigator.of(context).pop();
               },
               child: const Text('Close'),
-            )
+            ),
+            TextButton(
+              onPressed: () async {
+                // Wait for the _showEditPopup to complete and get the edited task
+                Task? editedTask = await _showEditPopup(context);
+                Navigator.of(context).pop();
+                // Update the state only if the user submitted changes
+                if (editedTask != null) {
+                  setState(() {});
+                }
+              },
+              child: const Text('Edit'),
+            ),
           ],
         );
       },
     );
+  }
+
+  Future<Task?> _showEditPopup(BuildContext context) async {
+    DatabaseService db = DatabaseService(uid: 'ian');
+    TextEditingController nameController = TextEditingController();
+    TextEditingController descriptionController = TextEditingController();
+    TextEditingController locationController = TextEditingController();
+    TextEditingController colorController = TextEditingController();
+    TextEditingController tagController = TextEditingController();
+    TextEditingController recRulesController = TextEditingController();
+    TextEditingController dueDateController = TextEditingController();
+
+    Completer<Task?> completer = Completer<Task?>();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Edit Task'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(labelText: 'Task Name'),
+              ),
+              TextField(
+                controller: descriptionController,
+                decoration: InputDecoration(labelText: 'Description'),
+              ),
+              TextField(
+                controller: locationController,
+                decoration: InputDecoration(labelText: 'Location'),
+              ),
+              TextField(
+                controller: colorController,
+                decoration: InputDecoration(labelText: 'Color'),
+              ),
+              // TextField(
+              //   controller: tagController,
+              //   decoration: InputDecoration(labelText: 'Tag'),
+              // ),
+              // TextField(
+              //   controller: recRulesController,
+              //   decoration: InputDecoration(labelText: 'Recurrence Rules'),
+              // ),
+              TextField(
+                controller: dueDateController,
+                decoration: InputDecoration(labelText: 'Due Date'),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                completer.complete(null);
+              },
+            ),
+            TextButton(
+              child: Text('Submit'),
+              onPressed: () {
+                String name = nameController.text;
+                String description = descriptionController.text;
+                String location = locationController.text;
+                String color = colorController.text;
+                String tag = tagController.text;
+                //String recRules = recRulesController.text;
+                //String dueDate = dueDateController.text;
+
+                widget.task.name = name;
+                widget.task.description = description;
+                widget.task.location = location;
+                widget.task.color = color;
+                widget.task.color = tag;
+                //widget.task.recurrenceRules = recRules;
+
+                db.setTask(widget.task);
+
+                completer.complete(widget.task);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+
+    // Return the Future that completes with the edited task
+    return completer.future;
   }
 }
