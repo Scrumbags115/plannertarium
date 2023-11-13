@@ -250,7 +250,7 @@ class DatabaseService {
 
   /// Deletes a task from the database
   Future<void> deleteTask(Task t) async {
-    return await users.doc(uid).collection('tasks').doc(t.id).delete();
+    return await users.doc(userid).collection('tasks').doc(t.id).delete();
   }
 
   /// Returns a pair of lists of the form (active tasks, completed tasks)
