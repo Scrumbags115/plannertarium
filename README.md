@@ -1,7 +1,7 @@
 <div align="center">
 <h1>Plannertarium</h1>
 <h3>Scheduling for scrumbags.</h3>
-<a href="https://github.com/Scrumbags115/plannertarium/actions"><img src="https://github.com/Scrumbags115/plannertarium/workflows/test-my-app/badge.svg" alt="Build Status"></a>
+<a href="https://github.com/Scrumbags115/plannertarium/actions"><img src="https://github.com/Scrumbags115/plannertarium/workflows/plannertarium-tests/badge.svg" alt="Build Status"></a>
 </div>
 
 ---
