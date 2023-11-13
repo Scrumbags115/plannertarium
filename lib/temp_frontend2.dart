@@ -77,8 +77,17 @@ class MyAppState extends State<MyApp> {
         print('User is signed in!');
       }
     });
-    DatabaseService db = DatabaseService(uid: "test_user_1");
+    DatabaseService db = DatabaseService();
+    if (event == "run") {
+      print(db);
+      print("do crap");
+      db.initUID("random test string");
 
+      DatabaseService db2 = DatabaseService();
+
+      print(db);
+      print("done doing crap");
+    }
     if (event == "add") {
       final timeStart = DateTime.now();
       final timeEnd = timeStart.add(const Duration(hours: 8));

@@ -4,7 +4,18 @@ import 'package:planner/models/event.dart';
 import 'package:planner/models/task.dart';
 
 class DatabaseService {
-  final String uid;
+  static final DatabaseService _singleton = DatabaseService._internal();
+
+  factory DatabaseService({String? uid}) {
+    if (uid != null) {
+      uid = uid;
+    }
+    return _singleton;
+  }
+
+  DatabaseService._internal();
+
+  late String userid;
   // TODO: Add caching layer here if time permits
 
   // users collection reference
@@ -12,14 +23,18 @@ class DatabaseService {
       FirebaseFirestore.instance.collection('users');
   late CollectionReference events;
 
-  DatabaseService({required this.uid}) {
-    events = users.doc(uid).collection("events");
+  /// Assign UID. This must be ran before any other database function is called else it will crash
+  /// 
+  /// takes the string ID
+  initUID(String uid) {
+    userid = uid;
+    events = users.doc(userid).collection("events");
   }
 
   getEvents(String eventID) {
     return FirebaseFirestore.instance
         .collection('users')
-        .doc(uid)
+        .doc(userid)
         .collection("events")
         .doc(eventID)
         .get(); // turn this into a map of eventID to event objects?
@@ -28,7 +43,7 @@ class DatabaseService {
   getAllEvents() {
     return FirebaseFirestore.instance
         .collection('users')
-        .doc(uid)
+        .doc(userid)
         .collection("events")
         .get();
   }
@@ -52,7 +67,7 @@ class DatabaseService {
     final timestampStart = Timestamp.fromDate(dateStart);
     final timestampEnd = Timestamp.fromDate(dateEnd);
     return users
-        .doc(uid)
+        .doc(userid)
         .collection("events")
         .where("time start",
             isGreaterThanOrEqualTo: timestampStart,
@@ -121,7 +136,7 @@ class DatabaseService {
       throw Future.error("Event ID already exists!");
     }
     return await users
-        .doc(uid)
+        .doc(userid)
         .collection("events")
         .doc(eventID)
         .set(event.toMap());
@@ -148,7 +163,7 @@ class DatabaseService {
 
   Future<void> updateEventName(String oldEventID, String newEventID) async {
     try {
-      var doc = await users.doc(uid).collection("events").doc(oldEventID).get();
+      var doc = await users.doc(userid).collection("events").doc(oldEventID).get();
       Map<String, dynamic> data = {};
       if (doc.data() != null) {
         data = doc.data()!;
@@ -202,7 +217,7 @@ class DatabaseService {
 
   Future<Task> getTask(String taskID) async {
     try {
-      DocumentSnapshot<Map<String, dynamic>> taskDocument = await users.doc(uid).collection('tasks').doc(taskID).get();
+      DocumentSnapshot<Map<String, dynamic>> taskDocument = await users.doc(userid).collection('tasks').doc(taskID).get();
       if (taskDocument.exists) {
         return Task.fromMap(taskDocument.data() ?? {"getTask Error":1}, id: taskDocument.id);
       }
@@ -230,7 +245,7 @@ class DatabaseService {
   
   /// Saves a task into the database
   Future<void> setTask(Task t) async {
-    return await users.doc(uid).collection('tasks').doc(t.id).set(t.toMap());
+    return await users.doc(userid).collection('tasks').doc(t.id).set(t.toMap());
   }
 
   /// Returns a pair of lists of the form (active tasks, completed tasks)
@@ -241,7 +256,7 @@ class DatabaseService {
     Timestamp timestampStart = Timestamp.fromDate(dateStart);
     Timestamp timestampEnd = Timestamp.fromDate(dateEnd);
     QuerySnapshot<Map<String, dynamic>> allTasks = await users
-        .doc(uid)
+        .doc(userid)
         .collection("tasks")
         .where("current date",
             isGreaterThanOrEqualTo: timestampStart, isLessThan: timestampEnd)
@@ -268,7 +283,7 @@ class DatabaseService {
     assert(dateStart.isBefore(dateEnd));
     Timestamp timestampStart = Timestamp.fromDate(dateStart);
     QuerySnapshot<Map<String, dynamic>> candidateTasks = await users
-        .doc(uid)
+        .doc(userid)
         .collection("tasks")
         .where("current date", isGreaterThanOrEqualTo: timestampStart)
         // .where("time start",
@@ -355,7 +370,7 @@ class DatabaseService {
     Timestamp timestampStart = Timestamp.fromDate(dateStart);
     Timestamp timestampEnd = Timestamp.fromDate(dateEnd);
     QuerySnapshot<Map<String, dynamic>> allTasksDue = await users
-        .doc(uid)
+        .doc(userid)
         .collection("tasks")
         .where("time due",
             isGreaterThanOrEqualTo: timestampStart, isLessThan: timestampEnd)
