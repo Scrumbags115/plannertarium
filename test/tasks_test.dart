@@ -12,16 +12,20 @@ bool mapEquals(Map<DateTime, List<Task>> m1, Map<DateTime, List<Task>> m2) {
     return false;
   }
   for (DateTime key in m1.keys) {
-    if (!listEquals(m1[key], m2[key])) {
+    if (!setEquals(m1[key]!.toSet(), m2[key]!.toSet())) {
       // print('case 2');
       // print("     $key");
       // print("     ${m1.keys}");
       // print("     ${m2.keys}");
-      // // print("     " + m1[key].toString());
-      // // print("     " + m2[key].toString());
+      // print("     " + m1[key].toString());
+      // print("     " + m2[key].toString());
       // print(m1[key]![0].toDetailedString());
       // print(m2[key]![0].toDetailedString());
-      // print(listEquals(m1[key], m2[key]));
+      // print(m1[key]!.toSet());
+      // print(m1[key]![0].hashCode);
+      // print(m2[key]!.toSet());
+      // print(m2[key]![0].hashCode);
+      // print(setEquals(m1[key]!.toSet(), m2[key]!.toSet()));
       return false;
     }
   }
@@ -31,13 +35,13 @@ bool mapEquals(Map<DateTime, List<Task>> m1, Map<DateTime, List<Task>> m2) {
 main() async {
   // print("IN test_tasks");
 
-  // await task_new_user();
+  await task_new_user();
 
   await task_existing_user();
 
-  // await task_due_date();
+  await task_due_date();
 
-  // await task_delete();
+  await task_delete();
 
   // print("passed test_tasks :D");
 }
