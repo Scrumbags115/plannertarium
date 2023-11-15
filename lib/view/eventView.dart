@@ -20,7 +20,7 @@ class eventViewState extends State<eventView> {
   final User? user = FirebaseAuth.instance.currentUser;
   String userName = '';
   List<TaskEvent> events = [];
-  DatabaseService db = DatabaseService(uid: "ian");
+  DatabaseService db = DatabaseService();
 
   @override
   void initState() {

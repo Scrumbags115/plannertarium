@@ -200,9 +200,10 @@ Future<void> task_new_user() async {
 
 task_existing_user() async {
   late DatabaseService db;
+  String existingUser1 = "taskExistingUser";
+
   setUp(() async {
     // print("-----------------------------TEST TASKS EXISTING USER-----------------------------");
-    String existingUser1 = "taskExistingUser";
     // print("existingUser1 is $existingUser1");
     db = DatabaseService.createTest(uid: existingUser1, firestoreObject: FakeFirebaseFirestore());
     for (var t in tasks2) {

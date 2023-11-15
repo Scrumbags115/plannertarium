@@ -77,7 +77,8 @@ class MyAppState extends State<MyApp> {
       }
     });
     User? u = await runAuthFlow();
-    DatabaseService db = DatabaseService(uid: u!.uid);
+    DatabaseService db = DatabaseService();
+    db.initUID(u!.uid);
     if (event == "login") {
       await runAuthFlow();
     } else if (event == "logout") {

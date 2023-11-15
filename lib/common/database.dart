@@ -7,7 +7,7 @@ import 'package:planner/models/task.dart';
 
 class DatabaseService {
   static final DatabaseService _singleton = DatabaseService._internal();
-  static late String userid;
+  late String userid;
 
   // TODO: Add caching layer here if time permits
 
@@ -15,10 +15,7 @@ class DatabaseService {
   late CollectionReference users =
   FirebaseFirestore.instance.collection('users');
 
-  factory DatabaseService({String? uid}) {
-    if (uid != null) {
-      userid = uid;
-    }
+  factory DatabaseService() {
     return _singleton;
   }
 
@@ -263,15 +260,12 @@ class DatabaseService {
   }
 
   Future<Task> getTask(String taskID) async {
-    try {
-      DocumentSnapshot<Map<String, dynamic>> taskDocument = await users.doc(userid).collection('tasks').doc(taskID).get();
-      if (taskDocument.exists) {
-        return Task.fromMap(taskDocument.data() ?? {"getTask Error":1}, id: taskDocument.id);
-      }
-    } catch (e) {
-      print("Get Failed");
+    DocumentSnapshot<Map<String, dynamic>> taskDocument = await users.doc(userid).collection('tasks').doc(taskID).get();
+    if (taskDocument.exists) {
+      return Task.fromMap(taskDocument.data() ?? {"getTask Error":1}, id: taskDocument.id);
+    } else {
+      throw Exception("Task not found"); // either way this function should not return a new task if the get fails as that doesnt make sense
     }
-    return Task();
   }
   Future<List<Task>> getTasksOfName(String taskName) async {
     final allTasks = await users.doc(userid).collection("tasks")
@@ -318,9 +312,6 @@ class DatabaseService {
     List<Task> completedList = [];
     for (var doc in allTasks.docs) {
       Task t = Task.fromMap(doc.data(), id: doc.id);
-      if (t.completed) {
-        completedList.add(t);
-      } else
       if (t.completed) {
         completedList.add(t);
       } else {
@@ -386,14 +377,10 @@ class DatabaseService {
     List<Task> activeList, completedList;
     (activeList, completedList) =
         await _getTasksActiveOrCompleted(dateStart, dateEnd);
-    print("active:" + activeList.toString());
-    print("completed:" + completedList.toString());
 
     for (Task t in activeList) {
       DateTime currentDay = getDateOnly(t.timeCurrent);
-      print("active ame:" + t.name);
       if (activeMap[currentDay] == null) {
-        // print(activeMap.toString());
         continue;
       }
       activeMap[currentDay]!.add(t);
