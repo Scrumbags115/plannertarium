@@ -7,7 +7,7 @@ import 'package:planner/models/task.dart';
 
 class DatabaseService {
   static final DatabaseService _singleton = DatabaseService._internal();
-  static late String userid;
+  late String userid;
 
   // TODO: Add caching layer here if time permits
 
@@ -16,16 +16,13 @@ class DatabaseService {
   FirebaseFirestore.instance.collection('users');
 
   factory DatabaseService({String? uid}) {
-    if (uid != null) {
-      userid = uid;
-    }
     return _singleton;
   }
 
   DatabaseService._internal();
 
   /// constructor for testing, firestoreObject should be the replacement mocking firestore object
-  DatabaseService.forTest({required String uid, required firestoreObject}) {
+  DatabaseService.createTest({required String uid, required firestoreObject}) {
     userid = uid;
     users = firestoreObject.collection('users');
   }
@@ -264,15 +261,19 @@ class DatabaseService {
 
   Future<Task> getTask(String taskID) async {
     try {
-      DocumentSnapshot<Map<String, dynamic>> taskDocument = await users.doc(userid).collection('tasks').doc(taskID).get();
+      DocumentSnapshot<Map<String, dynamic>> taskDocument = await users.doc(
+          userid).collection('tasks').doc(taskID).get();
       if (taskDocument.exists) {
-        return Task.fromMap(taskDocument.data() ?? {"getTask Error":1}, id: taskDocument.id);
+        return Task.fromMap(
+            taskDocument.data() ?? {"getTask Error": 1}, id: taskDocument.id);
       }
-    } catch (e) {
-      print("Get Failed");
     }
-    return Task();
+    catch (e) {
+      rethrow;
+    }
+    throw Exception("Task not found"); // either way this function should not return a new task if the get fails as that doesnt make sense
   }
+
   Future<List<Task>> getTasksOfName(String taskName) async {
     final allTasks = await users.doc(userid).collection("tasks")
             .where("task name",  isEqualTo: taskName).get();
@@ -318,9 +319,6 @@ class DatabaseService {
     List<Task> completedList = [];
     for (var doc in allTasks.docs) {
       Task t = Task.fromMap(doc.data(), id: doc.id);
-      if (t.completed) {
-        completedList.add(t);
-      } else
       if (t.completed) {
         completedList.add(t);
       } else {
@@ -386,14 +384,19 @@ class DatabaseService {
     List<Task> activeList, completedList;
     (activeList, completedList) =
         await _getTasksActiveOrCompleted(dateStart, dateEnd);
+
     for (Task t in activeList) {
       DateTime currentDay = getDateOnly(t.timeCurrent);
-      assert(activeMap[currentDay] != null);
+      if (activeMap[currentDay] == null) {
+        continue;
+      }
       activeMap[currentDay]!.add(t);
     }
     for (Task t in completedList) {
       DateTime currentDay = getDateOnly(t.timeCurrent);
-      assert(completedMap[currentDay] != null);
+      if (completedMap[currentDay] == null) {
+        continue;
+      }
       completedMap[currentDay]!.add(t);
     }
 
@@ -407,7 +410,9 @@ class DatabaseService {
       loopEnd = getDateOnly(loopEnd);
       for (int i = 0; i < loopEnd.difference(loopStart).inDays; i++) {
         DateTime date = getDateOnly(loopStart, offset: i);
-        assert(delayedMap[date] != null);
+        if (delayedMap[date] == null) {
+          continue;
+        }
         delayedMap[date]!.add(t);
       }
     }

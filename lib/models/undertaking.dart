@@ -221,8 +221,8 @@ class Undertaking {
       _description,
       _location,
       _color,
-      _tags,
-      _recurrenceRules,
+      _tags.toString(),
+      _recurrenceRules.hashCode,
       _timeStart,
       _timeCreated,
     );

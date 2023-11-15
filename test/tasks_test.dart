@@ -3,31 +3,37 @@
 import 'package:flutter/foundation.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/models/task.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 
 bool mapEquals(Map<DateTime, List<Task>> m1, Map<DateTime, List<Task>> m2) {
   if (m1.keys.length != m2.keys.length) {
-    print('case 1');
+    // print('case 1');
     return false;
   }
   for (DateTime key in m1.keys) {
-    if (!listEquals(m1[key], m2[key])) {
-      print('case 2');
-      print("     $key");
-      print("     ${m1.keys}");
-      print("     ${m2.keys}");
+    if (!setEquals(m1[key]!.toSet(), m2[key]!.toSet())) {
+      // print('case 2');
+      // print("     $key");
+      // print("     ${m1.keys}");
+      // print("     ${m2.keys}");
       // print("     " + m1[key].toString());
       // print("     " + m2[key].toString());
-      print(m1[key]![0].toDetailedString());
-      print(m2[key]![0].toDetailedString());
-      print(listEquals(m1[key], m2[key]));
+      // print(m1[key]![0].toDetailedString());
+      // print(m2[key]![0].toDetailedString());
+      // print(m1[key]!.toSet());
+      // print(m1[key]![0].hashCode);
+      // print(m2[key]!.toSet());
+      // print(m2[key]![0].hashCode);
+      // print(setEquals(m1[key]!.toSet(), m2[key]!.toSet()));
       return false;
     }
   }
   return true;
 }
 
-test_tasks() async {
-  print("IN test_tasks");
+main() async {
+  // print("IN test_tasks");
 
   await task_new_user();
 
@@ -37,241 +43,281 @@ test_tasks() async {
 
   await task_delete();
 
-  print("passed test_tasks :D");
+  // print("passed test_tasks :D");
 }
 
 Future<void> task_new_user() async {
-  print(
-      "-----------------------------TEST TASKS NEW USER-----------------------------");
-  DateTime today = DateTime(2023, 11, 4);
+  late DatabaseService db;
+  late DateTime today;
   String newUser1 =
       "taskUser${DateTime.now().millisecondsSinceEpoch}";
-  print("newUser1 is $newUser1");
-  DatabaseService db = DatabaseService(uid: newUser1);
-
-  // Daily view test
-  DateTime tomorrow = DateTime(2023, 11, 5);
-  Map<DateTime, List<Task>> dailyActive, dailyCompleted, dailyDelayed;
-  (dailyActive, dailyCompleted, dailyDelayed) =
+  setUp(() async {
+    // print("-----------------------------TEST TASKS NEW USER-----------------------------");
+    today = DateTime(2023, 11, 4);
+    // print("newUser1 is $newUser1");
+    db = DatabaseService.createTest(uid: newUser1, firestoreObject: FakeFirebaseFirestore());
+  });
+  group("Test that a new user works as expected", () {
+    test("Test that a new user with no tasks will return no daily active, completed, and delayed tasks", () async {
+      // Daily view test
+      DateTime tomorrow = DateTime(2023, 11, 5);
+      Map<DateTime, List<Task>> dailyActive, dailyCompleted, dailyDelayed;
+      (dailyActive, dailyCompleted, dailyDelayed) =
       await db.getTaskMaps(today, tomorrow);
-  print("Daily active:    $dailyActive");
-  print("Daily completed: $dailyCompleted");
-  print("Daily delayed:   $dailyDelayed");
-  Map<DateTime, List<Task>> emptyDay = {today: <Task>[]};
-  print("Expecting:       $emptyDay");
-  assert(mapEquals(dailyActive, emptyDay));
-  assert(mapEquals(dailyCompleted, emptyDay));
-  assert(mapEquals(dailyDelayed, emptyDay));
+      // print("Daily active:    $dailyActive");
+      // print("Daily completed: $dailyCompleted");
+      // print("Daily delayed:   $dailyDelayed");
+      Map<DateTime, List<Task>> emptyDay = {today: <Task>[]};
+      // print("Expecting:       $emptyDay");
+      expect(
+          mapEquals(dailyActive, emptyDay), true
+      );
+      expect(
+          mapEquals(dailyCompleted, emptyDay), true
+      );
+      expect(
+          mapEquals(dailyDelayed, emptyDay), true
+      );
 
-  // Weekly view test
-  DateTime nextWeek = DateTime(2023, 11, 11);
-  Map<DateTime, List<Task>> weeklyActive, weeklyCompleted, weeklyDelayed;
-  (weeklyActive, weeklyCompleted, weeklyDelayed) =
+    });
+
+    test("Test that a new user with no tasks will return no weekly active, completed, and delayed tasks", () async {
+      // Weekly view test
+      DateTime nextWeek = DateTime(2023, 11, 11);
+      Map<DateTime, List<Task>> weeklyActive, weeklyCompleted, weeklyDelayed;
+      (weeklyActive, weeklyCompleted, weeklyDelayed) =
       await db.getTaskMaps(today, nextWeek);
-  print("Weekly active: $weeklyActive");
-  print("Weekly completed: $weeklyCompleted");
-  print("Weekly delayed: $weeklyDelayed");
-  Map<DateTime, List<Task>> emptyWeek = {
-    DateTime(2023, 11, 4): [],
-    DateTime(2023, 11, 5): [],
-    DateTime(2023, 11, 6): [],
-    DateTime(2023, 11, 7): [],
-    DateTime(2023, 11, 8): [],
-    DateTime(2023, 11, 9): [],
-    DateTime(2023, 11, 10): []
-  };
-  print("expecting $emptyWeek");
-  assert(mapEquals(weeklyActive, emptyWeek));
-  assert(mapEquals(weeklyCompleted, emptyWeek));
-  assert(mapEquals(weeklyDelayed, emptyWeek));
+      // print("Weekly active: $weeklyActive");
+      // print("Weekly completed: $weeklyCompleted");
+      // print("Weekly delayed: $weeklyDelayed");
+      Map<DateTime, List<Task>> emptyWeek = {
+        DateTime(2023, 11, 4): [],
+        DateTime(2023, 11, 5): [],
+        DateTime(2023, 11, 6): [],
+        DateTime(2023, 11, 7): [],
+        DateTime(2023, 11, 8): [],
+        DateTime(2023, 11, 9): [],
+        DateTime(2023, 11, 10): []
+      };
+      // print("expecting $emptyWeek");
+      assert(mapEquals(weeklyActive, emptyWeek));
+      assert(mapEquals(weeklyCompleted, emptyWeek));
+      assert(mapEquals(weeklyDelayed, emptyWeek));
+    });
 
-  // Weekly view test
-  DateTime nextMonth = DateTime(2023, 12, 4);
-  Map<DateTime, List<Task>> monthlyActive, monthlyCompleted, monthlyDelayed;
-  (monthlyActive, monthlyCompleted, monthlyDelayed) =
+    test("Test that a new user with no tasks will return no monthy active, completed, and delayed tasks", () async {
+      // Monthly view test
+      DateTime nextMonth = DateTime(2023, 12, 4);
+      Map<DateTime, List<Task>> monthlyActive, monthlyCompleted, monthlyDelayed;
+      (monthlyActive, monthlyCompleted, monthlyDelayed) =
       await db.getTaskMaps(today, nextMonth);
-  print("Monthly active: $monthlyActive");
-  print("Monthly completed: $monthlyCompleted");
-  print("Monthly delayed: $monthlyDelayed");
-  Map<DateTime, List<Task>> emptyMonth = {
-    DateTime(2023, 11, 4): [],
-    DateTime(2023, 11, 5): [],
-    DateTime(2023, 11, 6): [],
-    DateTime(2023, 11, 7): [],
-    DateTime(2023, 11, 8): [],
-    DateTime(2023, 11, 9): [],
-    DateTime(2023, 11, 10): [],
-    DateTime(2023, 11, 11): [],
-    DateTime(2023, 11, 12): [],
-    DateTime(2023, 11, 13): [],
-    DateTime(2023, 11, 14): [],
-    DateTime(2023, 11, 15): [],
-    DateTime(2023, 11, 16): [],
-    DateTime(2023, 11, 17): [],
-    DateTime(2023, 11, 18): [],
-    DateTime(2023, 11, 19): [],
-    DateTime(2023, 11, 20): [],
-    DateTime(2023, 11, 21): [],
-    DateTime(2023, 11, 22): [],
-    DateTime(2023, 11, 23): [],
-    DateTime(2023, 11, 24): [],
-    DateTime(2023, 11, 25): [],
-    DateTime(2023, 11, 26): [],
-    DateTime(2023, 11, 27): [],
-    DateTime(2023, 11, 28): [],
-    DateTime(2023, 11, 29): [],
-    DateTime(2023, 11, 30): [],
-    DateTime(2023, 12, 1): [],
-    DateTime(2023, 12, 2): [],
-    DateTime(2023, 12, 3): []
-  };
-  print("expecting $emptyMonth");
-  assert(mapEquals(monthlyActive, emptyMonth));
-  assert(mapEquals(monthlyCompleted, emptyMonth));
-  assert(mapEquals(monthlyDelayed, emptyMonth));
+      // print("Monthly active: $monthlyActive");
+      // print("Monthly completed: $monthlyCompleted");
+      // print("Monthly delayed: $monthlyDelayed");
+      Map<DateTime, List<Task>> emptyMonth = {
+        DateTime(2023, 11, 4): [],
+        DateTime(2023, 11, 5): [],
+        DateTime(2023, 11, 6): [],
+        DateTime(2023, 11, 7): [],
+        DateTime(2023, 11, 8): [],
+        DateTime(2023, 11, 9): [],
+        DateTime(2023, 11, 10): [],
+        DateTime(2023, 11, 11): [],
+        DateTime(2023, 11, 12): [],
+        DateTime(2023, 11, 13): [],
+        DateTime(2023, 11, 14): [],
+        DateTime(2023, 11, 15): [],
+        DateTime(2023, 11, 16): [],
+        DateTime(2023, 11, 17): [],
+        DateTime(2023, 11, 18): [],
+        DateTime(2023, 11, 19): [],
+        DateTime(2023, 11, 20): [],
+        DateTime(2023, 11, 21): [],
+        DateTime(2023, 11, 22): [],
+        DateTime(2023, 11, 23): [],
+        DateTime(2023, 11, 24): [],
+        DateTime(2023, 11, 25): [],
+        DateTime(2023, 11, 26): [],
+        DateTime(2023, 11, 27): [],
+        DateTime(2023, 11, 28): [],
+        DateTime(2023, 11, 29): [],
+        DateTime(2023, 11, 30): [],
+        DateTime(2023, 12, 1): [],
+        DateTime(2023, 12, 2): [],
+        DateTime(2023, 12, 3): []
+      };
+      // print("expecting $emptyMonth");
+      expect(mapEquals(monthlyActive, emptyMonth), true);
+      expect(mapEquals(monthlyCompleted, emptyMonth), true);
+      expect(mapEquals(monthlyDelayed, emptyMonth), true);
+    });
+  });
 
-  print(
-      "---------------------------------------------Setting db with tasks---------------------------------------------");
-  for (var t in tasks) {
-    db.setTask(t);
-  }
+  group("Test adding tasks works", () {
+    test("Test that adding new daily tasks works", () async {
+      // print("---------------------------------------------Setting db with tasks---------------------------------------------");
+      for (var t in tasks) {
+        db.setTask(t);
+      }
 
-  // Daily
-  (dailyActive, dailyCompleted, dailyDelayed) =
+      // Daily
+      Map<DateTime, List<Task>> dailyActive, dailyCompleted, dailyDelayed;
+      (dailyActive, dailyCompleted, dailyDelayed) =
       await db.getTaskMaps(DateTime(2023, 11, 20), DateTime(2023, 11, 21));
-  Map<DateTime, List<Task>> dailyActiveExp = {
-    DateTime(2023, 11, 20): [tasks[18]]
-  };
-  Map<DateTime, List<Task>> dailyCompExp = {
-    DateTime(2023, 11, 20): [tasks[16], tasks[20]]
-  };
-  Map<DateTime, List<Task>> dailyDelayExp = {
-    DateTime(2023, 11, 20): [tasks[13], tasks[4]]
-  };
-  print("Daily active found   : $dailyActive");
-  print("Daily active expected: $dailyActiveExp");
-  print("Daily completed found   : $dailyCompleted");
-  print("Daily completed expected: $dailyCompExp");
-  print("Daily delayed found   : $dailyDelayed");
-  print("Daily delayed expected: $dailyDelayExp");
-  assert(mapEquals(dailyActive, dailyActiveExp));
-  assert(mapEquals(dailyCompleted, dailyCompExp));
-  assert(mapEquals(dailyDelayed, dailyDelayExp));
+      Map<DateTime, List<Task>> dailyActiveExp = {
+        DateTime(2023, 11, 20): [tasks[18]]
+      };
+      Map<DateTime, List<Task>> dailyCompExp = {
+        DateTime(2023, 11, 20): [tasks[16], tasks[20]]
+      };
+      Map<DateTime, List<Task>> dailyDelayExp = {
+        DateTime(2023, 11, 20): [tasks[4], tasks[13]]
+      };
+      // print("Daily active found   : $dailyActive");
+      // print("Daily active expected: $dailyActiveExp");
+      // print("Daily completed found   : $dailyCompleted");
+      // print("Daily completed expected: $dailyCompExp");
+      // print("Daily delayed found   : $dailyDelayed");
+      // print("Daily delayed expected: $dailyDelayExp");
+      expect(mapEquals(dailyActive, dailyActiveExp), true);
+      expect(mapEquals(dailyCompleted, dailyCompExp), true);
+      expect(mapEquals(dailyDelayed, dailyDelayExp), true);
+    });
+  });
+
 
   // eyeballed the others, seems ok
   // TODO: fill out the rest of these tests
-
-  // Delete the new user
-  for (int i = 1; i <= tasks.length; i++) {
-    await db.users.doc(newUser1).collection('tasks').doc("ID-$i").delete();
-  }
-  await db.users.doc(newUser1).delete();
+  tearDown(() async {
+    // Delete the new user
+    // this may not be necessary as the mocking library means nothing persists between runs
+    for (int i = 1; i <= tasks.length; i++) {
+      await db.users.doc(newUser1).collection('tasks').doc("ID-$i").delete();
+    }
+    await db.users.doc(newUser1).delete();
+  });
 }
 
 task_existing_user() async {
-  print(
-      "-----------------------------TEST TASKS EXISTING USER-----------------------------");
+  late DatabaseService db;
   String existingUser1 = "taskExistingUser";
-  print("existingUser1 is $existingUser1");
-  DatabaseService db = DatabaseService(uid: existingUser1);
-  // tasks2.forEach((t) {
-  //   db.setTask(t);
-  // });
-  // ^ Uncomment above to rewrite database info
 
-  // Weekly
-  Map<DateTime, List<Task>> weeklyActive, weeklyCompleted, weeklyDelayed;
-  (weeklyActive, weeklyCompleted, weeklyDelayed) =
+  setUp(() async {
+    // print("-----------------------------TEST TASKS EXISTING USER-----------------------------");
+    // print("existingUser1 is $existingUser1");
+    db = DatabaseService.createTest(uid: existingUser1, firestoreObject: FakeFirebaseFirestore());
+    for (var t in tasks2) {
+      await db.setTask(t);
+    }
+  });
+  group("Test created weekly tasks", () {
+    test("Test that weekly tasks can be retrieved", () async {
+      // Weekly
+      // db.users.collection("tasks").where()
+      Map<DateTime, List<Task>> weeklyActive, weeklyCompleted, weeklyDelayed;
+      (weeklyActive, weeklyCompleted, weeklyDelayed) =
       await db.getTaskMaps(DateTime(2023, 11, 6), DateTime(2023, 11, 13));
-  Map<DateTime, List<Task>> weeklyActiveExp = {
-    DateTime(2023, 11, 6): [],
-    DateTime(2023, 11, 7): [],
-    DateTime(2023, 11, 8): [],
-    DateTime(2023, 11, 9): [],
-    DateTime(2023, 11, 10): [],
-    DateTime(2023, 11, 11): [],
-    DateTime(2023, 11, 12): [tasks2[7]]
-  };
-  Map<DateTime, List<Task>> weeklyCompExp = {
-    DateTime(2023, 11, 6): [],
-    DateTime(2023, 11, 7): [tasks2[2]],
-    DateTime(2023, 11, 8): [],
-    DateTime(2023, 11, 9): [tasks2[3]],
-    DateTime(2023, 11, 10): [],
-    DateTime(2023, 11, 11): [],
-    DateTime(2023, 11, 12): []
-  };
-  Map<DateTime, List<Task>> weeklyDelayExp = {
-    DateTime(2023, 11, 6): [tasks2[2], tasks2[3], tasks2[7], tasks2[6]],
-    DateTime(2023, 11, 7): [tasks2[3], tasks2[7], tasks2[6]],
-    DateTime(2023, 11, 8): [tasks2[3], tasks2[7], tasks2[6]],
-    DateTime(2023, 11, 9): [tasks2[7], tasks2[4], tasks2[6]],
-    DateTime(2023, 11, 10): [tasks2[7], tasks2[4], tasks2[6]],
-    DateTime(2023, 11, 11): [tasks2[7], tasks2[4], tasks2[6]],
-    DateTime(2023, 11, 12): [tasks2[4], tasks2[6]]
-  };
-  print("Weekly active found   : $weeklyActive");
-  print("Weekly active expected: $weeklyActiveExp");
-  print("Weekly completed found   : $weeklyCompleted");
-  print("Weekly completed expected: $weeklyCompExp");
-  print("Weekly delayed found   : $weeklyDelayed");
-  print("Weekly delayed expected: $weeklyDelayExp");
-  assert(mapEquals(weeklyActive, weeklyActiveExp));
-  assert(mapEquals(weeklyCompleted, weeklyCompExp));
-  assert(mapEquals(weeklyDelayed, weeklyDelayExp));
+      Map<DateTime, List<Task>> weeklyActiveExp = {
+        DateTime(2023, 11, 6): [],
+        DateTime(2023, 11, 7): [],
+        DateTime(2023, 11, 8): [],
+        DateTime(2023, 11, 9): [],
+        DateTime(2023, 11, 10): [],
+        DateTime(2023, 11, 11): [],
+        DateTime(2023, 11, 12): [tasks2[7]]
+      };
+      Map<DateTime, List<Task>> weeklyCompExp = {
+        DateTime(2023, 11, 6): [],
+        DateTime(2023, 11, 7): [tasks2[2]],
+        DateTime(2023, 11, 8): [],
+        DateTime(2023, 11, 9): [tasks2[3]],
+        DateTime(2023, 11, 10): [],
+        DateTime(2023, 11, 11): [],
+        DateTime(2023, 11, 12): []
+      };
+      Map<DateTime, List<Task>> weeklyDelayExp = {
+        DateTime(2023, 11, 6): [tasks2[2], tasks2[3], tasks2[7], tasks2[6]],
+        DateTime(2023, 11, 7): [tasks2[3], tasks2[7], tasks2[6]],
+        DateTime(2023, 11, 8): [tasks2[3], tasks2[7], tasks2[6]],
+        DateTime(2023, 11, 9): [tasks2[7], tasks2[4], tasks2[6]],
+        DateTime(2023, 11, 10): [tasks2[7], tasks2[4], tasks2[6]],
+        DateTime(2023, 11, 11): [tasks2[7], tasks2[4], tasks2[6]],
+        DateTime(2023, 11, 12): [tasks2[4], tasks2[6]]
+      };
+      expect(mapEquals(weeklyActive, weeklyActiveExp), true);
+      expect(mapEquals(weeklyCompleted, weeklyCompExp), true);
+      expect(mapEquals(weeklyDelayed, weeklyDelayExp), true);
+    });
+  });
 }
 
 task_due_date() async {
+  late DatabaseService db;
   String existingUser2 = "taskExistingUser2";
-  print("existingUser2 is $existingUser2");
-  DatabaseService db = DatabaseService(uid: existingUser2);
-  // tasksDue.forEach((t) {
-  //   db.setTask(t);
-  // });
-  // ^ Uncomment above to rewrite database info
+  setUp(() async {
+    // print("existingUser2 is $existingUser2");
+    db = DatabaseService.createTest(uid: existingUser2, firestoreObject: FakeFirebaseFirestore());
+    for (var t in tasksDue) {
+      db.setTask(t);
+    }
+    // ^ Uncomment above to rewrite database info
+  });
 
-  // Daily (11/9/2023)
-  Map<DateTime, List<Task>> dailyTasksDue =
+  group("Test created daily tasks", () {
+    test("Test that existing daily tasks are retrieved properly", () async {
+      // Daily (11/9/2023)
+      Map<DateTime, List<Task>> dailyTasksDue =
       await db.getTasksDue(DateTime(2023, 11, 9), DateTime(2023, 11, 10));
-  Map<DateTime, List<Task>> dailyTasksDueExpected = {
-    DateTime(2023, 11, 9): [tasksDue[0], tasksDue[1]],
-  };
-  print("Daily tasks due found   : $dailyTasksDue");
-  print("Daily tasks due expected: $dailyTasksDueExpected");
+      Map<DateTime, List<Task>> dailyTasksDueExpected = {
+        DateTime(2023, 11, 9): [tasksDue[0], tasksDue[1]],
+      };
+      // print("Daily tasks due found   : $dailyTasksDue");
+      // print("Daily tasks due expected: $dailyTasksDueExpected");
 
-  assert(mapEquals(dailyTasksDue, dailyTasksDueExpected));
+      expect(mapEquals(dailyTasksDue, dailyTasksDueExpected), true);
+    });
+  });
 }
 
 task_delete() async {
+  late DatabaseService db;
   String newUser2 =
       "taskUser${DateTime.now().millisecondsSinceEpoch}";
-  print("newUser1 is $newUser2");
-  DatabaseService db = DatabaseService(uid: newUser2);
+  setUp(() {
+    // print("newUser1 is $newUser2");
+    db = DatabaseService.createTest(uid: newUser2, firestoreObject: FakeFirebaseFirestore());
 
-  for (var t in tasks) {
-    db.setTask(t);
-  }
+    for (var t in tasks) {
+      db.setTask(t);
+    }
+  });
 
-  for (Task t in tasks) {
-    db.deleteTask(t);
-  }
+  group("Test deleting tasks", () {
+    test("Test that delete operations work", () async {
 
-  Map<DateTime, List<Task>> allActive, allCompleted, allDelayed;
-  (allActive, allCompleted, allDelayed) =
+      for (Task t in tasks) {
+        db.deleteTask(t);
+      }
+
+      Map<DateTime, List<Task>> allActive, allCompleted, allDelayed;
+      (allActive, allCompleted, allDelayed) =
       await db.getTaskMaps(DateTime(2023, 10), DateTime(2024));
 
-  for (DateTime date in allActive.keys) {
-    assert (listEquals(allActive[date], []));
-  }
-  for (DateTime date in allCompleted.keys) {
-    assert (listEquals(allCompleted[date], []));
-  }
-  for (DateTime date in allDelayed.keys) {
-    assert (listEquals(allDelayed[date], []));
-  }
+      for (DateTime date in allActive.keys) {
+        expect(listEquals(allActive[date], []), true);
+      }
+      for (DateTime date in allCompleted.keys) {
+        expect(listEquals(allCompleted[date], []), true);
+      }
+      for (DateTime date in allDelayed.keys) {
+        expect(listEquals(allDelayed[date], []), true);
+      }
 
-  // Delete the new user
-  await db.users.doc(newUser2).delete();
+      // Delete the new user
+      await db.users.doc(newUser2).delete();
+    });
+  });
+
 }
 
 List<Task> tasks = [
