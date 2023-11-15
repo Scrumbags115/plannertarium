@@ -284,7 +284,7 @@ List<Event> events = [
 void main() async {
   late DatabaseService db;
   setUp(() async {
-    db = DatabaseService.forTest(uid: "test_user_1", firestoreObject: FakeFirebaseFirestore());
+    db = DatabaseService.createTest(uid: "test_user_1", firestoreObject: FakeFirebaseFirestore());
   });
 
   group("Test creating a bunch of events works", () {

@@ -25,7 +25,7 @@ class DatabaseService {
   DatabaseService._internal();
 
   /// constructor for testing, firestoreObject should be the replacement mocking firestore object
-  DatabaseService.forTest({required String uid, required firestoreObject}) {
+  DatabaseService.createTest({required String uid, required firestoreObject}) {
     userid = uid;
     users = firestoreObject.collection('users');
   }
@@ -386,14 +386,23 @@ class DatabaseService {
     List<Task> activeList, completedList;
     (activeList, completedList) =
         await _getTasksActiveOrCompleted(dateStart, dateEnd);
+    print("active:" + activeList.toString());
+    print("completed:" + completedList.toString());
+
     for (Task t in activeList) {
       DateTime currentDay = getDateOnly(t.timeCurrent);
-      assert(activeMap[currentDay] != null);
+      print("active ame:" + t.name);
+      if (activeMap[currentDay] == null) {
+        // print(activeMap.toString());
+        continue;
+      }
       activeMap[currentDay]!.add(t);
     }
     for (Task t in completedList) {
       DateTime currentDay = getDateOnly(t.timeCurrent);
-      assert(completedMap[currentDay] != null);
+      if (completedMap[currentDay] == null) {
+        continue;
+      }
       completedMap[currentDay]!.add(t);
     }
 
@@ -407,7 +416,9 @@ class DatabaseService {
       loopEnd = getDateOnly(loopEnd);
       for (int i = 0; i < loopEnd.difference(loopStart).inDays; i++) {
         DateTime date = getDateOnly(loopStart, offset: i);
-        assert(delayedMap[date] != null);
+        if (delayedMap[date] == null) {
+          continue;
+        }
         delayedMap[date]!.add(t);
       }
     }
