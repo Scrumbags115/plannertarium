@@ -15,7 +15,7 @@ class DatabaseService {
   late CollectionReference users =
   FirebaseFirestore.instance.collection('users');
 
-  factory DatabaseService() {
+  factory DatabaseService({String? uid}) {
     return _singleton;
   }
 
@@ -260,13 +260,20 @@ class DatabaseService {
   }
 
   Future<Task> getTask(String taskID) async {
-    DocumentSnapshot<Map<String, dynamic>> taskDocument = await users.doc(userid).collection('tasks').doc(taskID).get();
-    if (taskDocument.exists) {
-      return Task.fromMap(taskDocument.data() ?? {"getTask Error":1}, id: taskDocument.id);
-    } else {
-      throw Exception("Task not found"); // either way this function should not return a new task if the get fails as that doesnt make sense
+    try {
+      DocumentSnapshot<Map<String, dynamic>> taskDocument = await users.doc(
+          userid).collection('tasks').doc(taskID).get();
+      if (taskDocument.exists) {
+        return Task.fromMap(
+            taskDocument.data() ?? {"getTask Error": 1}, id: taskDocument.id);
+      }
     }
+    catch (e) {
+      rethrow;
+    }
+    throw Exception("Task not found"); // either way this function should not return a new task if the get fails as that doesnt make sense
   }
+
   Future<List<Task>> getTasksOfName(String taskName) async {
     final allTasks = await users.doc(userid).collection("tasks")
             .where("task name",  isEqualTo: taskName).get();
