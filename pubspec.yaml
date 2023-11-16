@@ -42,13 +42,8 @@ dependencies:
   google_sign_in: ^6.1.5
   swipeable_page_route: ^0.4.0
   fake_cloud_firestore: ^2.4.3
-  firebase_crashlytics: ^3.4.4
-  flutter_localization: ^0.1.14
-  built_value: ^8.7.0
-  uuid: ^4.2.1
-  package_info: ^2.0.2
-  dio: ^5.3.3
-  sqflite: ^2.3.0
+  http: ^0.13.3
+  oauth2: ^2.0.2
 
 dev_dependencies:
   flutter_test:
