@@ -14,7 +14,7 @@
 
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
-import 'package:flutter_student_embed/models/user.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/models/user.dart';
 import 'package:uuid/uuid.dart';
 
 part 'login.g.dart';

@@ -17,11 +17,11 @@ import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_student_embed/student_flutter_app.dart';
-import 'package:flutter_student_embed/utils/crash_utils.dart';
-import 'package:flutter_student_embed/utils/db/db_util.dart';
-import 'package:flutter_student_embed/utils/native_comm.dart';
-import 'package:flutter_student_embed/utils/service_locator.dart';
+import 'package:planner/canvas/flutter_student_embed/student_flutter_app.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/crash_utils.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/db/db_util.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/native_comm.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/service_locator.dart';
 
 import 'network/utils/api_prefs.dart';
 

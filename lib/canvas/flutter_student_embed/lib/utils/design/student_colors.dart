@@ -16,7 +16,7 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_student_embed/utils/design/light_colors.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/design/light_colors.dart';
 
 import 'dark_colors.dart';
 

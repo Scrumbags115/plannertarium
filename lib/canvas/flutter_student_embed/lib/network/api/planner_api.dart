@@ -13,10 +13,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import 'package:built_value/built_value.dart';
-import 'package:flutter_student_embed/models/plannable.dart';
-import 'package:flutter_student_embed/models/planner_item.dart';
-import 'package:flutter_student_embed/network/utils/dio_config.dart';
-import 'package:flutter_student_embed/network/utils/fetch.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/models/plannable.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/models/planner_item.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/network/utils/dio_config.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/network/utils/fetch.dart';
 
 class PlannerApi {
   Future<List<PlannerItem>> getUserPlannerItems(

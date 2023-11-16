@@ -13,12 +13,12 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:flutter_student_embed/network/api/course_api.dart';
-import 'package:flutter_student_embed/network/api/planner_api.dart';
-import 'package:flutter_student_embed/screens/calendar/calendar_widget/calendar_filter_screen/calendar_filter_list_interactor.dart';
-import 'package:flutter_student_embed/screens/to_do/create_update_to_do_screen_interactor.dart';
-import 'package:flutter_student_embed/utils/db/calendar_filter_db.dart';
-import 'package:flutter_student_embed/utils/quick_nav.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/network/api/course_api.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/network/api/planner_api.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/screens/calendar/calendar_widget/calendar_filter_screen/calendar_filter_list_interactor.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/screens/to_do/create_update_to_do_screen_interactor.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/db/calendar_filter_db.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/quick_nav.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sqflite/sqflite.dart';
 

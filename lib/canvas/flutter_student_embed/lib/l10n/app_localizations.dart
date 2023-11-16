@@ -13,7 +13,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import 'package:flutter/material.dart';
-import 'package:flutter_student_embed/l10n/generated/messages_all.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/l10n/generated/messages_all.dart';
 import 'package:intl/intl.dart';
 
 ///

@@ -13,8 +13,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import 'package:flutter/material.dart';
-import 'package:flutter_student_embed/utils/design/student_colors.dart';
-import 'package:flutter_student_embed/utils/native_comm.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/design/student_colors.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/native_comm.dart';
 import 'package:provider/provider.dart';
 
 /// Provides Student App [ThemeData] to the 'builder' callback. This widget is designed to directly wrap (or be a nearby

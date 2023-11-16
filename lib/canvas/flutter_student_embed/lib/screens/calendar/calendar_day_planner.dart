@@ -13,12 +13,12 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import 'package:flutter/material.dart';
-import 'package:flutter_student_embed/l10n/app_localizations.dart';
-import 'package:flutter_student_embed/models/planner_item.dart';
-import 'package:flutter_student_embed/screens/calendar/planner_fetcher.dart';
-import 'package:flutter_student_embed/utils/common_widgets/empty_panda_widget.dart';
-import 'package:flutter_student_embed/utils/common_widgets/error_panda_widget.dart';
-import 'package:flutter_student_embed/utils/common_widgets/loading_indicator.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/l10n/app_localizations.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/models/planner_item.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/screens/calendar/planner_fetcher.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/common_widgets/empty_panda_widget.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/common_widgets/error_panda_widget.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/common_widgets/loading_indicator.dart';
 import 'package:provider/provider.dart';
 
 import 'calendar_day_list_tile.dart';

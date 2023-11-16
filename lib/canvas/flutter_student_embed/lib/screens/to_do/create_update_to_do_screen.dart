@@ -13,19 +13,19 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import 'package:flutter/material.dart';
-import 'package:flutter_student_embed/l10n/app_localizations.dart';
-import 'package:flutter_student_embed/models/course.dart';
-import 'package:flutter_student_embed/models/planner_item.dart';
-import 'package:flutter_student_embed/screens/to_do/create_update_to_do_screen_interactor.dart';
-import 'package:flutter_student_embed/utils/alert_dialog_channel.dart';
-import 'package:flutter_student_embed/utils/common_widgets/appbar_dynamic_style.dart';
-import 'package:flutter_student_embed/utils/common_widgets/arrow_aware_focus_scope.dart';
-import 'package:flutter_student_embed/utils/common_widgets/colored_status_bar.dart';
-import 'package:flutter_student_embed/utils/core_extensions/date_time_extensions.dart';
-import 'package:flutter_student_embed/utils/core_extensions/string_extensions.dart';
-import 'package:flutter_student_embed/utils/design/student_colors.dart';
-import 'package:flutter_student_embed/utils/design/student_theme.dart';
-import 'package:flutter_student_embed/utils/service_locator.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/l10n/app_localizations.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/models/course.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/models/planner_item.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/screens/to_do/create_update_to_do_screen_interactor.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/alert_dialog_channel.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/common_widgets/appbar_dynamic_style.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/common_widgets/arrow_aware_focus_scope.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/common_widgets/colored_status_bar.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/core_extensions/date_time_extensions.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/core_extensions/string_extensions.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/design/student_colors.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/design/student_theme.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/service_locator.dart';
 
 class CreateUpdateToDoScreen extends StatefulWidget with ColoredStatusBar {
   final DateTime initialDate;

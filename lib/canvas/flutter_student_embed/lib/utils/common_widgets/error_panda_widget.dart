@@ -13,10 +13,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import 'package:flutter/material.dart';
-import 'package:flutter_student_embed/l10n/app_localizations.dart';
-import 'package:flutter_student_embed/utils/common_widgets/full_screen_scroll_container.dart';
-import 'package:flutter_student_embed/utils/design/canvas_icons.dart';
-import 'package:flutter_student_embed/utils/design/student_colors.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/l10n/app_localizations.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/common_widgets/full_screen_scroll_container.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/design/canvas_icons.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/design/student_colors.dart';
 
 /// Displays the error page used throughout the app
 /// Contains a warning icon, an error message, and a retry button.

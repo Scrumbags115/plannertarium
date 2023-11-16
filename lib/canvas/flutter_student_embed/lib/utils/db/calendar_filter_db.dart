@@ -13,7 +13,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import 'package:built_collection/built_collection.dart';
-import 'package:flutter_student_embed/models/calendar_filter.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/models/calendar_filter.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../service_locator.dart';

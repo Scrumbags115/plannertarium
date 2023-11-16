@@ -16,11 +16,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_student_embed/l10n/app_localizations.dart';
-import 'package:flutter_student_embed/network/utils/api_prefs.dart';
-import 'package:flutter_student_embed/screens/calendar/calendar_screen.dart';
-import 'package:flutter_student_embed/utils/design/student_theme.dart';
-import 'package:flutter_student_embed/utils/native_comm.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/l10n/app_localizations.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/network/utils/api_prefs.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/screens/calendar/calendar_screen.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/design/student_theme.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/native_comm.dart';
 
 class StudentFlutterApp extends StatefulWidget {
   @override

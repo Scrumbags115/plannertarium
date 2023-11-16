@@ -13,11 +13,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import 'package:built_value/built_value.dart';
-import 'package:flutter_student_embed/models/course.dart';
-import 'package:flutter_student_embed/models/plannable.dart';
-import 'package:flutter_student_embed/network/api/course_api.dart';
-import 'package:flutter_student_embed/network/api/planner_api.dart';
-import 'package:flutter_student_embed/utils/service_locator.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/models/course.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/models/plannable.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/network/api/course_api.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/network/api/planner_api.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/service_locator.dart';
 
 class CreateUpdateToDoScreenInteractor {
   Future<List<Course>> getCoursesForUser({bool isRefresh = false}) async {

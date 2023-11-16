@@ -13,14 +13,14 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import 'package:flutter/material.dart';
-import 'package:flutter_student_embed/l10n/app_localizations.dart';
-import 'package:flutter_student_embed/models/course.dart';
-import 'package:flutter_student_embed/network/utils/api_prefs.dart';
-import 'package:flutter_student_embed/utils/common_widgets/appbar_dynamic_style.dart';
-import 'package:flutter_student_embed/utils/common_widgets/empty_panda_widget.dart';
-import 'package:flutter_student_embed/utils/common_widgets/error_panda_widget.dart';
-import 'package:flutter_student_embed/utils/common_widgets/loading_indicator.dart';
-import 'package:flutter_student_embed/utils/service_locator.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/l10n/app_localizations.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/models/course.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/network/utils/api_prefs.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/common_widgets/appbar_dynamic_style.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/common_widgets/empty_panda_widget.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/common_widgets/error_panda_widget.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/common_widgets/loading_indicator.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/service_locator.dart';
 
 import 'calendar_filter_list_interactor.dart';
 

@@ -16,8 +16,8 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_student_embed/models/login.dart';
-import 'package:flutter_student_embed/models/user.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/models/login.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/models/user.dart';
 import 'package:package_info/package_info.dart';
 
 class ApiPrefs {

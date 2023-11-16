@@ -18,13 +18,13 @@ import 'package:built_collection/built_collection.dart';
 import 'package:built_value/iso_8601_date_time_serializer.dart';
 import 'package:built_value/serializer.dart';
 import 'package:built_value/standard_json_plugin.dart';
-import 'package:flutter_student_embed/models/course.dart';
-import 'package:flutter_student_embed/models/enrollment.dart';
-import 'package:flutter_student_embed/models/login.dart';
-import 'package:flutter_student_embed/models/plannable.dart';
-import 'package:flutter_student_embed/models/planner_item.dart';
-import 'package:flutter_student_embed/models/planner_submission.dart';
-import 'package:flutter_student_embed/models/user.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/models/course.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/models/enrollment.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/models/login.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/models/plannable.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/models/planner_item.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/models/planner_submission.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/models/user.dart';
 
 part 'serializers.g.dart';
 

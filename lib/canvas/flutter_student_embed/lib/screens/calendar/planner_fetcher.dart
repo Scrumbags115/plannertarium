@@ -16,12 +16,12 @@ import 'dart:async';
 
 import 'package:built_collection/built_collection.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_student_embed/models/calendar_filter.dart';
-import 'package:flutter_student_embed/models/planner_item.dart';
-import 'package:flutter_student_embed/network/api/planner_api.dart';
-import 'package:flutter_student_embed/utils/core_extensions/date_time_extensions.dart';
-import 'package:flutter_student_embed/utils/db/calendar_filter_db.dart';
-import 'package:flutter_student_embed/utils/service_locator.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/models/calendar_filter.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/models/planner_item.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/network/api/planner_api.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/core_extensions/date_time_extensions.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/db/calendar_filter_db.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/service_locator.dart';
 
 class PlannerFetcher extends ChangeNotifier {
   @visibleForTesting

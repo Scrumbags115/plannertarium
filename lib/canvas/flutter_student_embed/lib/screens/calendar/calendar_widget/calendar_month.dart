@@ -13,8 +13,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import 'package:flutter/material.dart';
-import 'package:flutter_student_embed/utils/core_extensions/date_time_extensions.dart';
-import 'package:flutter_student_embed/utils/core_extensions/list_extensions.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/core_extensions/date_time_extensions.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/core_extensions/list_extensions.dart';
 
 import 'calendar_day.dart';
 import 'calendar_day_of_week_headers.dart';

@@ -13,7 +13,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import 'package:dio/dio.dart';
-import 'package:flutter_student_embed/models/serializers.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/models/serializers.dart';
 
 /// A helper class to communicate back to api callers what the data and next url is for paged lists.
 class PagedList<T> {

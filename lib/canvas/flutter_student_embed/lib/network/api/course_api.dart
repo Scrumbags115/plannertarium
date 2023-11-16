@@ -12,9 +12,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import 'package:flutter_student_embed/models/course.dart';
-import 'package:flutter_student_embed/network/utils/dio_config.dart';
-import 'package:flutter_student_embed/network/utils/fetch.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/models/course.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/network/utils/dio_config.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/network/utils/fetch.dart';
 
 class CourseApi {
   Future<List<Course>> getCourses({bool forceRefresh: false}) async {

@@ -16,8 +16,8 @@ import 'package:built_value/built_value.dart';
 import 'package:built_value/json_object.dart';
 import 'package:built_value/serializer.dart';
 import 'package:planner/canvas/flutter_student_embed/lib/models/plannable.dart';
-import 'package:planner/camvas/flutter_student_embed/lib/models/planner_submission.dart';
-import 'package:flutter_student_embed/models/serializers.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/models/planner_submission.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/models/serializers.dart';
 
 part 'planner_item.g.dart';
 

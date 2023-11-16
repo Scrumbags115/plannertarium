@@ -17,13 +17,13 @@ import 'dart:ui';
 
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_student_embed/models/login.dart';
-import 'package:flutter_student_embed/models/serializers.dart';
-import 'package:flutter_student_embed/network/utils/api_prefs.dart';
-import 'package:flutter_student_embed/screens/calendar/calendar_screen.dart';
-import 'package:flutter_student_embed/screens/calendar/planner_fetcher.dart';
-import 'package:flutter_student_embed/utils/common_widgets/colored_status_bar.dart';
-import 'package:flutter_student_embed/utils/quick_nav.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/models/login.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/models/serializers.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/network/utils/api_prefs.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/screens/calendar/calendar_screen.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/screens/calendar/planner_fetcher.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/common_widgets/colored_status_bar.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/quick_nav.dart';
 
 import 'design/student_colors.dart';
 

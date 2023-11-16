@@ -15,13 +15,13 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_student_embed/l10n/app_localizations.dart';
-import 'package:flutter_student_embed/screens/calendar/calendar_widget/calendar_month.dart';
-import 'package:flutter_student_embed/screens/calendar/planner_fetcher.dart';
-import 'package:flutter_student_embed/utils/common_widgets/dropdown_arrow.dart';
-import 'package:flutter_student_embed/utils/core_extensions/date_time_extensions.dart';
-import 'package:flutter_student_embed/utils/design/canvas_icons.dart';
-import 'package:flutter_student_embed/utils/design/student_theme.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/l10n/app_localizations.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/screens/calendar/calendar_widget/calendar_month.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/screens/calendar/planner_fetcher.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/common_widgets/dropdown_arrow.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/core_extensions/date_time_extensions.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/design/canvas_icons.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/design/student_theme.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';

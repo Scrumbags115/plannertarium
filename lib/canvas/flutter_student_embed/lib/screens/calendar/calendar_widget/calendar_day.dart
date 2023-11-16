@@ -15,10 +15,10 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_student_embed/l10n/app_localizations.dart';
-import 'package:flutter_student_embed/models/planner_item.dart';
-import 'package:flutter_student_embed/utils/core_extensions/date_time_extensions.dart';
-import 'package:flutter_student_embed/utils/design/student_colors.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/l10n/app_localizations.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/models/planner_item.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/core_extensions/date_time_extensions.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/design/student_colors.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 

@@ -15,7 +15,7 @@
 import 'package:device_info/device_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_student_embed/utils/design/student_theme.dart';
+import 'package:planner/canvas/flutter_student_embed/lib/utils/design/student_theme.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:package_info/package_info.dart';
 
