@@ -13,7 +13,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import 'dart:convert';
-import 'dart:ui';
 
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -39,7 +38,7 @@ class NativeComm {
   static const methodUpdateThemeData = 'updateThemeData';
   static const methodUpdateDarkMode = 'updateLightOrDarkMode';
 
-  static const channel = const MethodChannel(channelName);
+  static const channel = MethodChannel(channelName);
 
   static final ShouldPopTracker routeTracker = ShouldPopTracker((shouldPop, statusBarColor) {
     channel.invokeMethod(methodUpdateShouldPop, shouldPop);
@@ -65,7 +64,7 @@ class NativeComm {
         _updateTheme(methodCall.arguments);
         break;
       case methodRouteToCalendar:
-        if (routeToCalendar != null) routeToCalendar(methodCall.arguments as String);
+        routeToCalendar(methodCall.arguments as String);
         break;
       case methodReset:
         _performReset();
@@ -112,7 +111,7 @@ class NativeComm {
         return MapEntry(contextCode as String, Color(int.parse(hexCode, radix: 16)));
       });
 
-      if (onThemeUpdated != null) onThemeUpdated();
+      onThemeUpdated();
     } catch (e) {
       print('Error updating theme data!');
     }
@@ -125,14 +124,14 @@ class NativeComm {
 
   static void _performReset() {
     // Reset the current route to an empty screen
-    if (resetRoute != null) resetRoute();
+    resetRoute();
 
     // Reset ApiPrefs
     ApiPrefs.reset();
 
     // Reset theme
     StudentColors.reset();
-    if (onThemeUpdated != null) onThemeUpdated();
+    onThemeUpdated();
   }
 
   static void setStatusBarColor(Color color) {
@@ -164,7 +163,7 @@ class ShouldPopTracker extends NavigatorObserver {
         color = child.getStatusBarColor();
       }
     }
-    onUpdate(route?.settings?.name == CalendarScreen.routeName, color);
+    onUpdate(route.settings.name == CalendarScreen.routeName, color);
   }
 
   @override

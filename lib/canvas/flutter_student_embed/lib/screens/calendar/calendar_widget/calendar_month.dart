@@ -27,7 +27,7 @@ class CalendarMonth extends StatefulWidget {
   final DaySelectedCallback onDaySelected;
   final MonthExpansionNotifier monthExpansionListener;
 
-  CalendarMonth({
+  const CalendarMonth({
     Key key,
     @required this.year,
     @required this.month,
@@ -82,7 +82,6 @@ class _CalendarMonthState extends State<CalendarMonth> {
       );
 
       return ValueListenableBuilder<double>(
-        child: weekWidget,
         valueListenable: widget.monthExpansionListener,
         builder: (BuildContext context, double value, Widget child) {
           final top = DayOfWeekHeaders.headerHeight + (value * index * CalendarDay.dayHeight);
@@ -98,12 +97,13 @@ class _CalendarMonthState extends State<CalendarMonth> {
             ),
           );
         },
+        child: weekWidget,
       );
     });
 
     return Stack(
       children: [
-        DayOfWeekHeaders(),
+        const DayOfWeekHeaders(),
         ...weekWidgets,
       ],
     );
@@ -111,7 +111,7 @@ class _CalendarMonthState extends State<CalendarMonth> {
 }
 
 class MonthExpansionNotifier extends ValueNotifier<double> {
-  MonthExpansionNotifier(double value) : super(value);
+  MonthExpansionNotifier(super.value);
 
   void notify() => notifyListeners();
 }

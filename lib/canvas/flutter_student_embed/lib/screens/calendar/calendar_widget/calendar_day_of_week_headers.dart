@@ -19,16 +19,18 @@ import 'package:intl/intl.dart' hide TextDirection;
 class DayOfWeekHeaders extends StatelessWidget {
   static const double headerHeight = 14;
 
+  const DayOfWeekHeaders({super.key});
+
   @override
   Widget build(BuildContext context) {
-    final weekendTheme = Theme.of(context).textTheme.subtitle2;
+    final weekendTheme = Theme.of(context).textTheme.titleSmall;
     final weekdayTheme = weekendTheme.copyWith(color: StudentTheme.of(context).onSurfaceColor);
 
     final symbols = DateFormat().dateSymbols;
     final firstDayOfWeek = symbols.FIRSTDAYOFWEEK;
 
     return ExcludeSemantics(
-      child: Container(
+      child: SizedBox(
         height: headerHeight,
         child: Row(
           mainAxisSize: MainAxisSize.max,

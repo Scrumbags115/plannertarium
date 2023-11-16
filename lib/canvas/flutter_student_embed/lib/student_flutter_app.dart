@@ -14,7 +14,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:planner/canvas/flutter_student_embed/lib/l10n/app_localizations.dart';
 import 'package:planner/canvas/flutter_student_embed/lib/network/utils/api_prefs.dart';
@@ -23,14 +22,16 @@ import 'package:planner/canvas/flutter_student_embed/lib/utils/design/student_th
 import 'package:planner/canvas/flutter_student_embed/lib/utils/native_comm.dart';
 
 class StudentFlutterApp extends StatefulWidget {
+  const StudentFlutterApp({super.key});
+
   @override
   _StudentFlutterAppState createState() => _StudentFlutterAppState();
 }
 
 class _StudentFlutterAppState extends State<StudentFlutterApp> {
-  Locale _locale = Locale('en'); // will be updated by the localeResolutionCallback
+  Locale _locale = const Locale('en'); // will be updated by the localeResolutionCallback
 
-  GlobalKey<NavigatorState> _navKey = GlobalKey();
+  final GlobalKey<NavigatorState> _navKey = GlobalKey();
 
   rebuild(locale) {
     setState(() => _locale = locale);
@@ -46,7 +47,7 @@ class _StudentFlutterAppState extends State<StudentFlutterApp> {
         // Use a route with a non-animated 'pop' transition
         PageRouteBuilder(
           pageBuilder: (_, __, ___) => CalendarScreen(channelId: channelId),
-          settings: RouteSettings(name: CalendarScreen.routeName), // Set route name for the benefit of ShouldPopTracker
+          settings: const RouteSettings(name: CalendarScreen.routeName), // Set route name for the benefit of ShouldPopTracker
           transitionsBuilder: (_, __, ___, child) => child,
           transitionDuration: Duration.zero,
         ),
@@ -55,7 +56,7 @@ class _StudentFlutterAppState extends State<StudentFlutterApp> {
 
     // Set up resetRoute callback to clear the back stack, called on logout or user switch
     NativeComm.resetRoute = () {
-      _navKey.currentState.pushAndRemoveUntil(MaterialPageRoute(builder: (context) => Material()), (_) => false);
+      _navKey.currentState.pushAndRemoveUntil(MaterialPageRoute(builder: (context) => const Material()), (_) => false);
     };
   }
 
@@ -85,7 +86,7 @@ class _StudentFlutterAppState extends State<StudentFlutterApp> {
         supportedLocales: AppLocalizations.delegate.supportedLocales,
         localeResolutionCallback: _localeCallback(),
         theme: themeData,
-        home: Material(), // Home should be an empty screen
+        home: const Material(), // Home should be an empty screen
       ),
     );
   }
@@ -93,7 +94,7 @@ class _StudentFlutterAppState extends State<StudentFlutterApp> {
   // Get notified when there's a new system locale so we can rebuild the app with the new language
   LocaleResolutionCallback _localeCallback() => (locale, supportedLocales) {
         // If there is no user locale, they want the system locale. If there is a user locale, we should use it over the system locale
-        Locale newLocale = ApiPrefs.getUser()?.locale == null ? locale : ApiPrefs.effectiveLocale();
+        Locale newLocale = ApiPrefs.getUser().locale == null ? locale : ApiPrefs.effectiveLocale();
 
         const fallback = Locale('en');
         Locale resolvedLocale =
@@ -137,7 +138,7 @@ class _ParentlessScrollBehavior extends ScrollBehavior {
   }
 
   @override
-  Widget buildViewportChrome(BuildContext context, Widget child, AxisDirection axisDirection) {
+  Widget buildOverscrollIndicator(BuildContext context, Widget child, AxisDirection axisDirection) {
     // When modifying this function, consider modifying the implementation in
     // the base class as well.
     switch (getPlatform(context)) {
@@ -149,9 +150,9 @@ class _ParentlessScrollBehavior extends ScrollBehavior {
       case TargetPlatform.android:
       case TargetPlatform.fuchsia:
         return GlowingOverscrollIndicator(
-          child: child,
           axisDirection: axisDirection,
-          color: Theme.of(context).accentColor,
+          color: Theme.of(context).colorScheme.secondary,
+          child: child,
         );
     }
     return null;

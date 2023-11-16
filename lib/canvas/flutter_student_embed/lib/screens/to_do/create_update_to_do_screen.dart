@@ -45,26 +45,22 @@ class _CreateUpdateToDoScreenState extends State<CreateUpdateToDoScreen> {
   TextEditingController _titleController;
   TextEditingController _descriptionController;
   bool _saving = false;
-  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
-  FocusScopeNode _focusScopeNode = FocusScopeNode();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+  final FocusScopeNode _focusScopeNode = FocusScopeNode();
   AlertDialogChannel _channel;
 
   @override
   void initState() {
-    if (widget.channelId != null) {
-      _channel = AlertDialogChannel(widget.channelId);
-    }
-    _coursesFuture = locator<CreateUpdateToDoScreenInteractor>().getCoursesForUser();
-    _date = widget.editToDo?.plannable?.toDoDate?.toLocal() ?? widget.initialDate ?? DateTime.now();
-    _titleController = TextEditingController(text: widget.editToDo?.plannable?.title);
-    _descriptionController = TextEditingController(text: widget.editToDo?.plannable?.details);
-    if (widget.editToDo != null) {
-      _coursesFuture.then((courses) {
-        var course = courses.firstWhere((it) => it.id == widget.editToDo.plannable.courseId, orElse: () => null);
-        setState(() => _selectedCourse = course);
-      });
-    }
-    super.initState();
+    _channel = AlertDialogChannel(widget.channelId);
+      _coursesFuture = locator<CreateUpdateToDoScreenInteractor>().getCoursesForUser();
+    _date = widget.editToDo.plannable.toDoDate.toLocal() ?? widget.initialDate ?? DateTime.now();
+    _titleController = TextEditingController(text: widget.editToDo.plannable.title);
+    _descriptionController = TextEditingController(text: widget.editToDo.plannable.details);
+    _coursesFuture.then((courses) {
+      var course = courses.firstWhere((it) => it.id == widget.editToDo.plannable.courseId, orElse: () => null);
+      setState(() => _selectedCourse = course);
+    });
+      super.initState();
   }
 
   @override
@@ -84,7 +80,7 @@ class _CreateUpdateToDoScreenState extends State<CreateUpdateToDoScreen> {
                   if (_saving)
                     Container(
                       alignment: Alignment.center,
-                      padding: EdgeInsets.only(right: 16),
+                      padding: const EdgeInsets.only(right: 16),
                       child: SizedBox(
                           width: 20,
                           height: 20,
@@ -98,11 +94,11 @@ class _CreateUpdateToDoScreenState extends State<CreateUpdateToDoScreen> {
                       onTap: _save,
                       child: Container(
                         height: 48,
-                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                         alignment: Alignment.center,
                         child: Text(
                           L10n(context).save.toUpperCase(),
-                          style: Theme.of(context).textTheme.subtitle1.copyWith(color: Theme.of(context).buttonColor),
+                          style: Theme.of(context).textTheme.titleMedium.copyWith(color: Theme.of(context).buttonColor),
                         ),
                       ),
                     )
@@ -113,16 +109,16 @@ class _CreateUpdateToDoScreenState extends State<CreateUpdateToDoScreen> {
               child: Column(
                 children: <Widget>[
                   TextField(
-                    key: Key('title-input'),
+                    key: const Key('title-input'),
                     controller: _titleController,
                     textCapitalization: TextCapitalization.sentences,
                     decoration: InputDecoration(
-                      contentPadding: EdgeInsets.all(16),
+                      contentPadding: const EdgeInsets.all(16),
                       border: InputBorder.none,
                       hintText: L10n(context).toDoTitleHint,
                     ),
                   ),
-                  Divider(height: 0),
+                  const Divider(height: 0),
                   FutureBuilder<List<Course>>(
                     future: _coursesFuture,
                     builder: (context, snapshot) {
@@ -150,7 +146,7 @@ class _CreateUpdateToDoScreenState extends State<CreateUpdateToDoScreen> {
                                         color: StudentTheme.of(context).getCanvasContextColor('course_${it.id}'),
                                       ),
                                     ),
-                                    SizedBox(width: 12),
+                                    const SizedBox(width: 12),
                                     Text(it.name),
                                   ],
                                 )))
@@ -188,7 +184,7 @@ class _CreateUpdateToDoScreenState extends State<CreateUpdateToDoScreen> {
                                         color: StudentTheme.of(context).getCanvasContextColor('course_${course.id}'),
                                       ),
                                     ),
-                                    SizedBox(width: 12),
+                                    const SizedBox(width: 12),
                                     Text(course.name,
                                         style: it.value == null ? TextStyle(color: StudentColors.textDark) : null),
                                   ],
@@ -202,37 +198,37 @@ class _CreateUpdateToDoScreenState extends State<CreateUpdateToDoScreen> {
                       );
                     },
                   ),
-                  Divider(height: 0),
+                  const Divider(height: 0),
                   InkWell(
                     onTap: _setDate,
                     child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       height: 48,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
                           Text(
                             L10n(context).date,
-                            style: Theme.of(context).textTheme.subtitle1,
+                            style: Theme.of(context).textTheme.titleMedium,
                           ),
                           Text(
                             _date.l10nFormat(L10n(context).dateAtTime),
-                            style: Theme.of(context).textTheme.subtitle1,
+                            style: Theme.of(context).textTheme.titleMedium,
                           ),
                         ],
                       ),
                     ),
                   ),
-                  Divider(height: 0),
+                  const Divider(height: 0),
                   TextField(
-                    key: Key('description-input'),
+                    key: const Key('description-input'),
                     controller: _descriptionController,
                     textCapitalization: TextCapitalization.sentences,
-                    style: Theme.of(context).textTheme.bodyText2.copyWith(fontSize: 16),
+                    style: Theme.of(context).textTheme.bodyMedium.copyWith(fontSize: 16),
                     minLines: 8,
                     maxLines: 100,
                     decoration: InputDecoration(
-                        contentPadding: EdgeInsets.all(16),
+                        contentPadding: const EdgeInsets.all(16),
                         border: InputBorder.none,
                         hintText: L10n(context).toDoDescriptionHint,
                         hintStyle: TextStyle(color: StudentColors.textDark)),
@@ -254,35 +250,30 @@ class _CreateUpdateToDoScreenState extends State<CreateUpdateToDoScreen> {
       context: context,
       initialDate: _date,
       firstDate: DateTime(2000, 1, 1),
-      lastDate: _date.add(Duration(days: 365)),
+      lastDate: _date.add(const Duration(days: 365)),
       builder: (BuildContext buildContext, Widget child) {
         return _createPickerTheme(buildContext, child);
       },
     );
 
-    if (date != null) {
-      time = await showTimePicker(
-          context: context,
-          initialTime: TimeOfDay.fromDateTime(_date),
-          builder: (BuildContext buildContext, Widget child) {
-            return _createPickerTheme(buildContext, child);
-          });
+    time = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(_date),
+        builder: (BuildContext buildContext, Widget child) {
+          return _createPickerTheme(buildContext, child);
+        });
+  
+    DateTime newDate = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    setState(() {
+      _date = newDate;
+    });
     }
-
-    if (date != null && time != null) {
-      DateTime newDate = DateTime(date.year, date.month, date.day, time.hour, time.minute);
-      setState(() {
-        _date = newDate;
-      });
-    }
-  }
 
   Theme _createPickerTheme(BuildContext buildContext, Widget child) {
     return Theme(
       data: Theme.of(buildContext).copyWith(
         colorScheme: ColorScheme.light(
             primary: StudentColors.textButtonColor,
-            primaryVariant: StudentColors.textButtonColor,
             onPrimary: StudentColors.textLightest,
             surface: StudentColors.backgroundLightest,
             background: StudentColors.backgroundLightest,
@@ -297,8 +288,8 @@ class _CreateUpdateToDoScreenState extends State<CreateUpdateToDoScreen> {
     if (widget.editToDo != null) {
       return _titleController.text != (widget.editToDo.plannable.title ?? '') ||
           _descriptionController.text != (widget.editToDo.plannable.details ?? '') ||
-          _selectedCourse?.id != widget.editToDo.plannable.courseId ||
-          _date != widget.editToDo.plannable.toDoDate?.toLocal();
+          _selectedCourse.id != widget.editToDo.plannable.courseId ||
+          _date != widget.editToDo.plannable.toDoDate.toLocal();
     } else {
       return _titleController.text.isNotEmpty ||
           _descriptionController.text.isNotEmpty ||
@@ -324,7 +315,7 @@ class _CreateUpdateToDoScreenState extends State<CreateUpdateToDoScreen> {
   Future<void> _save() async {
     String title = _titleController.text;
     String description = _descriptionController.text;
-    String courseId = _selectedCourse?.id;
+    String courseId = _selectedCourse.id;
     DateTime date = _date;
 
     if (title.isNullOrBlank()) {
@@ -342,7 +333,7 @@ class _CreateUpdateToDoScreenState extends State<CreateUpdateToDoScreen> {
         await interactor.createToDo(title, description, date, courseId);
         Navigator.pop(context, [_date]);
       }
-    } catch (e, s) {
+    } catch (e) {
       setState(() => _saving = false);
       _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text(L10n(context).errorSavingToDo)));
     }
@@ -350,7 +341,7 @@ class _CreateUpdateToDoScreenState extends State<CreateUpdateToDoScreen> {
 
   @override
   void dispose() {
-    _channel?.dispose();
+    _channel.dispose();
     super.dispose();
   }
 }

@@ -48,7 +48,7 @@ class StudentTheme extends StatefulWidget {
 /// State for the [StudentTheme] widget. To obtain an instance of this state, call 'StudentTheme.of(context)' with any
 /// context that inherits from a StudentTheme widget.
 class _StudentThemeState extends State<StudentTheme> {
-  StudentThemeStateChangeNotifier _notifier = StudentThemeStateChangeNotifier();
+  final StudentThemeStateChangeNotifier _notifier = StudentThemeStateChangeNotifier();
 
   @override
   void initState() {
@@ -71,7 +71,7 @@ class _StudentThemeState extends State<StudentTheme> {
   }
 
   Color getCanvasContextColor(String contextCode) {
-    if (contextCode == null || contextCode.isEmpty || contextCode.startsWith('user')) {
+    if (contextCode.isEmpty || contextCode.startsWith('user')) {
       return StudentColors.accentColor;
     } else {
       return StudentColors.contextColors[contextCode] ?? StudentColors.generateContextColor(contextCode);
@@ -105,38 +105,29 @@ class _StudentThemeState extends State<StudentTheme> {
 
     var primarySwatch = StudentColors.makeSwatch(primaryColor);
 
-    var buttonColorScheme = ColorScheme.light().copyWith(
+    var buttonColorScheme = const ColorScheme.light().copyWith(
       primary: textButtonColor,
-      primaryVariant: textButtonColor,
       secondary: textButtonColor,
-      secondaryVariant: textButtonColor,
     );
 
     return ThemeData(
       brightness: Brightness.light,
-      primarySwatch: primarySwatch,
-      accentColor: accentColor,
-      textSelectionHandleColor: primarySwatch[300],
       scaffoldBackgroundColor: StudentColors.backgroundLightest,
       canvasColor: StudentColors.backgroundLightest,
-      accentColorBrightness: Brightness.dark,
       textTheme: textTheme,
       primaryTextTheme: _buildTextTheme(primaryTextColor, primaryTextColor.withOpacity(0.7)),
-      accentTextTheme: _buildTextTheme(Colors.white, Colors.white70),
       iconTheme: IconThemeData(color: onSurfaceColor),
       primaryIconTheme: IconThemeData(color: primaryTextColor),
-      accentIconTheme: IconThemeData(color: Colors.white),
       popupMenuTheme: PopupMenuThemeData(color: StudentColors.backgroundLightestElevated),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: buttonColor,
         foregroundColor: Colors.white,
       ),
       dividerColor: StudentColors.tiara,
-      buttonColor: textButtonColor,
       hintColor: StudentColors.textDark,
       buttonTheme: ButtonThemeData(height: 48, minWidth: 120, colorScheme: buttonColorScheme),
       fontFamily: 'Lato',
-      unselectedWidgetColor: StudentColors.textDarkest
+      unselectedWidgetColor: StudentColors.textDarkest, textSelectionTheme: TextSelectionThemeData(selectionHandleColor: primarySwatch[300]), colorScheme: ColorScheme.fromSwatch(primarySwatch: primarySwatch).copyWith(secondary: accentColor)
     );
   }
 
@@ -146,39 +137,39 @@ class _StudentThemeState extends State<StudentTheme> {
 
       // Comments for each text style represent the nomenclature of the designs we have
       // Caption
-      subtitle2: TextStyle(color: fadeColor, fontSize: 12, fontWeight: FontWeight.w500),
+      titleSmall: TextStyle(color: fadeColor, fontSize: 12, fontWeight: FontWeight.w500),
 
       // Subhead
-      overline: TextStyle(color: fadeColor, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 0),
+      labelSmall: TextStyle(color: fadeColor, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 0),
 
       // Body
-      bodyText2: TextStyle(color: color, fontSize: 14, fontWeight: FontWeight.normal),
+      bodyMedium: TextStyle(color: color, fontSize: 14, fontWeight: FontWeight.normal),
 
       // Subtitle
-      caption: TextStyle(color: fadeColor, fontSize: 14, fontWeight: FontWeight.w500),
+      bodySmall: TextStyle(color: fadeColor, fontSize: 14, fontWeight: FontWeight.w500),
 
       // Title
-      subtitle1: TextStyle(color: color, fontSize: 16, fontWeight: FontWeight.w500),
+      titleMedium: TextStyle(color: color, fontSize: 16, fontWeight: FontWeight.w500),
 
       // Heading
-      headline5: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.w500),
+      headlineSmall: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.w500),
 
       // Display
-      headline4: TextStyle(color: color, fontSize: 24, fontWeight: FontWeight.w500),
+      headlineMedium: TextStyle(color: color, fontSize: 24, fontWeight: FontWeight.w500),
 
       /// Other/unmapped styles
 
-      headline6: TextStyle(color: color),
+      titleLarge: TextStyle(color: color),
 
-      headline1: TextStyle(color: fadeColor),
+      displayLarge: TextStyle(color: fadeColor),
 
-      headline2: TextStyle(color: fadeColor),
+      displayMedium: TextStyle(color: fadeColor),
 
-      headline3: TextStyle(color: fadeColor),
+      displaySmall: TextStyle(color: fadeColor),
 
-      bodyText1: TextStyle(color: color),
+      bodyLarge: TextStyle(color: color),
 
-      button: TextStyle(color: color),
+      labelLarge: TextStyle(color: color),
     );
   }
 }
@@ -205,8 +196,8 @@ class CanvasContextTheme extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<StudentThemeStateChangeNotifier>(
       builder: (context, state, _) => Theme(
-        child: Builder(builder: builder),
         data: StudentTheme.of(context).getCanvasContextTheme(contextCode),
+        child: Builder(builder: builder),
       ),
     );
   }
@@ -224,8 +215,8 @@ class WhiteAppBarTheme extends StatelessWidget {
     var theme = StudentTheme.of(context).defaultTheme.copyWith(
           appBarTheme: AppBarTheme(
             color: StudentColors.backgroundLightestElevated,
-            toolbarTextStyle: baseTheme.textTheme.bodyText2,
-            titleTextStyle: baseTheme.textTheme.headline6,
+            toolbarTextStyle: baseTheme.textTheme.bodyMedium,
+            titleTextStyle: baseTheme.textTheme.titleLarge,
             iconTheme: baseTheme.iconTheme,
             elevation: 2,
           ),
@@ -233,8 +224,8 @@ class WhiteAppBarTheme extends StatelessWidget {
 
     return Consumer<StudentThemeStateChangeNotifier>(
       builder: (context, state, _) => Theme(
-        child: Builder(builder: builder),
         data: theme,
+        child: Builder(builder: builder),
       ),
     );
   }

@@ -135,7 +135,6 @@ abstract class Enrollment implements Built<Enrollment, EnrollmentBuilder> {
 
   bool hasActiveGradingPeriod() =>
       multipleGradingPeriodsEnabled &&
-      currentGradingPeriodId != null &&
       currentGradingPeriodId.isNotEmpty &&
       currentGradingPeriodId != '0';
 

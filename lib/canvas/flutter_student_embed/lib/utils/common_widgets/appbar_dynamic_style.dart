@@ -28,7 +28,7 @@ PreferredSizeWidget dynamicStyleAppBar({@required BuildContext context, @require
   // Return original Appbar for default configuration (i.e. non-tablet portrait)
   if (!isTablet && !isLandscape) return appBar;
 
-  Color color = appBar.backgroundColor ?? Theme.of(context).appBarTheme?.color ?? Theme.of(context).primaryColor;
+  Color color = appBar.backgroundColor ?? Theme.of(context).appBarTheme.backgroundColor ?? Theme.of(context).primaryColor;
   TextTheme textTheme = appBar.textTheme;
   double appBarHeight;
   EdgeInsets padding;
@@ -36,23 +36,22 @@ PreferredSizeWidget dynamicStyleAppBar({@required BuildContext context, @require
   if (isTablet) {
     // Regardless of device orientation, tablets use a tall appbar and have additional padding
     appBarHeight = appBarHeightTablet;
-    padding = EdgeInsets.symmetric(
+    padding = const EdgeInsets.symmetric(
       horizontal: appBarHeightTablet - kToolbarHeight,
       vertical: (appBarHeightTablet - kToolbarHeight) / 2,
     );
   } else {
     // Portrait mode uses a short appbar and small font size
     appBarHeight = appBarHeightLandscape;
-    var theme = textTheme ?? AppBarTheme.of(context).textTheme ?? Theme.of(context).primaryTextTheme ?? TextTheme();
-    var headline = (theme.headline6 ?? TextStyle()).copyWith(fontSize: appBarFontSizeLandscape);
+    var theme = textTheme ?? AppBarTheme.of(context).textTheme ?? Theme.of(context).primaryTextTheme ?? const TextTheme();
+    var headline = (theme.headline6 ?? const TextStyle()).copyWith(fontSize: appBarFontSizeLandscape);
     textTheme = theme.copyWith(headline6: headline);
     padding = EdgeInsets.zero;
   }
 
   // Clone the AppBar to apply the modified properties
   AppBar flatAppbar = AppBar(
-    elevation: 0, // Remove elevation
-    textTheme: textTheme, // Use modified text theme
+    elevation: 0, // Use modified text theme
     key: appBar.key,
     leading: appBar.leading,
     automaticallyImplyLeading: appBar.automaticallyImplyLeading,
@@ -62,7 +61,7 @@ PreferredSizeWidget dynamicStyleAppBar({@required BuildContext context, @require
     bottom: appBar.bottom,
     shape: appBar.shape,
     backgroundColor: appBar.backgroundColor,
-    brightness: appBar.brightness,
+    brightness: appBar.systemOverlayStyle,
     iconTheme: appBar.iconTheme,
     actionsIconTheme: appBar.actionsIconTheme,
     primary: appBar.primary,
@@ -70,7 +69,7 @@ PreferredSizeWidget dynamicStyleAppBar({@required BuildContext context, @require
     excludeHeaderSemantics: appBar.excludeHeaderSemantics,
     titleSpacing: appBar.titleSpacing,
     toolbarOpacity: appBar.toolbarOpacity,
-    bottomOpacity: appBar.bottomOpacity,
+    bottomOpacity: appBar.bottomOpacity, toolbarTextStyle: textTheme.bodyMedium, titleTextStyle: textTheme.titleLarge,
   );
 
   return PreferredSize(

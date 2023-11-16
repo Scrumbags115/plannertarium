@@ -28,30 +28,30 @@ class ErrorPandaWidget extends StatelessWidget {
   final String errorString;
   final Widget header;
 
-  ErrorPandaWidget(this.errorString, this.callback, {this.header});
+  const ErrorPandaWidget(this.errorString, this.callback, {super.key, this.header});
 
   @override
   Widget build(BuildContext context) {
     return FullScreenScrollContainer(
       header: header,
       children: <Widget>[
-        Icon(CanvasIcons.warning, size: 40, color: StudentColors.failure),
+        const Icon(CanvasIcons.warning, size: 40, color: StudentColors.failure),
         Padding(
           padding: const EdgeInsets.fromLTRB(48, 28, 48, 32),
           child: Text(
             errorString,
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.caption.copyWith(fontSize: 16),
+            style: Theme.of(context).textTheme.bodySmall.copyWith(fontSize: 16),
           ),
         ),
         FlatButton(
           onPressed: () {
             callback();
           },
-          child: Text(L10n(context).retry, style: Theme.of(context).textTheme.caption.copyWith(fontSize: 16)),
+          child: Text(L10n(context).retry, style: Theme.of(context).textTheme.bodySmall.copyWith(fontSize: 16)),
           shape: RoundedRectangleBorder(
-            borderRadius: new BorderRadius.circular(4.0),
-            side: BorderSide(color: StudentColors.tiara),
+            borderRadius: BorderRadius.circular(4.0),
+            side: const BorderSide(color: StudentColors.tiara),
           ),
         )
       ],

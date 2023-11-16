@@ -76,7 +76,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "There was an error loading your calendar" : MessageLookupByLibrary.simpleMessage("Upp kom villa við að hlaða dagatalinu þínu"),
     "There was an error loading your your student’s courses." : MessageLookupByLibrary.simpleMessage("Villa kom upp við að sækja námskeið nemanda þíns."),
     "There was an error saving this To Do. Please check your connection and try again." : MessageLookupByLibrary.simpleMessage("Villa kom upp við að vista þetta verkefni. Athugaðu tengingu þína og reyndu aftur."),
-    "There\'s no description yet" : MessageLookupByLibrary.simpleMessage("Engin lýsing hefur verið gerð"),
+    "There's no description yet" : MessageLookupByLibrary.simpleMessage("Engin lýsing hefur verið gerð"),
     "Title" : MessageLookupByLibrary.simpleMessage("Titill"),
     "Title must not be empty" : MessageLookupByLibrary.simpleMessage("Titillinn má ekki vera auður"),
     "To Do" : MessageLookupByLibrary.simpleMessage("Verkefni"),

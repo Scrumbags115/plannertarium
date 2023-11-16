@@ -294,20 +294,18 @@ class PlannableBuilder implements Builder<Plannable, PlannableBuilder> {
   PlannableBuilder();
 
   PlannableBuilder get _$this {
-    if (_$v != null) {
-      _id = _$v.id;
-      _title = _$v.title;
-      _courseId = _$v.courseId;
-      _groupId = _$v.groupId;
-      _userId = _$v.userId;
-      _pointsPossible = _$v.pointsPossible;
-      _toDoDate = _$v.toDoDate;
-      _dueAt = _$v.dueAt;
-      _assignmentId = _$v.assignmentId;
-      _details = _$v.details;
-      _$v = null;
-    }
-    return this;
+    _id = _$v.id;
+    _title = _$v.title;
+    _courseId = _$v.courseId;
+    _groupId = _$v.groupId;
+    _userId = _$v.userId;
+    _pointsPossible = _$v.pointsPossible;
+    _toDoDate = _$v.toDoDate;
+    _dueAt = _$v.dueAt;
+    _assignmentId = _$v.assignmentId;
+    _details = _$v.details;
+    _$v = null;
+      return this;
   }
 
   @override
@@ -320,12 +318,12 @@ class PlannableBuilder implements Builder<Plannable, PlannableBuilder> {
 
   @override
   void update(void Function(PlannableBuilder) updates) {
-    if (updates != null) updates(this);
+    updates(this);
   }
 
   @override
   _$Plannable build() {
-    final _$result = _$v ??
+    final $result = _$v ??
         new _$Plannable._(
             id: id,
             title: title,
@@ -337,8 +335,8 @@ class PlannableBuilder implements Builder<Plannable, PlannableBuilder> {
             dueAt: dueAt,
             assignmentId: assignmentId,
             details: details);
-    replace(_$result);
-    return _$result;
+    replace($result);
+    return $result;
   }
 }
 

@@ -124,5 +124,5 @@ abstract class Course implements Built<Course, CourseBuilder> {
     ..hasGradingPeriods = false
     ..restrictEnrollmentsToCourseDates = false;
 
-  String contextFilterId() => 'course_${this.id}';
+  String contextFilterId() => 'course_$id';
 }

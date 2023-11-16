@@ -43,8 +43,8 @@ class CalendarWeek extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        if (displayDayOfWeekHeader) DayOfWeekHeaders(),
-        Container(
+        if (displayDayOfWeekHeader) const DayOfWeekHeaders(),
+        SizedBox(
           height: CalendarDay.dayHeight,
           child: Row(
             mainAxisSize: MainAxisSize.max,

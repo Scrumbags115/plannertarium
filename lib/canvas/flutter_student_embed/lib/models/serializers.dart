@@ -45,14 +45,14 @@ Serializers jsonSerializers = (_serializers.toBuilder()
       ..addPlugin(StandardJsonPlugin())
       ..addPlugin(RemoveNullInMapConvertedListPlugin())
       ..add(Iso8601DateTimeSerializer())
-      ..addBuilderFactory(FullType(BuiltList, [FullType(String)]), () => ListBuilder<String>())
+      ..addBuilderFactory(const FullType(BuiltList, [FullType(String)]), () => ListBuilder<String>())
       ..addBuilderFactory(
-          FullType(BuiltMap, [
+          const FullType(BuiltMap, [
             FullType(String),
             FullType(BuiltList, [FullType(String)])
           ]),
           () => MapBuilder<String, BuiltList<String>>())
-      ..addBuilderFactory(FullType(BuiltMap, [FullType(String), FullType(String)]), () => MapBuilder<String, String>()))
+      ..addBuilderFactory(const FullType(BuiltMap, [FullType(String), FullType(String)]), () => MapBuilder<String, String>()))
     .build();
 
 T deserialize<T>(dynamic value) => jsonSerializers.deserializeWith<T>(jsonSerializers.serializerForType(T), value);
@@ -64,10 +64,13 @@ List<T> deserializeList<T>(dynamic value) => List.from(value?.map((value) => des
 /// Plugin that works around an issue where deserialization breaks if a map key is null
 /// Sourced from https://github.com/google/built_value.dart/issues/653#issuecomment-495964030
 class RemoveNullInMapConvertedListPlugin implements SerializerPlugin {
+  @override
   Object beforeSerialize(Object object, FullType specifiedType) => object;
 
+  @override
   Object afterSerialize(Object object, FullType specifiedType) => object;
 
+  @override
   Object beforeDeserialize(Object object, FullType specifiedType) {
     if (specifiedType.root == BuiltMap && object is List) {
       return object.where((v) => v != null).toList();
@@ -75,5 +78,6 @@ class RemoveNullInMapConvertedListPlugin implements SerializerPlugin {
     return object;
   }
 
+  @override
   Object afterDeserialize(Object object, FullType specifiedType) => object;
 }

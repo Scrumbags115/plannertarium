@@ -76,7 +76,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "There was an error loading your calendar" : MessageLookupByLibrary.simpleMessage("加载日历时发生错误"),
     "There was an error loading your your student’s courses." : MessageLookupByLibrary.simpleMessage("加载学生的课程时发生错误。"),
     "There was an error saving this To Do. Please check your connection and try again." : MessageLookupByLibrary.simpleMessage("保存此待办事项时发生错误。请检查您的连接，然后再试一次。"),
-    "There\'s no description yet" : MessageLookupByLibrary.simpleMessage("暂时没有描述"),
+    "There's no description yet" : MessageLookupByLibrary.simpleMessage("暂时没有描述"),
     "Title" : MessageLookupByLibrary.simpleMessage("标题"),
     "Title must not be empty" : MessageLookupByLibrary.simpleMessage("标题不能为空"),
     "To Do" : MessageLookupByLibrary.simpleMessage("待办事项"),

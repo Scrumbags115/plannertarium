@@ -178,15 +178,13 @@ class LoginBuilder implements Builder<Login, LoginBuilder> {
   }
 
   LoginBuilder get _$this {
-    if (_$v != null) {
-      _uuid = _$v.uuid;
-      _domain = _$v.domain;
-      _accessToken = _$v.accessToken;
-      _user = _$v.user?.toBuilder();
-      _masqueradeId = _$v.masqueradeId;
-      _$v = null;
-    }
-    return this;
+    _uuid = _$v.uuid;
+    _domain = _$v.domain;
+    _accessToken = _$v.accessToken;
+    _user = _$v.user?.toBuilder();
+    _masqueradeId = _$v.masqueradeId;
+    _$v = null;
+      return this;
   }
 
   @override
@@ -199,14 +197,14 @@ class LoginBuilder implements Builder<Login, LoginBuilder> {
 
   @override
   void update(void Function(LoginBuilder) updates) {
-    if (updates != null) updates(this);
+    updates(this);
   }
 
   @override
   _$Login build() {
-    _$Login _$result;
+    _$Login $result;
     try {
-      _$result = _$v ??
+      $result = _$v ??
           new _$Login._(
               uuid: uuid,
               domain: domain,
@@ -214,18 +212,18 @@ class LoginBuilder implements Builder<Login, LoginBuilder> {
               user: user.build(),
               masqueradeId: masqueradeId);
     } catch (_) {
-      String _$failedField;
+      String $failedField;
       try {
-        _$failedField = 'user';
+        $failedField = 'user';
         user.build();
       } catch (e) {
         throw new BuiltValueNestedFieldError(
-            'Login', _$failedField, e.toString());
+            'Login', $failedField, e.toString());
       }
       rethrow;
     }
-    replace(_$result);
-    return _$result;
+    replace($result);
+    return $result;
   }
 }
 

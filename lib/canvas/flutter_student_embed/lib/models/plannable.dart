@@ -67,9 +67,8 @@ abstract class Plannable implements Built<Plannable, PlannableBuilder> {
       code = 'course_$courseId';
     } else if (groupId != null) {
       code = 'group_$groupId';
-    } else if (userId != null) {
-      code = 'user_$userId';
-    }
+    } else    code = 'user_$userId';
+  
     return code;
   }
 

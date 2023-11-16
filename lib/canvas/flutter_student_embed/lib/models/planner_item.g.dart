@@ -300,20 +300,18 @@ class PlannerItemBuilder implements Builder<PlannerItem, PlannerItemBuilder> {
   PlannerItemBuilder();
 
   PlannerItemBuilder get _$this {
-    if (_$v != null) {
-      _courseId = _$v.courseId;
-      _groupId = _$v.groupId;
-      _userId = _$v.userId;
-      _contextType = _$v.contextType;
-      _contextName = _$v.contextName;
-      _plannableType = _$v.plannableType;
-      _plannable = _$v.plannable?.toBuilder();
-      _plannableDate = _$v.plannableDate;
-      _submissionStatusRaw = _$v.submissionStatusRaw;
-      _htmlUrl = _$v.htmlUrl;
-      _$v = null;
-    }
-    return this;
+    _courseId = _$v.courseId;
+    _groupId = _$v.groupId;
+    _userId = _$v.userId;
+    _contextType = _$v.contextType;
+    _contextName = _$v.contextName;
+    _plannableType = _$v.plannableType;
+    _plannable = _$v.plannable.toBuilder();
+    _plannableDate = _$v.plannableDate;
+    _submissionStatusRaw = _$v.submissionStatusRaw;
+    _htmlUrl = _$v.htmlUrl;
+    _$v = null;
+      return this;
   }
 
   @override
@@ -326,14 +324,14 @@ class PlannerItemBuilder implements Builder<PlannerItem, PlannerItemBuilder> {
 
   @override
   void update(void Function(PlannerItemBuilder) updates) {
-    if (updates != null) updates(this);
+    updates(this);
   }
 
   @override
   _$PlannerItem build() {
-    _$PlannerItem _$result;
+    _$PlannerItem $result;
     try {
-      _$result = _$v ??
+      $result = _$v ??
           new _$PlannerItem._(
               courseId: courseId,
               groupId: groupId,
@@ -346,18 +344,18 @@ class PlannerItemBuilder implements Builder<PlannerItem, PlannerItemBuilder> {
               submissionStatusRaw: submissionStatusRaw,
               htmlUrl: htmlUrl);
     } catch (_) {
-      String _$failedField;
+      String $failedField;
       try {
-        _$failedField = 'plannable';
+        $failedField = 'plannable';
         plannable.build();
       } catch (e) {
         throw new BuiltValueNestedFieldError(
-            'PlannerItem', _$failedField, e.toString());
+            'PlannerItem', $failedField, e.toString());
       }
       rethrow;
     }
-    replace(_$result);
-    return _$result;
+    replace($result);
+    return $result;
   }
 }
 

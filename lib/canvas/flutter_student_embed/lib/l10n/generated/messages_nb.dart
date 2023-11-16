@@ -76,7 +76,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "There was an error loading your calendar" : MessageLookupByLibrary.simpleMessage("Det oppsto en feil under lasting av kalenderen din"),
     "There was an error loading your your student’s courses." : MessageLookupByLibrary.simpleMessage("Det oppsto en feil under lasting av emnene til studentene dine."),
     "There was an error saving this To Do. Please check your connection and try again." : MessageLookupByLibrary.simpleMessage("Det oppsto en feil ved lagring av dette gjøremålet. Kontroller tilkoblingen og prøv på nytt."),
-    "There\'s no description yet" : MessageLookupByLibrary.simpleMessage("Det er ingen beskrivelse ennå"),
+    "There's no description yet" : MessageLookupByLibrary.simpleMessage("Det er ingen beskrivelse ennå"),
     "Title" : MessageLookupByLibrary.simpleMessage("Tittel"),
     "Title must not be empty" : MessageLookupByLibrary.simpleMessage("Tittelen kan ikke være tom"),
     "To Do" : MessageLookupByLibrary.simpleMessage("Å gjøre"),

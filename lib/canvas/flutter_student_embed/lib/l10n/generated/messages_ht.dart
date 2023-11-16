@@ -76,7 +76,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "There was an error loading your calendar" : MessageLookupByLibrary.simpleMessage("Te gen yon erè nan chajman kalandriye ou a."),
     "There was an error loading your your student’s courses." : MessageLookupByLibrary.simpleMessage("Te gen yon erè nan chajman kou elèv ou a."),
     "There was an error saving this To Do. Please check your connection and try again." : MessageLookupByLibrary.simpleMessage("Te gen erè pou anrejistre Tach sa a. Tanpri verifye koneksyon ou a epi eseye ankò."),
-    "There\'s no description yet" : MessageLookupByLibrary.simpleMessage("Poko gen deskripsyon"),
+    "There's no description yet" : MessageLookupByLibrary.simpleMessage("Poko gen deskripsyon"),
     "Title" : MessageLookupByLibrary.simpleMessage("Tit"),
     "Title must not be empty" : MessageLookupByLibrary.simpleMessage("Tit la pa dwe vid"),
     "To Do" : MessageLookupByLibrary.simpleMessage("Pou Fè"),

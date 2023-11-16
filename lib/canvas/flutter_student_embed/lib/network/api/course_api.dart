@@ -17,7 +17,7 @@ import 'package:planner/canvas/flutter_student_embed/lib/network/utils/dio_confi
 import 'package:planner/canvas/flutter_student_embed/lib/network/utils/fetch.dart';
 
 class CourseApi {
-  Future<List<Course>> getCourses({bool forceRefresh: false}) async {
+  Future<List<Course>> getCourses({bool forceRefresh = false}) async {
     final dio = canvasDio(forceRefresh: forceRefresh, pageSize: PageSize.canvasMax);
     final params = {
       'include[]': [

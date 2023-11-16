@@ -641,36 +641,34 @@ class EnrollmentBuilder implements Builder<Enrollment, EnrollmentBuilder> {
   }
 
   EnrollmentBuilder get _$this {
-    if (_$v != null) {
-      _role = _$v.role;
-      _type = _$v.type;
-      _id = _$v.id;
-      _courseId = _$v.courseId;
-      _courseSectionId = _$v.courseSectionId;
-      _enrollmentState = _$v.enrollmentState;
-      _userId = _$v.userId;
-      _computedCurrentScore = _$v.computedCurrentScore;
-      _computedFinalScore = _$v.computedFinalScore;
-      _computedCurrentGrade = _$v.computedCurrentGrade;
-      _computedFinalGrade = _$v.computedFinalGrade;
-      _multipleGradingPeriodsEnabled = _$v.multipleGradingPeriodsEnabled;
-      _totalsForAllGradingPeriodsOption = _$v.totalsForAllGradingPeriodsOption;
-      _currentPeriodComputedCurrentScore =
-          _$v.currentPeriodComputedCurrentScore;
-      _currentPeriodComputedFinalScore = _$v.currentPeriodComputedFinalScore;
-      _currentPeriodComputedCurrentGrade =
-          _$v.currentPeriodComputedCurrentGrade;
-      _currentPeriodComputedFinalGrade = _$v.currentPeriodComputedFinalGrade;
-      _currentGradingPeriodId = _$v.currentGradingPeriodId;
-      _currentGradingPeriodTitle = _$v.currentGradingPeriodTitle;
-      _associatedUserId = _$v.associatedUserId;
-      _lastActivityAt = _$v.lastActivityAt;
-      _limitPrivilegesToCourseSection = _$v.limitPrivilegesToCourseSection;
-      _observedUser = _$v.observedUser?.toBuilder();
-      _user = _$v.user?.toBuilder();
-      _$v = null;
-    }
-    return this;
+    _role = _$v.role;
+    _type = _$v.type;
+    _id = _$v.id;
+    _courseId = _$v.courseId;
+    _courseSectionId = _$v.courseSectionId;
+    _enrollmentState = _$v.enrollmentState;
+    _userId = _$v.userId;
+    _computedCurrentScore = _$v.computedCurrentScore;
+    _computedFinalScore = _$v.computedFinalScore;
+    _computedCurrentGrade = _$v.computedCurrentGrade;
+    _computedFinalGrade = _$v.computedFinalGrade;
+    _multipleGradingPeriodsEnabled = _$v.multipleGradingPeriodsEnabled;
+    _totalsForAllGradingPeriodsOption = _$v.totalsForAllGradingPeriodsOption;
+    _currentPeriodComputedCurrentScore =
+        _$v.currentPeriodComputedCurrentScore;
+    _currentPeriodComputedFinalScore = _$v.currentPeriodComputedFinalScore;
+    _currentPeriodComputedCurrentGrade =
+        _$v.currentPeriodComputedCurrentGrade;
+    _currentPeriodComputedFinalGrade = _$v.currentPeriodComputedFinalGrade;
+    _currentGradingPeriodId = _$v.currentGradingPeriodId;
+    _currentGradingPeriodTitle = _$v.currentGradingPeriodTitle;
+    _associatedUserId = _$v.associatedUserId;
+    _lastActivityAt = _$v.lastActivityAt;
+    _limitPrivilegesToCourseSection = _$v.limitPrivilegesToCourseSection;
+    _observedUser = _$v.observedUser?.toBuilder();
+    _user = _$v.user?.toBuilder();
+    _$v = null;
+      return this;
   }
 
   @override
@@ -683,14 +681,14 @@ class EnrollmentBuilder implements Builder<Enrollment, EnrollmentBuilder> {
 
   @override
   void update(void Function(EnrollmentBuilder) updates) {
-    if (updates != null) updates(this);
+    updates(this);
   }
 
   @override
   _$Enrollment build() {
-    _$Enrollment _$result;
+    _$Enrollment $result;
     try {
-      _$result = _$v ??
+      $result = _$v ??
           new _$Enrollment._(
               role: role,
               type: type,
@@ -717,23 +715,23 @@ class EnrollmentBuilder implements Builder<Enrollment, EnrollmentBuilder> {
               associatedUserId: associatedUserId,
               lastActivityAt: lastActivityAt,
               limitPrivilegesToCourseSection: limitPrivilegesToCourseSection,
-              observedUser: _observedUser?.build(),
-              user: _user?.build());
+              observedUser: _observedUser.build(),
+              user: _user.build());
     } catch (_) {
-      String _$failedField;
+      String $failedField;
       try {
-        _$failedField = 'observedUser';
-        _observedUser?.build();
-        _$failedField = 'user';
-        _user?.build();
+        $failedField = 'observedUser';
+        _observedUser.build();
+        $failedField = 'user';
+        _user.build();
       } catch (e) {
         throw new BuiltValueNestedFieldError(
-            'Enrollment', _$failedField, e.toString());
+            'Enrollment', $failedField, e.toString());
       }
       rethrow;
     }
-    replace(_$result);
-    return _$result;
+    replace($result);
+    return $result;
   }
 }
 

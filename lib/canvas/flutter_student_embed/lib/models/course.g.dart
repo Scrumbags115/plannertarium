@@ -542,33 +542,31 @@ class CourseBuilder implements Builder<Course, CourseBuilder> {
   }
 
   CourseBuilder get _$this {
-    if (_$v != null) {
-      _currentScore = _$v.currentScore;
-      _finalScore = _$v.finalScore;
-      _currentGrade = _$v.currentGrade;
-      _finalGrade = _$v.finalGrade;
-      _id = _$v.id;
-      _name = _$v.name;
-      _originalName = _$v.originalName;
-      _courseCode = _$v.courseCode;
-      _startAt = _$v.startAt;
-      _endAt = _$v.endAt;
-      _syllabusBody = _$v.syllabusBody;
-      _hideFinalGrades = _$v.hideFinalGrades;
-      _isPublic = _$v.isPublic;
-      _enrollments = _$v.enrollments?.toBuilder();
-      _needsGradingCount = _$v.needsGradingCount;
-      _applyAssignmentGroupWeights = _$v.applyAssignmentGroupWeights;
-      _isFavorite = _$v.isFavorite;
-      _accessRestrictedByDate = _$v.accessRestrictedByDate;
-      _imageDownloadUrl = _$v.imageDownloadUrl;
-      _hasWeightedGradingPeriods = _$v.hasWeightedGradingPeriods;
-      _hasGradingPeriods = _$v.hasGradingPeriods;
-      _restrictEnrollmentsToCourseDates = _$v.restrictEnrollmentsToCourseDates;
-      _workflowState = _$v.workflowState;
-      _$v = null;
-    }
-    return this;
+    _currentScore = _$v.currentScore;
+    _finalScore = _$v.finalScore;
+    _currentGrade = _$v.currentGrade;
+    _finalGrade = _$v.finalGrade;
+    _id = _$v.id;
+    _name = _$v.name;
+    _originalName = _$v.originalName;
+    _courseCode = _$v.courseCode;
+    _startAt = _$v.startAt;
+    _endAt = _$v.endAt;
+    _syllabusBody = _$v.syllabusBody;
+    _hideFinalGrades = _$v.hideFinalGrades;
+    _isPublic = _$v.isPublic;
+    _enrollments = _$v.enrollments.toBuilder();
+    _needsGradingCount = _$v.needsGradingCount;
+    _applyAssignmentGroupWeights = _$v.applyAssignmentGroupWeights;
+    _isFavorite = _$v.isFavorite;
+    _accessRestrictedByDate = _$v.accessRestrictedByDate;
+    _imageDownloadUrl = _$v.imageDownloadUrl;
+    _hasWeightedGradingPeriods = _$v.hasWeightedGradingPeriods;
+    _hasGradingPeriods = _$v.hasGradingPeriods;
+    _restrictEnrollmentsToCourseDates = _$v.restrictEnrollmentsToCourseDates;
+    _workflowState = _$v.workflowState;
+    _$v = null;
+      return this;
   }
 
   @override
@@ -581,14 +579,14 @@ class CourseBuilder implements Builder<Course, CourseBuilder> {
 
   @override
   void update(void Function(CourseBuilder) updates) {
-    if (updates != null) updates(this);
+    updates(this);
   }
 
   @override
   _$Course build() {
-    _$Course _$result;
+    _$Course $result;
     try {
-      _$result = _$v ??
+      $result = _$v ??
           new _$Course._(
               currentScore: currentScore,
               finalScore: finalScore,
@@ -615,18 +613,18 @@ class CourseBuilder implements Builder<Course, CourseBuilder> {
                   restrictEnrollmentsToCourseDates,
               workflowState: workflowState);
     } catch (_) {
-      String _$failedField;
+      String $failedField;
       try {
-        _$failedField = 'enrollments';
+        $failedField = 'enrollments';
         enrollments.build();
       } catch (e) {
         throw new BuiltValueNestedFieldError(
-            'Course', _$failedField, e.toString());
+            'Course', $failedField, e.toString());
       }
       rethrow;
     }
-    replace(_$result);
-    return _$result;
+    replace($result);
+    return $result;
   }
 }
 

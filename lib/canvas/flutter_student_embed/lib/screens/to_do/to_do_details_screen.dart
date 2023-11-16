@@ -13,7 +13,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:planner/canvas/flutter_student_embed/lib/l10n/app_localizations.dart';
 import 'package:planner/canvas/flutter_student_embed/lib/models/planner_item.dart';
 import 'package:planner/canvas/flutter_student_embed/lib/network/api/planner_api.dart';
@@ -31,7 +30,7 @@ class ToDoDetailsScreen extends StatefulWidget {
 
   final String channelId;
 
-  ToDoDetailsScreen(this.toDo, {this.channelId, Key key}) : super(key: key);
+  const ToDoDetailsScreen(this.toDo, {this.channelId, Key key}) : super(key: key);
 
   @override
   ToDoDetailsScreenState createState() => ToDoDetailsScreenState();
@@ -46,10 +45,8 @@ class ToDoDetailsScreenState extends State<ToDoDetailsScreen> {
 
   @override
   void initState() {
-    if (widget.channelId != null) {
-      _channel = AlertDialogChannel(widget.channelId);
-    }
-    super.initState();
+    _channel = AlertDialogChannel(widget.channelId);
+      super.initState();
   }
 
   @override
@@ -65,7 +62,7 @@ class ToDoDetailsScreenState extends State<ToDoDetailsScreen> {
             if (_deleting) Center(
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Container(
+                child: SizedBox(
                   width: 24.0,
                   height: 24.0,
                   child: CircularProgressIndicator(
@@ -99,37 +96,36 @@ class ToDoDetailsScreenState extends State<ToDoDetailsScreen> {
             children: <Widget>[
               Text(
                 widget.toDo.plannable.title,
-                style: Theme.of(context).textTheme.headline4,
+                style: Theme.of(context).textTheme.headlineMedium,
               ),
-              if (widget.toDo.contextName != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Text(
-                    widget.toDo.contextName,
-                    style: Theme.of(context).textTheme.caption.copyWith(color: contextColor),
-                  ),
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  widget.toDo.contextName,
+                  style: Theme.of(context).textTheme.bodySmall.copyWith(color: contextColor),
                 ),
-              Divider(height: 32),
+              ),
+              const Divider(height: 32),
               Text(
                 L10n(context).date,
-                style: Theme.of(context).textTheme.overline,
+                style: Theme.of(context).textTheme.labelSmall,
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
                 widget.toDo.plannable.toDoDate.l10nFormat(L10n(context).dateAtTime),
-                style: Theme.of(context).textTheme.subtitle1,
+                style: Theme.of(context).textTheme.titleMedium,
               ),
-              Divider(height: 32),
+              const Divider(height: 32),
               Text(
                 L10n(context).descriptionLabel,
-                style: Theme.of(context).textTheme.overline,
+                style: Theme.of(context).textTheme.labelSmall,
               ),
-              SizedBox(height: 8),
-              if (widget.toDo.plannable.details == null || widget.toDo.plannable.details.isEmpty)
+              const SizedBox(height: 8),
+              if (widget.toDo.plannable.details.isEmpty)
                 Container(
                   width: double.infinity,
                   height: 72,
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: StudentTheme.of(context).nearSurfaceColor,
                     borderRadius: BorderRadius.circular(4),
@@ -137,11 +133,11 @@ class ToDoDetailsScreenState extends State<ToDoDetailsScreen> {
                   child: Center(
                     child: Text(
                       L10n(context).noToDoDescription,
-                      style: Theme.of(context).textTheme.caption.copyWith(color: StudentColors.textDarkest),
+                      style: Theme.of(context).textTheme.bodySmall.copyWith(color: StudentColors.textDarkest),
                     ),
                   ),
                 ),
-              if (widget.toDo.plannable.details != null) Text(widget.toDo.plannable.details),
+              Text(widget.toDo.plannable.details),
             ],
           ),
         ),
@@ -183,7 +179,7 @@ class ToDoDetailsScreenState extends State<ToDoDetailsScreen> {
 
   @override
   void dispose() {
-    _channel?.dispose();
+    _channel.dispose();
     super.dispose();
   }
 }

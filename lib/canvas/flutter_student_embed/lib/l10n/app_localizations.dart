@@ -110,12 +110,12 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   /// Internal method to resolve a locale from a list of locales.
   ///
   Locale _resolve(Locale locale, Locale fallback, Iterable<Locale> supported, bool matchCountry) {
-    if (locale == Locale('zh', 'Hant')) {
+    if (locale == const Locale('zh', 'Hant')) {
       // Special case Traditional Chinese (server sends us zh-Hant but translators give us zh-HK)
-      locale = Locale('zh', 'HK');
-    } else if (locale == Locale('pt')) {
+      locale = const Locale('zh', 'HK');
+    } else if (locale == const Locale('pt')) {
       // Special case base Portuguese (server sends us pt but translators give us pt-PT)
-      locale = Locale('pt', 'PT');
+      locale = const Locale('pt', 'PT');
     }
 
     return _isSupported(locale, matchCountry) ?? fallback ?? supported.first;
@@ -144,7 +144,7 @@ class AppLocalizations {
 
     return initializeMessages(localeName).then((_) {
       Intl.defaultLocale = localeName;
-      return new AppLocalizations();
+      return AppLocalizations();
     });
   }
 
@@ -340,10 +340,10 @@ class AppLocalizations {
   String get noCoursesTitle => Intl.message('No Courses', desc: 'Title for having no courses');
 
   String get noCoursesMessage =>
-      Intl.message('Your student\’s courses might not be published yet.', desc: 'Message for having no courses');
+      Intl.message('Your student’s courses might not be published yet.', desc: 'Message for having no courses');
 
   String get errorLoadingCourses => Intl.message(
-        'There was an error loading your your student\’s courses.',
+        'There was an error loading your your student’s courses.',
         desc: 'Message displayed when the list of student courses could not be loaded',
       );
 

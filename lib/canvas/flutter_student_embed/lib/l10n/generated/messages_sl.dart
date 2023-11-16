@@ -76,7 +76,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "There was an error loading your calendar" : MessageLookupByLibrary.simpleMessage("Pri nalaganju vašega koledarja je prišlo do napake"),
     "There was an error loading your your student’s courses." : MessageLookupByLibrary.simpleMessage("Pri nalaganju predmetov vašega študenta je prišlo do napake."),
     "There was an error saving this To Do. Please check your connection and try again." : MessageLookupByLibrary.simpleMessage("Prišlo je do napake pri shranjevanju tega seznama opravil. Preverite svojo povezavo in poskusite znova."),
-    "There\'s no description yet" : MessageLookupByLibrary.simpleMessage("Opisa še ni"),
+    "There's no description yet" : MessageLookupByLibrary.simpleMessage("Opisa še ni"),
     "Title" : MessageLookupByLibrary.simpleMessage("Naslov"),
     "Title must not be empty" : MessageLookupByLibrary.simpleMessage("Polje z naslovom ne more ostati prazno"),
     "To Do" : MessageLookupByLibrary.simpleMessage("Čakajoča opravila"),

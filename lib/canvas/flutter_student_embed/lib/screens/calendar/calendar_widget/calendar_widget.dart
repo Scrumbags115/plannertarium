@@ -35,7 +35,7 @@ class CalendarWidget extends StatefulWidget {
   static const Curve animCurve = Curves.easeInOutCubic;
 
   /// The duration to be used by all calendar animations
-  static const Duration animDuration = const Duration(milliseconds: 300);
+  static const Duration animDuration = Duration(milliseconds: 300);
 
   /// Called to obtain the child widget for the specified [day]
   final Widget Function(BuildContext context, DateTime day) dayBuilder;
@@ -94,9 +94,9 @@ class CalendarWidgetState extends State<CalendarWidget> with TickerProviderState
   DateTime selectedDay = DateTime.now();
 
   // Global keys for the PageViews
-  Key _dayKey = GlobalKey();
-  Key _weekKey = GlobalKey();
-  Key _monthKey = GlobalKey();
+  final Key _dayKey = GlobalKey();
+  final Key _weekKey = GlobalKey();
+  final Key _monthKey = GlobalKey();
 
   // Page controllers
   PageController _dayController;
@@ -104,7 +104,7 @@ class CalendarWidgetState extends State<CalendarWidget> with TickerProviderState
   PageController _monthController;
 
   // Notifier that tracks the current month collapse/expand progress
-  MonthExpansionNotifier _monthExpansionNotifier = MonthExpansionNotifier(0.0);
+  final MonthExpansionNotifier _monthExpansionNotifier = MonthExpansionNotifier(0.0);
 
   // Whether the calendar can be expanded to show the month view. This will only be false in cases where there
   // is not enough vertical space available to display the entire month
@@ -203,8 +203,9 @@ class CalendarWidgetState extends State<CalendarWidget> with TickerProviderState
       if (widget.startingView == CalendarView.Month) {
         _isMonthExpanded = true;
         _monthExpansionNotifier.value = 1.0;
-      } else
+      } else {
         _isMonthExpanded = false;
+      }
     }
 
     // Set up animation controller for tap-to-expand/collapse button
@@ -224,17 +225,15 @@ class CalendarWidgetState extends State<CalendarWidget> with TickerProviderState
     _weekController = PageController(initialPage: _todayWeekIndex);
     _monthController = PageController(initialPage: _todayMonthIndex);
 
-    if (widget.startingDate != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        selectDay(
-          widget.startingDate,
-          dayPagerBehavior: CalendarPageChangeBehavior.jump,
-          weekPagerBehavior: CalendarPageChangeBehavior.jump,
-          monthPagerBehavior: CalendarPageChangeBehavior.jump,
-        );
-      });
-    }
-
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      selectDay(
+        widget.startingDate,
+        dayPagerBehavior: CalendarPageChangeBehavior.jump,
+        weekPagerBehavior: CalendarPageChangeBehavior.jump,
+        monthPagerBehavior: CalendarPageChangeBehavior.jump,
+      );
+    });
+  
     super.initState();
   }
 
@@ -253,7 +252,7 @@ class CalendarWidgetState extends State<CalendarWidget> with TickerProviderState
                 Column(
                   children: <Widget>[
                     _calendar(),
-                    Divider(height: 1),
+                    const Divider(height: 1),
                     Expanded(child: _dayPager()),
                   ],
                 ),
@@ -280,7 +279,7 @@ class CalendarWidgetState extends State<CalendarWidget> with TickerProviderState
       crossAxisAlignment: CrossAxisAlignment.end,
       children: <Widget>[
         InkWell(
-          key: Key('expand-button'),
+          key: const Key('expand-button'),
           onTap: _canExpandMonth ? _toggleExpanded : null,
           child: Semantics(
             label: L10n(context).selectedMonthLabel(DateFormat.yMMMM().format(selectedDay)),
@@ -291,11 +290,11 @@ class CalendarWidgetState extends State<CalendarWidget> with TickerProviderState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(DateFormat.y().format(selectedDay), style: Theme.of(context).textTheme.overline),
+                  Text(DateFormat.y().format(selectedDay), style: Theme.of(context).textTheme.labelSmall),
                   Row(
                     children: <Widget>[
-                      Text(DateFormat.MMMM().format(selectedDay), style: Theme.of(context).textTheme.headline4),
-                      SizedBox(width: 10),
+                      Text(DateFormat.MMMM().format(selectedDay), style: Theme.of(context).textTheme.headlineMedium),
+                      const SizedBox(width: 10),
                       Visibility(
                         visible: _canExpandMonth,
                         child: ValueListenableBuilder(
@@ -323,7 +322,7 @@ class CalendarWidgetState extends State<CalendarWidget> with TickerProviderState
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
               child: Text(
                 L10n(context).calendars,
-                style: Theme.of(context).textTheme.caption.copyWith(color: Theme.of(context).buttonColor),
+                style: Theme.of(context).textTheme.bodySmall.copyWith(color: Theme.of(context).buttonColor),
               ),
             ),
           ),
@@ -342,7 +341,7 @@ class CalendarWidgetState extends State<CalendarWidget> with TickerProviderState
           : null,
       onVerticalDragEnd: _canExpandMonth
           ? (details) {
-              _monthFlingAnimController?.stop();
+              _monthFlingAnimController.stop();
               if (_isMonthExpanded) {
                 _monthFlingAnimController.value = _monthExpansionNotifier.value;
                 _monthFlingAnimController.fling(velocity: details.primaryVelocity / _monthExpansionHeight);
@@ -350,19 +349,19 @@ class CalendarWidgetState extends State<CalendarWidget> with TickerProviderState
             }
           : null,
       child: ValueListenableBuilder(
+        valueListenable: _monthExpansionNotifier,
+        builder: (BuildContext context, double value, Widget child) {
+          return SizedBox(
+            height: CalendarWeek.weekHeight + (value * _monthExpansionHeight),
+            child: child,
+          );
+        },
         child: Stack(
           children: <Widget>[
             Offstage(offstage: _isMonthExpanded, child: _weekPager()),
             Offstage(offstage: !_isMonthExpanded, child: _monthPager()),
           ],
         ),
-        valueListenable: _monthExpansionNotifier,
-        builder: (BuildContext context, double value, Widget child) {
-          return Container(
-            height: CalendarWeek.weekHeight + (value * _monthExpansionHeight),
-            child: child,
-          );
-        },
       ),
     );
   }
@@ -390,7 +389,7 @@ class CalendarWidgetState extends State<CalendarWidget> with TickerProviderState
         _monthExpansionNotifier.value = (_monthExpansionNotifier.value + expansionDiff).clamp(0.0, 1.0);
       };
       endCallback = (details) {
-        _monthFlingAnimController?.stop();
+        _monthFlingAnimController.stop();
         _monthFlingAnimController.value = _monthExpansionNotifier.value;
         _monthFlingAnimController.fling(velocity: details.primaryVelocity / _monthExpansionHeight);
       };
@@ -463,9 +462,9 @@ class CalendarWidgetState extends State<CalendarWidget> with TickerProviderState
 
   void selectDay(
     DateTime day, {
-    CalendarPageChangeBehavior dayPagerBehavior: CalendarPageChangeBehavior.jump,
-    CalendarPageChangeBehavior weekPagerBehavior: CalendarPageChangeBehavior.animate,
-    CalendarPageChangeBehavior monthPagerBehavior: CalendarPageChangeBehavior.animate,
+    CalendarPageChangeBehavior dayPagerBehavior = CalendarPageChangeBehavior.jump,
+    CalendarPageChangeBehavior weekPagerBehavior = CalendarPageChangeBehavior.animate,
+    CalendarPageChangeBehavior monthPagerBehavior = CalendarPageChangeBehavior.animate,
   }) {
     // Do nothing if the day is already selected
     if (selectedDay.isSameDayAs(day)) return;
@@ -557,17 +556,17 @@ class CalendarWidgetState extends State<CalendarWidget> with TickerProviderState
 
     return [
       IconButton(
-        key: Key('calendar-a11y-previous-week'),
+        key: const Key('calendar-a11y-previous-week'),
         tooltip: L10n(context).previousWeek(previousWeekName),
-        icon: Icon(CanvasIcons.arrow_left),
+        icon: const Icon(CanvasIcons.arrow_left),
         onPressed: () {
           _weekController.jumpToPage(index - 1);
         },
       ),
       IconButton(
-        key: Key('calendar-a11y-next-week'),
+        key: const Key('calendar-a11y-next-week'),
         tooltip: L10n(context).nextWeek(nextWeekName),
-        icon: Icon(CanvasIcons.arrow_right),
+        icon: const Icon(CanvasIcons.arrow_right),
         onPressed: () {
           _weekController.jumpToPage(index + 1);
         },
@@ -591,17 +590,17 @@ class CalendarWidgetState extends State<CalendarWidget> with TickerProviderState
 
     return [
       IconButton(
-        key: Key('calendar-a11y-previous-month'),
+        key: const Key('calendar-a11y-previous-month'),
         tooltip: L10n(context).previousMonth(previousMonthName),
-        icon: Icon(CanvasIcons.arrow_left),
+        icon: const Icon(CanvasIcons.arrow_left),
         onPressed: () {
           _monthController.jumpToPage(index - 1);
         },
       ),
       IconButton(
-        key: Key('calendar-a11y-next-month'),
+        key: const Key('calendar-a11y-next-month'),
         tooltip: L10n(context).nextMonth(nextMonthName),
-        icon: Icon(CanvasIcons.arrow_right),
+        icon: const Icon(CanvasIcons.arrow_right),
         onPressed: () {
           _monthController.jumpToPage(index + 1);
         },
@@ -623,7 +622,7 @@ class CalendarWidgetState extends State<CalendarWidget> with TickerProviderState
             });
           });
         }
-        return Container(width: double.infinity, height: double.infinity);
+        return const SizedBox(width: double.infinity, height: double.infinity);
       },
     );
   }

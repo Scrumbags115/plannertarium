@@ -28,7 +28,7 @@ class CalendarDayPlanner extends StatefulWidget {
 
   final Function(PlannerItem item) onItemSelected;
 
-  CalendarDayPlanner(this._day, {@required this.onItemSelected});
+  const CalendarDayPlanner(this._day, {super.key, @required this.onItemSelected});
 
   @override
   State<StatefulWidget> createState() => CalendarDayPlannerState();
@@ -42,16 +42,16 @@ class CalendarDayPlannerState extends State<CalendarDayPlanner> {
       builder: (_, snapshot, __) {
         Widget body;
         if (snapshot.hasError) {
-          body = ErrorPandaWidget(L10n(context).errorLoadingEvents, _refresh, header: SizedBox(height: 32));
+          body = ErrorPandaWidget(L10n(context).errorLoadingEvents, _refresh, header: const SizedBox(height: 32));
         } else if (!snapshot.hasData) {
-          body = LoadingIndicator();
+          body = const LoadingIndicator();
         } else {
           if (snapshot.data.isEmpty) {
             body = EmptyPandaWidget(
               svgPath: 'assets/svg/panda-no-events.svg',
               title: L10n(context).noEventsTitle,
               subtitle: L10n(context).noEventsMessage,
-              header: SizedBox(height: 32),
+              header: const SizedBox(height: 32),
             );
           } else {
             body = CalendarDayList(snapshot.data, widget.onItemSelected);
@@ -59,8 +59,8 @@ class CalendarDayPlannerState extends State<CalendarDayPlanner> {
         }
 
         return RefreshIndicator(
-          child: body,
           onRefresh: _refresh,
+          child: body,
         );
       },
     );
@@ -76,12 +76,12 @@ class CalendarDayList extends StatelessWidget {
   final List<PlannerItem> _plannerItems;
   final Function(PlannerItem item) onItemSelected;
 
-  CalendarDayList(this._plannerItems, this.onItemSelected);
+  const CalendarDayList(this._plannerItems, this.onItemSelected, {super.key});
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      padding: EdgeInsets.only(top: 8, bottom: 64), // Large bottom padding to account for FAB
+      padding: const EdgeInsets.only(top: 8, bottom: 64), // Large bottom padding to account for FAB
       itemCount: _plannerItems.length,
       itemBuilder: (context, index) => _dayTile(context, _plannerItems[index], index),
     );

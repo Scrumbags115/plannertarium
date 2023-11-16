@@ -15,7 +15,6 @@
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:planner/canvas/flutter_student_embed/lib/network/utils/api_prefs.dart';
 import 'package:planner/canvas/flutter_student_embed/lib/screens/crash_screen.dart';
 import 'package:planner/canvas/flutter_student_embed/lib/utils/service_locator.dart';
 

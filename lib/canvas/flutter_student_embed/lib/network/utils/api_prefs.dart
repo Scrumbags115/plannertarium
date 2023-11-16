@@ -55,7 +55,7 @@ class ApiPrefs {
     _checkInit();
     User user = getUser();
     List<String> userLocale =
-        (user?.effectiveLocale ?? user?.locale ?? ui.window.locale?.toLanguageTag() ?? '').split('-x-');
+        (user.effectiveLocale ?? user.locale ?? ui.window.locale.toLanguageTag() ?? '').split('-x-');
 
     if (userLocale[0].isEmpty) {
       return null;
@@ -78,36 +78,32 @@ class ApiPrefs {
     }
   }
 
-  static User getUser() => getCurrentLogin()?.user;
+  static User getUser() => getCurrentLogin().user;
 
   static String getUserAgent() => 'androidStudent/${_packageInfo.version} (${_packageInfo.buildNumber})';
 
   static String getApiUrl({String path = ''}) => '${getDomain()}/api/v1/$path';
 
-  static String getDomain() => getCurrentLogin()?.domain;
+  static String getDomain() => getCurrentLogin().domain;
 
-  static String getAuthToken() => getCurrentLogin()?.accessToken;
+  static String getAuthToken() => getCurrentLogin().accessToken;
 
   static Map<String, String> getHeaderMap({
     bool forceDeviceLanguage = false,
     String token,
     Map<String, String> extraHeaders,
   }) {
-    if (token == null) {
-      token = getAuthToken();
-    }
+    token ??= getAuthToken();
 
     var headers = {
       'authorization': 'Bearer $token',
-      'accept-language': (forceDeviceLanguage ? ui.window.locale.toLanguageTag() : effectiveLocale()?.toLanguageTag())
+      'accept-language': (forceDeviceLanguage ? ui.window.locale.toLanguageTag() : effectiveLocale().toLanguageTag())
           .replaceAll('-', ','),
       'user-agent': getUserAgent(),
     };
 
-    if (extraHeaders != null) {
-      headers.addAll(extraHeaders);
-    }
-
+    headers.addAll(extraHeaders);
+  
     return headers;
   }
 }

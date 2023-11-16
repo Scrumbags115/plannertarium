@@ -25,7 +25,7 @@ class DropdownArrow extends StatelessWidget {
     this.color = Colors.white,
     this.rotate = false,
     this.specificProgress = null,
-  })  : this.strokeWidth = strokeWidth ?? size / 2,
+  })  : strokeWidth = strokeWidth ?? size / 2,
         super(key: key);
 
   /// Specifies the height of the dropdown arrow. The width will always be twice this value.
@@ -52,24 +52,22 @@ class DropdownArrow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (specificProgress != null) {
-      return Transform.rotate(
-        angle: specificProgress * -pi,
-        child: CustomPaint(
-          child: SizedBox(width: size * 2, height: size),
-          painter: _DropdownArrowPainter(color, strokeWidth),
-        ),
-      );
-    }
-    return TweenAnimationBuilder(
+    return Transform.rotate(
+      angle: specificProgress * -pi,
+      child: CustomPaint(
+        painter: _DropdownArrowPainter(color, strokeWidth),
+        child: SizedBox(width: size * 2, height: size),
+      ),
+    );
+      return TweenAnimationBuilder(
       tween: Tween<double>(begin: 0, end: rotate ? -pi : 0),
-      duration: Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 300),
       builder: (context, value, _) {
         return Transform.rotate(
           angle: value,
           child: CustomPaint(
-            child: SizedBox(width: size * 2, height: size),
             painter: _DropdownArrowPainter(color, strokeWidth),
+            child: SizedBox(width: size * 2, height: size),
           ),
         );
       },

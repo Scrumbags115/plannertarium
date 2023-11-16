@@ -21,7 +21,7 @@ extension DateTimeExtensions on DateTime {
     DateFormat dateFormat,
     DateFormat timeFormat,
   }) {
-    if (this == null || localizer == null) return null;
+    if (localizer == null) return null;
     DateTime local = toLocal();
     String date = (dateFormat ?? DateFormat.MMMd()).format(local);
     String time = (timeFormat ?? DateFormat.jm()).format(local);
@@ -29,26 +29,26 @@ extension DateTimeExtensions on DateTime {
   }
 
   bool isSameDayAs(DateTime other) {
-    if (this == null || other == null) return false;
-    return this.year == other.year && this.month == other.month && this.day == other.day;
+    if (other == null) return false;
+    return year == other.year && month == other.month && day == other.day;
   }
 
   DateTime withFirstDayOfWeek() {
     if (this == null) return null;
     final firstDay = DateFormat().dateSymbols.FIRSTDAYOFWEEK;
-    var offset = (this.weekday - 1 - firstDay) % 7;
-    return DateTime(this.year, this.month, this.day - offset);
+    var offset = (weekday - 1 - firstDay) % 7;
+    return DateTime(year, month, day - offset);
   }
 
   int get localDayOfWeek {
     if (this == null) return null;
     final firstDay = DateFormat().dateSymbols.FIRSTDAYOFWEEK;
-    return (this.weekday - 1 - firstDay) % 7;
+    return (weekday - 1 - firstDay) % 7;
   }
 
   bool isWeekend() {
     if (this == null) return false;
-    return DateFormat().dateSymbols.WEEKENDRANGE.contains((this.weekday - 1) % 7);
+    return DateFormat().dateSymbols.WEEKENDRANGE.contains((weekday - 1) % 7);
   }
 
   DateTime withStartOfDay() => this == null ? null : DateTime(year, month, day);

@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 
 class AlertDialogChannel extends MethodChannel {
-  AlertDialogChannel(String channelId) : super(channelId) {
+  AlertDialogChannel(super.channelId) {
     setMethodCallHandler((methodCall) async {
       // Set up call handling here
     });

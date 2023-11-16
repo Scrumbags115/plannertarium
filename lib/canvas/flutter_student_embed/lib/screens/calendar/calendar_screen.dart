@@ -18,7 +18,6 @@ import 'package:built_value/built_value.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:planner/canvas/flutter_student_embed/lib/l10n/app_localizations.dart';
 import 'package:planner/canvas/flutter_student_embed/lib/models/planner_item.dart';
 import 'package:planner/canvas/flutter_student_embed/lib/models/serializers.dart';
@@ -42,11 +41,11 @@ class CalendarScreen extends StatefulWidget {
   final CalendarView startView;
 
   // Keys for the deep link parameter map passed in via DashboardScreen
-  static final startDateKey = 'startDate';
-  static final startViewKey = 'startView';
+  static const startDateKey = 'startDate';
+  static const startViewKey = 'startView';
   final String channelId;
 
-  CalendarScreen({Key key, this.startDate, this.startView = CalendarView.Week, this.channelId}) : super(key: key);
+  const CalendarScreen({Key key, this.startDate, this.startView = CalendarView.Week, this.channelId}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => CalendarScreenState();
@@ -57,7 +56,7 @@ class CalendarScreenState extends State<CalendarScreen> {
 
   CalendarScreenChannel _channel;
 
-  GlobalKey<CalendarWidgetState> _calendarKey = GlobalKey();
+  final GlobalKey<CalendarWidgetState> _calendarKey = GlobalKey();
 
   bool _showTodayButton = false;
 
@@ -66,10 +65,8 @@ class CalendarScreenState extends State<CalendarScreen> {
   @override
   void initState() {
     _fetcher = PlannerFetcher(userId: ApiPrefs.getUser().id, userDomain: ApiPrefs.getDomain());
-    if (widget.channelId != null) {
-      _channel = CalendarScreenChannel(widget.channelId);
-    }
-    super.initState();
+    _channel = CalendarScreenChannel(widget.channelId);
+      super.initState();
   }
 
   @override
@@ -80,7 +77,7 @@ class CalendarScreenState extends State<CalendarScreen> {
         appBar: AppBar(
           title: Text(L10n(context).calendar),
           leading: IconButton(
-            icon: Icon(Icons.menu),
+            icon: const Icon(Icons.menu),
             onPressed: () => _channel.openDrawer(),
             tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
           ),
@@ -138,7 +135,7 @@ class CalendarScreenState extends State<CalendarScreen> {
             CalendarFilterListScreen(currentContexts),
           );
           // Check if the list changed or not
-          if (!SetEquality().equals(currentContexts, updatedContexts)) {
+          if (!const SetEquality().equals(currentContexts, updatedContexts)) {
             _fetcher.setContexts(updatedContexts);
           }
         },
@@ -165,13 +162,13 @@ class CalendarScreenState extends State<CalendarScreen> {
 
   @override
   void dispose() {
-    _channel?.dispose();
+    _channel.dispose();
     super.dispose();
   }
 }
 
 class CalendarScreenChannel extends MethodChannel {
-  CalendarScreenChannel(String channelId) : super(channelId) {
+  CalendarScreenChannel(super.channelId) {
     setMethodCallHandler((methodCall) async {
       // Set up call handling here
     });

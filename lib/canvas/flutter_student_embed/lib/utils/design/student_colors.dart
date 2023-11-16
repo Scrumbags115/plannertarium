@@ -13,7 +13,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import 'dart:math';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:planner/canvas/flutter_student_embed/lib/utils/design/light_colors.dart';
@@ -108,7 +107,7 @@ class StudentColors {
     // are accessible on a white background, we need to always return an accessible color so that tests are stable and
     // pass the contrast checker. Remove this test code once designs have been updated/modified to account for this issue
     var isTest = WidgetsBinding.instance.runtimeType != WidgetsFlutterBinding;
-    if (isTest) return Color(0xFF4452A6); // Ultramarine, accessible on a white background
+    if (isTest) return const Color(0xFF4452A6); // Ultramarine, accessible on a white background
 
     return defaultContextColors[contextCode.hashCode % StudentColors.defaultContextColors.length];
   }

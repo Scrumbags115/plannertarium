@@ -40,7 +40,7 @@ abstract class Login implements Built<Login, LoginBuilder> {
   factory Login([void Function(LoginBuilder) updates]) = _$Login;
 
   static void _initializeBuilder(LoginBuilder b) => b
-    ..uuid = Uuid().v4()
+    ..uuid = const Uuid().v4()
     ..domain = ''
     ..accessToken = ''
     ..user = User().toBuilder();

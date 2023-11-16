@@ -42,36 +42,33 @@ class EmptyPandaWidget extends StatelessWidget {
     return FullScreenScrollContainer(
       header: header,
       children: <Widget>[
-        if (svgPath != null) SvgPicture.asset(svgPath, excludeFromSemantics: true),
-        if (svgPath != null && (title != null || subtitle != null)) SizedBox(height: 64),
-        if (title != null)
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.headline6.copyWith(fontSize: 20, fontWeight: FontWeight.normal),
-          ),
-        if (title != null && subtitle != null) SizedBox(height: 8),
-        if (subtitle != null)
-          Text(
-            subtitle,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.subtitle1.copyWith(fontWeight: FontWeight.normal),
-          ),
-        if (buttonText != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 48),
-            child: FlatButton(
-              onPressed: onButtonTap,
-              child: Text(
-                buttonText,
-                style: Theme.of(context).textTheme.caption.copyWith(fontSize: 16),
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: new BorderRadius.circular(4),
-                side: BorderSide(color: StudentColors.tiara),
-              ),
+        SvgPicture.asset(svgPath, excludeFromSemantics: true),
+        if ((title != null || subtitle != null)) const SizedBox(height: 64),
+        Text(
+          title,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.titleLarge.copyWith(fontSize: 20, fontWeight: FontWeight.normal),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          subtitle,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.titleMedium.copyWith(fontWeight: FontWeight.normal),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 48),
+          child: FlatButton(
+            onPressed: onButtonTap,
+            child: Text(
+              buttonText,
+              style: Theme.of(context).textTheme.bodySmall.copyWith(fontSize: 16),
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(4),
+              side: const BorderSide(color: StudentColors.tiara),
             ),
           ),
+        ),
       ],
     );
   }

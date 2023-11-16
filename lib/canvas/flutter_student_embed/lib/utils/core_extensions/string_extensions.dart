@@ -13,5 +13,5 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 extension StringExtensions on String {
-  bool isNullOrBlank() => this == null || this.trim().isEmpty;
+  bool isNullOrBlank() => trim().isEmpty;
 }

@@ -36,11 +36,7 @@ class DioConfig {
     this.forceRefresh = false,
     this.pageSize = PageSize.none,
     this.extraQueryParams,
-  })  : this.baseHeaders = baseHeaders ?? {},
-        assert(baseUrl != null),
-        assert(cacheMaxAge != null),
-        assert(forceRefresh != null),
-        assert(pageSize != null);
+  })  : baseHeaders = baseHeaders ?? {};
 
   /// Creates a copy of this configuration with the given fields replaced with the new values
   DioConfig copyWith({
@@ -116,14 +112,14 @@ class DioConfig {
 
   /// Creates a [DioConfig] targeted at typical Canvas API usage
   static DioConfig canvas({
-    bool includeApiPath: true,
-    bool forceRefresh: false,
-    bool forceDeviceLanguage: false,
+    bool includeApiPath = true,
+    bool forceRefresh = false,
+    bool forceDeviceLanguage = false,
     String overrideToken,
     Map<String, String> extraHeaders,
-    PageSize pageSize: PageSize.none,
+    PageSize pageSize = PageSize.none,
   }) {
-    String masqueradeId = ApiPrefs.getCurrentLogin()?.masqueradeId;
+    String masqueradeId = ApiPrefs.getCurrentLogin().masqueradeId;
     Map<String, dynamic> extraParams = masqueradeId == null ? null : {'as_user_id': masqueradeId};
     return DioConfig(
       baseUrl: includeApiPath ? ApiPrefs.getApiUrl() : '${ApiPrefs.getDomain()}/',
@@ -141,11 +137,11 @@ class DioConfig {
 
   /// Creates a [DioConfig] targeted at core/free-for-teacher API usage (i.e. canvas.instructure.com)
   static DioConfig core({
-    bool includeApiPath: true,
+    bool includeApiPath = true,
     Map<String, String> headers,
-    Duration cacheMaxAge: Duration.zero,
-    bool forceRefresh: false,
-    PageSize pageSize: PageSize.none,
+    Duration cacheMaxAge = Duration.zero,
+    bool forceRefresh = false,
+    PageSize pageSize = PageSize.none,
   }) {
     var baseUrl = 'https://canvas.instructure.com/';
     if (includeApiPath) baseUrl += 'api/v1/';
@@ -178,24 +174,24 @@ class PageSize {
 
   const PageSize(this.size);
 
-  static const PageSize none = const PageSize(0);
+  static const PageSize none = PageSize(0);
 
-  static const PageSize canvasDefault = const PageSize(10);
+  static const PageSize canvasDefault = PageSize(10);
 
-  static const PageSize canvasMax = const PageSize(100);
+  static const PageSize canvasMax = PageSize(100);
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is PageSize && this.size == other.size;
+  bool operator ==(Object other) => identical(this, other) || other is PageSize && size == other.size;
 }
 
 /// Convenience method that returns a [Dio] instance configured by calling through to [DioConfig.canvas]
 Dio canvasDio({
-  bool includeApiPath: true,
-  bool forceRefresh: false,
-  bool forceDeviceLanguage: false,
+  bool includeApiPath = true,
+  bool forceRefresh = false,
+  bool forceDeviceLanguage = false,
   String overrideToken,
   Map<String, String> extraHeaders,
-  PageSize pageSize: PageSize.none,
+  PageSize pageSize = PageSize.none,
 }) {
   return DioConfig.canvas(
     forceRefresh: forceRefresh,

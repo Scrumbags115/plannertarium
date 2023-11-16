@@ -27,7 +27,7 @@ import 'calendar_filter_list_interactor.dart';
 class CalendarFilterListScreen extends StatefulWidget {
   final Set<String> _selectedCourses;
 
-  CalendarFilterListScreen(this._selectedCourses);
+  const CalendarFilterListScreen(this._selectedCourses, {super.key});
 
   @override
   State<StatefulWidget> createState() => CalendarFilterListScreenState();
@@ -36,7 +36,7 @@ class CalendarFilterListScreen extends StatefulWidget {
 class CalendarFilterListScreenState extends State<CalendarFilterListScreen> {
   Future<List<Course>> _coursesFuture;
   Set<String> selectedContextIds = {}; // Public, to allow for testing
-  final GlobalKey<RefreshIndicatorState> _refreshCoursesKey = new GlobalKey<RefreshIndicatorState>();
+  final GlobalKey<RefreshIndicatorState> _refreshCoursesKey = GlobalKey<RefreshIndicatorState>();
   bool selectAllIfEmpty = true;
   int courseLength = -1;
 
@@ -64,12 +64,12 @@ class CalendarFilterListScreenState extends State<CalendarFilterListScreen> {
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(L10n(context).calendarSelectFavoriteCalendars, style: Theme.of(context).textTheme.bodyText2),
+              child: Text(L10n(context).calendarSelectFavoriteCalendars, style: Theme.of(context).textTheme.bodyMedium),
             ),
-            SizedBox(height: 24.0),
+            const SizedBox(height: 24.0),
             Expanded(child: _body())
           ],
         ),
@@ -81,33 +81,31 @@ class CalendarFilterListScreenState extends State<CalendarFilterListScreen> {
     return FutureBuilder(
         future: _coursesFuture,
         builder: (context, snapshot) {
-          Widget _body;
-          List<Course> _courses;
+          Widget body;
+          List<Course> courses;
           if (snapshot.hasError) {
-            _body = ErrorPandaWidget(L10n(context).errorLoadingCourses, () => _refreshCoursesKey.currentState.show());
+            body = ErrorPandaWidget(L10n(context).errorLoadingCourses, () => _refreshCoursesKey.currentState.show());
           } else if (snapshot.hasData) {
-            _courses = snapshot.data;
-            courseLength = _courses.length;
-            if (ApiPrefs.getUser() != null) courseLength++;
+            courses = snapshot.data;
+            courseLength = courses.length;
+            courseLength++;
             if (selectedContextIds.isEmpty && selectAllIfEmpty) {
               // We only want to do this the first time we load, otherwise if the user ever deselects all the
               // contexts, then they will all automatically be put into the selected list
               // Note: As unlikely as it is, if the user deselects all contexts then all contexts will be returned in the calendar
 
               // List will be empty when all courses are selected (on first load)
-              selectedContextIds.addAll(_courses.map((c) => 'course_${c.id}').toList());
-              if (ApiPrefs.getUser() != null) {
-                selectedContextIds.add('user_${ApiPrefs.getUser().id}');
-              }
-              selectAllIfEmpty = false;
+              selectedContextIds.addAll(courses.map((c) => 'course_${c.id}').toList());
+              selectedContextIds.add('user_${ApiPrefs.getUser().id}');
+                          selectAllIfEmpty = false;
             }
-            _body = (_courses == null || _courses.isEmpty)
+            body = (courses.isEmpty)
                 ? EmptyPandaWidget(
                     svgPath: 'assets/svg/panda-book.svg',
                     title: L10n(context).noCoursesTitle,
                     subtitle: L10n(context).noCoursesMessage,
                   )
-                : _calendarList(_courses);
+                : _calendarList(courses);
           } else {
             selectedContextIds.addAll(widget._selectedCourses);
             if (selectedContextIds.isNotEmpty) {
@@ -116,7 +114,7 @@ class CalendarFilterListScreenState extends State<CalendarFilterListScreen> {
               // selected).
               selectAllIfEmpty = false;
             }
-            return LoadingIndicator();
+            return const LoadingIndicator();
           }
 
           return RefreshIndicator(
@@ -126,25 +124,25 @@ class CalendarFilterListScreenState extends State<CalendarFilterListScreen> {
               setState(() {});
               return _coursesFuture;
             },
-            child: _body,
+            child: body,
           );
         });
   }
 
   ListView _calendarList(List<Course> courses) {
     final user = ApiPrefs.getUser();
-    List<Widget> _listItems = [
-      if (user != null) LabeledCheckbox(
-          label: user.name,
-          padding: const EdgeInsets.only(left: 2.0, right: 16.0),
-          value: selectedContextIds.contains('user_${user.id}'),
-          onChanged: (bool newValue) {
-            setState(() {
-              newValue
-                  ? selectedContextIds.add('user_${user.id}')
-                  : selectedContextIds.remove('user_${user.id}');
-            });
-          }),
+    List<Widget> listItems = [
+      LabeledCheckbox(
+        label: user.name,
+        padding: const EdgeInsets.only(left: 2.0, right: 16.0),
+        value: selectedContextIds.contains('user_${user.id}'),
+        onChanged: (bool newValue) {
+          setState(() {
+            newValue
+                ? selectedContextIds.add('user_${user.id}')
+                : selectedContextIds.remove('user_${user.id}');
+          });
+        }),
       ...courses.map((c) => MergeSemantics(
             child: LabeledCheckbox(
                 label: c.name,
@@ -160,17 +158,17 @@ class CalendarFilterListScreenState extends State<CalendarFilterListScreen> {
           ))
     ];
     return ListView.builder(
-        physics: AlwaysScrollableScrollPhysics(),
-        itemCount: _listItems.length, // Add one for the Courses header
+        physics: const AlwaysScrollableScrollPhysics(),
+        itemCount: listItems.length, // Add one for the Courses header
         itemBuilder: (context, index) {
-          return _listItems[index];
+          return listItems[index];
         });
   }
 }
 
 // Custom checkbox to better control the padding at the start
 class LabeledCheckbox extends StatelessWidget {
-  const LabeledCheckbox({
+  const LabeledCheckbox({super.key, 
     this.label,
     this.padding,
     this.value,
@@ -198,8 +196,8 @@ class LabeledCheckbox extends StatelessWidget {
                 onChanged(newValue);
               },
             ),
-            SizedBox(width: 21.0),
-            Expanded(child: Text(label, style: Theme.of(context).textTheme.subtitle1)),
+            const SizedBox(width: 21.0),
+            Expanded(child: Text(label, style: Theme.of(context).textTheme.titleMedium)),
           ],
         ),
       ),

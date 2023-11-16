@@ -78,15 +78,14 @@ abstract class PlannerItem implements Built<PlannerItem, PlannerItemBuilder> {
       code = 'course_${plannable.courseId}';
     } else if (plannable.groupId != null) {
       code = 'group_${plannable.groupId}';
-    } else if (plannable.userId != null) {
-      code = 'user_${plannable.userId}';
-    }
+    } else    code = 'user_${plannable.userId}';
+  
     return code;
   }
 
   @nullable
   PlannerSubmission get submissionStatus {
-    if (submissionStatusRaw == null || submissionStatusRaw.isBool) return null;
+    if (submissionStatusRaw.isBool) return null;
     return deserialize<PlannerSubmission>(submissionStatusRaw.value);
   }
 

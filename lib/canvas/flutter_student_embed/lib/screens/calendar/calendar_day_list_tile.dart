@@ -24,7 +24,7 @@ class CalendarDayListTile extends StatelessWidget {
   final PlannerItem _item;
   final Function(PlannerItem item) onItemSelected;
 
-  CalendarDayListTile(this._item, this.onItemSelected);
+  const CalendarDayListTile(this._item, this.onItemSelected, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -35,27 +35,27 @@ class CalendarDayListTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          SizedBox(width: 18),
+          const SizedBox(width: 18),
           Padding(
             padding: const EdgeInsets.only(top: 14),
             child: _getIcon(context, _item, contextColor),
           ),
-          SizedBox(width: 34),
+          const SizedBox(width: 34),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                SizedBox(height: 16),
-                Text(_getContextName(context, _item), style: textTheme.caption.copyWith(color: contextColor)),
-                SizedBox(height: 2),
-                Text(_item.plannable.title, style: textTheme.subtitle1),
+                const SizedBox(height: 16),
+                Text(_getContextName(context, _item), style: textTheme.bodySmall.copyWith(color: contextColor)),
+                const SizedBox(height: 2),
+                Text(_item.plannable.title, style: textTheme.titleMedium),
                 ..._getDueDate(context, _item),
                 ..._getPointsOrStatus(context, _item),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
               ],
             ),
           ),
-          SizedBox(width: 16),
+          const SizedBox(width: 16),
         ],
       ),
     );
@@ -66,11 +66,11 @@ class CalendarDayListTile extends StatelessWidget {
   String _getContextName(BuildContext context, PlannerItem item) {
     // Planner notes are displayed as 'To Do' items
     if (item.plannableType == 'planner_note') {
-      if (item.contextName != null && item.contextName.isNotEmpty) return L10n(context).courseToDo(item.contextName);
+      if (item.contextName.isNotEmpty) return L10n(context).courseToDo(item.contextName);
       return L10n(context).toDo;
     }
 
-    return item.contextName != null ? item.contextName : '';
+    return item.contextName ?? '';
   }
 
   Widget _getIcon(BuildContext context, PlannerItem item, Color contextColor) {
@@ -97,20 +97,19 @@ class CalendarDayListTile extends StatelessWidget {
 
   List<Widget> _getDueDate(BuildContext context, PlannerItem item) {
     String formattedDate;
-    if (item.plannableType == 'planner_note' && item.plannable.toDoDate != null) {
+    if (item.plannableType == 'planner_note') {
       // Planner notes use the plannable's toDoDate
       formattedDate = item.plannable.toDoDate.l10nFormat(L10n(context).dateAtTime);
-    } else if (item.plannable.dueAt != null) {
+    } else {
       formattedDate = item.plannable.dueAt.l10nFormat(L10n(context).dueDateAtTime);
     }
+  
 
-    if (formattedDate != null) {
-      return [
-        SizedBox(height: 2),
-        Text(formattedDate, style: Theme.of(context).textTheme.caption),
-      ];
-    }
-    return [];
+    return [
+      const SizedBox(height: 2),
+      Text(formattedDate, style: Theme.of(context).textTheme.bodySmall),
+    ];
+      return [];
   }
 
   List<Widget> _getPointsOrStatus(BuildContext context, PlannerItem plannerItem) {
@@ -118,35 +117,30 @@ class CalendarDayListTile extends StatelessWidget {
     String pointsOrStatus;
     String semanticLabel;
     // Submission status can be null for non-assignment contexts like announcements
-    if (submissionStatus != null) {
-      if (submissionStatus.excused) {
-        pointsOrStatus = L10n(context).excused;
-      } else if (submissionStatus.missing) {
-        pointsOrStatus = L10n(context).missing;
-      } else if (submissionStatus.graded) {
-        pointsOrStatus = L10n(context).assignmentGradedLabel;
-      } else if (submissionStatus.needsGrading) {
-        pointsOrStatus = L10n(context).assignmentSubmittedLabel;
-      } else if (plannerItem.plannable.pointsPossible != null) {
-        // We don't have a status, but we should have points
-        String score = NumberFormat.decimalPattern().format(plannerItem.plannable.pointsPossible);
-        pointsOrStatus = L10n(context).assignmentTotalPoints(score);
-        semanticLabel = L10n(context).pointsPossible(score);
-      }
-    }
-
+    if (submissionStatus.excused) {
+      pointsOrStatus = L10n(context).excused;
+    } else if (submissionStatus.missing) {
+      pointsOrStatus = L10n(context).missing;
+    } else if (submissionStatus.graded) {
+      pointsOrStatus = L10n(context).assignmentGradedLabel;
+    } else if (submissionStatus.needsGrading) {
+      pointsOrStatus = L10n(context).assignmentSubmittedLabel;
+    } else    // We don't have a status, but we should have points
+    String score = NumberFormat.decimalPattern().format(plannerItem.plannable.pointsPossible);
+    pointsOrStatus = L10n(context).assignmentTotalPoints(score);
+    semanticLabel = L10n(context).pointsPossible(score);
+  
+  
     // Don't show this row if it doesn't have a score or status (e.g. announcement)
-    if (pointsOrStatus != null) {
-      return [
-        SizedBox(height: 4),
-        Text(
-          pointsOrStatus,
-          style: Theme.of(context).textTheme.caption.copyWith(color: Theme.of(context).accentColor),
-          semanticsLabel: semanticLabel,
-        ),
-      ];
-    }
-
+    return [
+      const SizedBox(height: 4),
+      Text(
+        pointsOrStatus,
+        style: Theme.of(context).textTheme.bodySmall.copyWith(color: Theme.of(context).colorScheme.secondary),
+        semanticsLabel: semanticLabel,
+      ),
+    ];
+  
     return [];
   }
 }

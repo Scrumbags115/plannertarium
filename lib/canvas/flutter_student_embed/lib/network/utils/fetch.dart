@@ -54,13 +54,13 @@ Future<PagedList<T>> fetchNextPage<T>(String nextUrl) async {
 /// with subsequent page requests (cache behavior, authentications headers, etc).
 Future<List<T>> fetchList<T>(
   Future<Response<dynamic>> request, {
-  Dio depaginateWith: null,
+  Dio depaginateWith = null,
 }) async {
   try {
     var response = await request;
     if (depaginateWith == null) return deserializeList(response.data);
     depaginateWith.options.baseUrl = null;
-    depaginateWith.options.queryParameters?.remove('per_page');
+    depaginateWith.options.queryParameters.remove('per_page');
     var pagedList = PagedList<T>(response);
     while (pagedList.nextUrl != null) {
       response = await depaginateWith.get(pagedList.nextUrl);

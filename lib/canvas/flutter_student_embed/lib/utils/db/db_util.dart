@@ -44,11 +44,15 @@ class DbUtil {
 
   @visibleForTesting
   static Future<void> onCreate(Database db, int version) async {
-    creators.forEach((creator) => creator(db, version));
+    for (var creator in creators) {
+      creator(db, version);
+    }
   }
 
   @visibleForTesting
   static Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
-    updaters.forEach((updater) => updater(db, oldVersion, newVersion));
+    for (var updater in updaters) {
+      updater(db, oldVersion, newVersion);
+    }
   }
 }

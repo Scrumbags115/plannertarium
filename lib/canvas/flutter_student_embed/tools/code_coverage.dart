@@ -24,7 +24,7 @@ void main(List<String> args) async {
   }
 
   // Get list of exclusions
-  File file = new File('tools/codecov_exclusions');
+  File file = File('tools/codecov_exclusions');
   if (!file.existsSync()) {
     print('Could not find exclusions list at ${file.absolute.path}');
     exit(1);

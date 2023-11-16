@@ -14,7 +14,6 @@
 
 import 'package:device_info/device_info.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:planner/canvas/flutter_student_embed/lib/utils/design/student_theme.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:package_info/package_info.dart';
@@ -53,16 +52,16 @@ class CrashScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               SvgPicture.asset('assets/svg/panda-not-supported.svg'),
-              SizedBox(height: 64),
+              const SizedBox(height: 64),
               Text(
                 L10n(context).crashScreenTitle,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
                 L10n(context).crashScreenMessage,
-                style: TextStyle(fontSize: 16),
+                style: const TextStyle(fontSize: 16),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -83,7 +82,7 @@ class CrashScreen extends StatelessWidget {
           onPressed: () => _showDetailsDialog(context, packageInfo, deviceInfo),
           child: Text(
             L10n(context).crashScreenViewDetails,
-            style: Theme.of(context).textTheme.subtitle2,
+            style: Theme.of(context).textTheme.titleSmall,
           ),
         );
       },
@@ -104,11 +103,11 @@ class CrashScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        contentPadding: EdgeInsets.all(0),
-        content: Container(
+        contentPadding: const EdgeInsets.all(0),
+        content: SizedBox(
           width: double.maxFinite,
           child: ListView(
-            padding: EdgeInsets.all(8),
+            padding: const EdgeInsets.all(8),
             shrinkWrap: true,
             children: <Widget>[
               ListTile(
@@ -129,14 +128,14 @@ class CrashScreen extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(8, 0, 8, 16),
                     child: Container(
-                      key: Key('full-error-message'),
-                      padding: EdgeInsets.all(8),
+                      key: const Key('full-error-message'),
+                      padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                           color: StudentTheme.of(context).nearSurfaceColor,
-                          borderRadius: BorderRadius.all(Radius.circular(8))),
+                          borderRadius: const BorderRadius.all(Radius.circular(8))),
                       child: Text(
                         _getFullErrorMessage(),
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
                       ),
                     ),
                   ),

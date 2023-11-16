@@ -72,12 +72,12 @@ class CalendarFilterDb {
   }
 
   static String joinFilters(Set<String> filters) {
-    if (filters == null || filters.isEmpty) return '';
+    if (filters.isEmpty) return '';
     return filters.join('|');
   }
 
   static Set<String> splitFilters(String joinedFilters) {
-    if (joinedFilters == null || joinedFilters.isEmpty) return {};
+    if (joinedFilters.isEmpty) return {};
     return joinedFilters.split('|').toSet();
   }
 

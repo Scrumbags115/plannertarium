@@ -13,7 +13,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 class QuickNav {
   Future<T> push<T extends Object>(BuildContext context, Widget widget) {
@@ -28,7 +27,7 @@ class QuickFadeRoute<T> extends MaterialPageRoute<T> {
   QuickFadeRoute(this.child) : super(builder: (_) => child);
 
   @override
-  Duration get transitionDuration => Duration(milliseconds: 200);
+  Duration get transitionDuration => const Duration(milliseconds: 200);
 
   @override
   Widget buildTransitions(

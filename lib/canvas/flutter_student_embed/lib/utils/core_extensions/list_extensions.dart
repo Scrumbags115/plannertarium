@@ -27,7 +27,7 @@ enum NullSortOrder {
   none,
 }
 
-typedef Comparable Selector<T>(T element);
+typedef Selector<T> = Comparable Function(T element);
 
 extension ListExtensions<T> on List<T> {
   /// Sorts elements in-place according to the natural sort order of the value returned by the specified [selectors].
@@ -37,7 +37,7 @@ extension ListExtensions<T> on List<T> {
     bool descending = false,
     NullSortOrder nullSortOrder = NullSortOrder.greaterThan,
   }) {
-    if (this == null || this.isEmpty || selectors.isEmpty) return this;
+    if (isEmpty || selectors.isEmpty) return this;
     sort((a, b) {
       int result;
       for (int i = 0; i < selectors.length; i++) {
@@ -46,7 +46,7 @@ extension ListExtensions<T> on List<T> {
         var value1 = selector(descending ? b : a);
         var value2 = selector(descending ? a : b);
 
-        if (value1 != null && value2 != null) {
+        if (value2 != null) {
           // Both values are non-null; perform a direct comparison.
           result = value1.compareTo((value2));
         } else if ((value1 == null) != (value2 == null)) {
@@ -83,16 +83,16 @@ extension ListExtensions<T> on List<T> {
   int count(bool Function(T) predicate) {
     if (this == null) return 0;
     var count = 0;
-    this.forEach((element) {
+    forEach((element) {
       if (predicate(element)) ++count;
     });
     return count;
   }
 
-  List<R> mapIndexed<R>(R transform(int index, T t)) {
+  List<R> mapIndexed<R>(R Function(int index, T t) transform) {
     if (this == null) return null;
     final List<R> list = [];
-    for (int i = 0; i < this.length; i++) {
+    for (int i = 0; i < length; i++) {
       list.add(transform(i, this[i]));
     }
     return list;

@@ -25,14 +25,13 @@ class FullScreenScrollContainer extends StatelessWidget {
   final double horizontalPadding;
 
   const FullScreenScrollContainer({@required this.children, this.header, this.horizontalPadding = 32, Key key})
-      : assert(horizontalPadding != null),
-        super(key: key);
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints viewportConstraints) => SingleChildScrollView(
-        physics: AlwaysScrollableScrollPhysics(),
+        physics: const AlwaysScrollableScrollPhysics(),
         child: ConstrainedBox(
           constraints: BoxConstraints(
             minHeight: viewportConstraints.maxHeight,
@@ -42,7 +41,7 @@ class FullScreenScrollContainer extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
-                if (header != null) header,
+                header,
                 Expanded(
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: horizontalPadding),

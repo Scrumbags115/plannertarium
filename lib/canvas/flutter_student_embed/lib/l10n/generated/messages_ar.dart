@@ -76,7 +76,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "There was an error loading your calendar" : MessageLookupByLibrary.simpleMessage("حدث خطأ أثناء تحميل التقويم الخاص بك"),
     "There was an error loading your your student’s courses." : MessageLookupByLibrary.simpleMessage("حدث خطأ أثناء تحميل مساقات الطالب."),
     "There was an error saving this To Do. Please check your connection and try again." : MessageLookupByLibrary.simpleMessage("حدث خطأ أثناء حفظ قائمة المهام هذه. يرجى التحقق من الاتصال وإعادة المحاولة."),
-    "There\'s no description yet" : MessageLookupByLibrary.simpleMessage("لا يوجد وصف حتى الآن"),
+    "There's no description yet" : MessageLookupByLibrary.simpleMessage("لا يوجد وصف حتى الآن"),
     "Title" : MessageLookupByLibrary.simpleMessage("العنوان"),
     "Title must not be empty" : MessageLookupByLibrary.simpleMessage("لا يمكن أن يكون العنوان فارغًا"),
     "To Do" : MessageLookupByLibrary.simpleMessage("قائمة المهام"),

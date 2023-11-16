@@ -24,7 +24,7 @@ import 'package:provider/provider.dart';
 
 import '../planner_fetcher.dart';
 
-typedef DaySelectedCallback(DateTime day);
+typedef DaySelectedCallback = Function(DateTime day);
 
 class CalendarDay extends StatelessWidget {
   static const double dayHeight = 50;
@@ -47,7 +47,7 @@ class CalendarDay extends StatelessWidget {
     final isToday = date.isSameDayAs(DateTime.now());
     final isSelected = date.isSameDayAs(selectedDay);
 
-    TextStyle textStyle = theme.textTheme.headline5;
+    TextStyle textStyle = theme.textTheme.headlineSmall;
     if (date.isWeekend() || date.month != selectedDay.month) textStyle = textStyle.copyWith(color: StudentColors.textDark);
     BoxDecoration decoration;
 
@@ -74,11 +74,11 @@ class CalendarDay extends StatelessWidget {
             highlightColor: StudentColors.buttonColor.withOpacity(0.35),
             splashColor: StudentColors.buttonColor.withOpacity(0.35),
             onTap: () => onDaySelected(date),
-            child: Container(
+            child: SizedBox(
               height: dayHeight,
               child: Column(
                 children: <Widget>[
-                  SizedBox(height: 6),
+                  const SizedBox(height: 6),
                   Container(
                     height: 32,
                     width: 32,
@@ -86,12 +86,12 @@ class CalendarDay extends StatelessWidget {
                     child: Center(
                       child: AnimatedDefaultTextStyle(
                         style: textStyle,
-                        duration: Duration(milliseconds: 300),
+                        duration: const Duration(milliseconds: 300),
                         child: Text(date.day.toString(), semanticsLabel: L10n(context).calendarDaySemanticsLabel(DateFormat.MMMMEEEEd().format(date), eventCount)),
                       ),
                     ),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   _eventIndicator(context, snapshot),
                 ],
               ),
@@ -113,7 +113,7 @@ class CalendarDay extends StatelessWidget {
       return Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: List.generate(itemCount, (index) {
-          if (index % 2 == 1) return SizedBox(width: 4);
+          if (index % 2 == 1) return const SizedBox(width: 4);
           return Container(
             width: 4,
             height: 4,
@@ -124,11 +124,11 @@ class CalendarDay extends StatelessWidget {
     }
 
     /// Otherwise, show loading
-    return Container(
+    return SizedBox(
       width: 4,
       height: 4,
       child: _RepeatTween(
-        duration: Duration(milliseconds: 350),
+        duration: const Duration(milliseconds: 350),
         delay: Duration(milliseconds: 100 * (date.localDayOfWeek)),
         builder: (BuildContext context, Animation animation) {
           return ScaleTransition(
@@ -170,7 +170,7 @@ class __RepeatTweenState extends State<_RepeatTween> with SingleTickerProviderSt
   }
 
   _startWithDelay() async {
-    if (widget.delay != null) await Future.delayed(widget.delay);
+    await Future.delayed(widget.delay);
     if (mounted) _controller.repeat(reverse: true);
   }
 

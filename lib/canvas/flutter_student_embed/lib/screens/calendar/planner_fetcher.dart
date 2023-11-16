@@ -39,10 +39,12 @@ class PlannerFetcher extends ChangeNotifier {
 
   PlannerFetcher({DateTime fetchFirst, @required this.userDomain, @required this.userId}) {
     _updateListener = () {
-      updateNotifier.value?.forEach((date) => refreshItemsForDate(date.toLocal(), clearCaches: true));
+      for (var date in updateNotifier.value) {
+        refreshItemsForDate(date.toLocal(), clearCaches: true);
+      }
     };
     updateNotifier.addListener(_updateListener);
-    if (fetchFirst != null) getSnapshotForDate(fetchFirst);
+    getSnapshotForDate(fetchFirst);
   }
 
   static void notifyDatesChanged(List<DateTime> dates) {
@@ -54,18 +56,18 @@ class PlannerFetcher extends ChangeNotifier {
       userDomain,
       userId,
     );
-    return calendarFilter?.filters?.toSet() ?? {};
+    return calendarFilter.filters.toSet() ?? {};
   }
 
   AsyncSnapshot<List<PlannerItem>> getSnapshotForDate(DateTime date) {
     final dayKey = dayKeyForDate(date);
     AsyncSnapshot<List<PlannerItem>> daySnapshot = daySnapshots[dayKey];
-    if (daySnapshot != null) return daySnapshot;
+    return daySnapshot;
     _beginMonthFetch(date);
     return daySnapshots[dayKey];
   }
 
-  Future<void> refreshItemsForDate(DateTime date, {bool clearCaches: false}) async {
+  Future<void> refreshItemsForDate(DateTime date, {bool clearCaches = false}) async {
     String dayKey = dayKeyForDate(date);
     bool hasError = daySnapshots[dayKey].hasError;
     bool monthFailed = failedMonths[monthKeyForYearMonth(date.year, date.month)] ?? false;
@@ -77,7 +79,7 @@ class PlannerFetcher extends ChangeNotifier {
     } else {
       // Just retry the single day
       if (hasError) {
-        daySnapshots[dayKey] = AsyncSnapshot<List<PlannerItem>>.nothing().inState(ConnectionState.waiting);
+        daySnapshots[dayKey] = const AsyncSnapshot<List<PlannerItem>>.nothing().inState(ConnectionState.waiting);
       } else {
         daySnapshots[dayKey] = daySnapshots[dayKey].inState(ConnectionState.waiting);
       }
@@ -98,7 +100,7 @@ class PlannerFetcher extends ChangeNotifier {
     final lastDayOfMonth = date.withEndOfMonth().day;
     for (int i = 1; i <= lastDayOfMonth; i++) {
       var dayKey = dayKeyForYearMonthDay(date.year, date.month, i);
-      daySnapshots[dayKey] = AsyncSnapshot<List<PlannerItem>>.nothing().inState(ConnectionState.waiting);
+      daySnapshots[dayKey] = const AsyncSnapshot<List<PlannerItem>>.nothing().inState(ConnectionState.waiting);
     }
     _fetchMonth(date, refresh);
   }
@@ -128,12 +130,10 @@ class PlannerFetcher extends ChangeNotifier {
     for (int i = 1; i <= lastDayOfMonth; i++) {
       dayItems[dayKeyForYearMonthDay(date.year, date.month, i)] = [];
     }
-    items.forEach((item) {
-      if (item.plannableDate != null) {
-        String dayKey = dayKeyForDate(item.plannableDate.toLocal());
-        dayItems[dayKey]?.add(item);
-      }
-    });
+    for (var item in items) {
+      String dayKey = dayKeyForDate(item.plannableDate.toLocal());
+      dayItems[dayKey]?.add(item);
+        }
 
     dayItems.forEach((dayKey, items) {
       daySnapshots[dayKey] = AsyncSnapshot<List<PlannerItem>>.withData(ConnectionState.done, items);

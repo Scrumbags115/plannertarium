@@ -76,7 +76,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "There was an error loading your calendar" : MessageLookupByLibrary.simpleMessage("He hapa i puta i te wā e uta ana i tō maramataka"),
     "There was an error loading your your student’s courses." : MessageLookupByLibrary.simpleMessage("He hapa i te wā e uta ana i tō ākonga akoranga."),
     "There was an error saving this To Do. Please check your connection and try again." : MessageLookupByLibrary.simpleMessage("He hapa i te wā e tiaki ana i tenei Hei Whakamahi Tēnā koa tirohia tō hononga ana ka tarai anō."),
-    "There\'s no description yet" : MessageLookupByLibrary.simpleMessage("Kaore he whakturanga i tēnei wā"),
+    "There's no description yet" : MessageLookupByLibrary.simpleMessage("Kaore he whakturanga i tēnei wā"),
     "Title" : MessageLookupByLibrary.simpleMessage("taitara"),
     "Title must not be empty" : MessageLookupByLibrary.simpleMessage("Me noho kore te taitara"),
     "To Do" : MessageLookupByLibrary.simpleMessage("Hei mahi"),
