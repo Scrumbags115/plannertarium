@@ -11,20 +11,21 @@ class SingleDay extends StatefulWidget {
   const SingleDay(this.date, {super.key});
 
   @override
-  SingleDayState createState() => SingleDayState(date);
+  _SingleDayState createState() => _SingleDayState(date);
 }
 
-class SingleDayState extends State<SingleDay> {
+class _SingleDayState extends State<SingleDay> {
   DateTime date;
   List<Task> tasksDueToday = [];
   List<Event> currentEvents = [];
   int taskCount = 0;
-  SingleDayState(this.date) {
+  _SingleDayState(this.date) {
     getCurrentEvents() {
       return db.getListOfEventsInDay(date: date);
     }
 
     getCurrentEvents().then((value) => setState(() {}));
+
     getTasksDueToday() {
       return db.getTasksDue(date, date.add(const Duration(days: 1)));
     }
@@ -39,137 +40,120 @@ class SingleDayState extends State<SingleDay> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: [
-          SizedBox(
-            height: 80,
-            child: Card(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      children: [
-                        const Text(
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 18),
-                            "Tasks for today!"),
-                        Expanded(
-                          child: ListView(
-                              scrollDirection: Axis.horizontal,
-                              children: List.generate(taskCount, (index) {
-                                return Row(
-                                  children: [
-                                    SizedBox(
-                                        height: 40,
-                                        child: Card(
-                                            color: Colors.amber,
-                                            child: InkWell(
-                                              splashColor:
-                                                  Colors.blue.withAlpha(30),
-                                              onTap: () {
-                                                Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          taskDetails(
-                                                              tasksDueToday[
-                                                                      index]
-                                                                  .name,
-                                                              tasksDueToday[
-                                                                      index]
-                                                                  .description,
-                                                              tasksDueToday[
-                                                                      index]
-                                                                  .location)),
-                                                );
-                                              },
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                child: Text(
-                                                    style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 15),
-                                                    tasksDueToday[index].name),
-                                              ),
-                                            ))),
-                                  ],
-                                );
-                              })),
-                        ),
-                      ],
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => AddTask(date)));
-                    },
-                    child: Container(
-                      color: Colors.black,
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 20),
-                      child: const Text(
-                        'Add Task',
-                        style: TextStyle(color: Colors.white, fontSize: 15.0),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Expanded(
-            child: ListView(
-              children: List.generate(24, (index) {
-                int displaynum;
-                String ampm;
-                if (index % 12 == 0) {
-                  displaynum = 12;
-                } else if (index > 12) {
-                  displaynum = index - 12;
-                } else {
-                  displaynum = index;
-                }
-                if (index > 11) {
-                  ampm = "PM";
-                } else {
-                  ampm = "AM";
-                }
-                return Column(
-                  children: [
-                    Row(
-                      children: [
-                        Flexible(
-                          flex: 0,
-                          child: SizedBox(
-                            width: 50,
-                            child: Center(
-                              child:
-                                  Text("$displaynum $ampm"), //Placeholder hour
+    return SafeArea(
+      child: GestureDetector(
+        onHorizontalDragEnd: (details) {
+          if (details.primaryVelocity! > 0) {
+            Navigator.of(context).pop();
+          }
+        },
+        child: Scaffold(
+          body: Column(
+            children: [
+              //Displays the tasks for the day, along with the add task button
+              SizedBox(
+                height: 80,
+                child: Card(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          children: [
+                            const Row(
+                              children: [
+                                Text(
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold, fontSize: 18),
+                                    "Tasks for today!"),
+                              ],
                             ),
+                            Expanded(
+                              child: ListView(
+                                  scrollDirection: Axis.horizontal,
+                                  children: List.generate(taskCount, (index) {
+                                    return Row(
+                                      children: [
+                                        TaskCard(
+                                            tasksDueToday: tasksDueToday,
+                                            index: index),
+                                      ],
+                                    );
+                                  })),
+                            ),
+                          ],
+                        ),
+                      ),
+                      //Takes you to the screen to add a task
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => AddTaskView(date)));
+                        },
+                        child: Container(
+                          color: Colors.black,
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 20),
+                          child: const Text(
+                            'Add Task',
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 15.0),
                           ),
                         ),
-                        const Expanded(
-                          child: Divider(
-                            height: 10,
-                            thickness: 2.5,
-                            color: Colors.lightBlueAccent,
-                          ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Expanded(
+                child: ListView(
+                  children: List.generate(24, (index) {
+                    int displaynum;
+                    String ampm;
+                    if (index % 12 == 0) {
+                      displaynum = 12;
+                    } else if (index > 12) {
+                      displaynum = index - 12;
+                    } else {
+                      displaynum = index;
+                    }
+                    if (index > 11) {
+                      ampm = "PM";
+                    } else {
+                      ampm = "AM";
+                    }
+                    return Column(
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              flex: 0,
+                              child: SizedBox(
+                                width: 50,
+                                child: Center(
+                                  child: Text("$displaynum $ampm"),
+                                ),
+                              ),
+                            ),
+                            const Expanded(
+                              child: Divider(
+                                height: 10,
+                                thickness: 2.5,
+                                color: Colors.lightBlueAccent,
+                              ),
+                            ),
+                          ],
                         ),
+                        generateHourBox(index),
                       ],
-                    ),
-                    generateHourBox(index),
-                  ],
-                );
-              }),
-            ),
+                    );
+                  }),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -187,21 +171,15 @@ class SingleDayState extends State<SingleDay> {
           ),
           Expanded(
             child: Container(
-              decoration: const BoxDecoration(
-                  //Makes a gray box that doesn't do anything right now
-                  //color: Color(0xFFBFBFBF),
-                  ),
+              decoration: const BoxDecoration(),
               child: SizedBox(
-                //Also not idea how I'm going to connect the backend with this, but better to have something than nothing
                 height: 50,
                 child: InkWell(
                   splashColor: Colors.red.withAlpha(30),
                   onTap: () {},
                   child: const Center(
                     child: Column(
-                      children: [
-                        //Text("Placeholder"), //Placeholder
-                      ],
+                      children: [],
                     ),
                   ),
                 ),
@@ -216,9 +194,71 @@ class SingleDayState extends State<SingleDay> {
   }
 }
 
-class AddTask extends StatelessWidget {
+class TaskCard extends StatefulWidget {
+  final List<Task> tasksDueToday;
+  final int index;
+  const TaskCard({super.key, required this.tasksDueToday, required this.index});
+
+  @override
+  _TaskCardState createState() => _TaskCardState();
+}
+
+class _TaskCardState extends State<TaskCard> {
+  Color tilecolor = Colors.amber;
+  TextDecoration dec = TextDecoration.none;
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+        height: 40,
+        child: Card(
+            color: tilecolor,
+            child: InkWell(
+              splashColor: Colors.blue.withAlpha(30),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => TaskDetailsView(
+                          widget.tasksDueToday[widget.index].name,
+                          widget.tasksDueToday[widget.index].description,
+                          widget.tasksDueToday[widget.index].location)),
+                );
+              },
+              onLongPress: () {
+                if (tilecolor == Colors.amber) {
+                  widget.tasksDueToday[widget.index].completed =
+                      !widget.tasksDueToday[widget.index].completed;
+                  db.setTask(widget.tasksDueToday[widget.index]);
+                  setState(() {
+                    tilecolor = Colors.green;
+                    dec = TextDecoration.lineThrough;
+                  });
+                } else {
+                  setState(() {
+                    widget.tasksDueToday[widget.index].completed =
+                        !widget.tasksDueToday[widget.index].completed;
+                    db.setTask(widget.tasksDueToday[widget.index]);
+                    tilecolor = Colors.amber;
+                    dec = TextDecoration.none;
+                  });
+                }
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                    style: TextStyle(
+                        decoration: dec,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15),
+                    widget.tasksDueToday[widget.index].name),
+              ),
+            )));
+  }
+}
+
+class AddTaskView extends StatelessWidget {
   final DateTime date;
-  AddTask(this.date, {super.key});
+  AddTaskView(this.date, {super.key});
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController taskNameController = TextEditingController();
@@ -229,7 +269,7 @@ class AddTask extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Event')),
+      appBar: AppBar(title: const Text('Add Task')),
       body: Form(
         key: _formKey,
         child: Column(
@@ -292,11 +332,12 @@ class AddTask extends StatelessWidget {
   }
 }
 
-class taskDetails extends StatelessWidget {
+class TaskDetailsView extends StatelessWidget {
   final String name;
   final String description;
   final String location;
-  taskDetails(this.name, this.description, this.location, {super.key});
+  const TaskDetailsView(this.name, this.description, this.location,
+      {super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -305,11 +346,11 @@ class taskDetails extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Text("Description: " + description),
+              child: Text("Description: $description"),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Text("Location: " + location),
+              child: Text("Location: $location"),
             ),
           ],
         ));

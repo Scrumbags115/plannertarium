@@ -306,7 +306,7 @@ class _taskViewState extends State<taskView> {
           print('swipe detected');
           if (details.primaryVelocity! < 0) {
             Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => const weekView(),
+              builder: (context) => const WeekView(),
             ));
           }
         },
