@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/models/task.dart';
+import 'package:planner/models/event.dart';
 
-DatabaseService dayta = DatabaseService(uid: "userid1");
+DatabaseService db = DatabaseService();
 
 //The entirety of the dayView is one SingleDay
 class SingleDay extends StatefulWidget {
@@ -15,20 +16,23 @@ class SingleDay extends StatefulWidget {
 
 class SingleDayState extends State<SingleDay> {
   DateTime date;
-  List<Task>? currentTasks = [];
-  List<Task>? currentdayTasks = [];
+  List<Task> tasksDueToday = [];
+  List<Event> currentEvents = [];
+  int taskCount = 0;
   SingleDayState(this.date) {
-    getCurrentTasks() {
-      return dayta.getTaskMaps(date, date.add(const Duration(days: 1)));
+    getCurrentEvents() {
+      return db.getListOfEventsInDay(date: date);
     }
-    getCurrentTasks().then((value) => setState(() {
-          currentTasks = value.$1[date];
-          //print(currentTasks);
-          for (int i = 0; i < currentTasks!.length; i++) {
-            if (currentTasks![i].timeDue!.isAtSameMomentAs(date) &
-                currentTasks![i].timeDue!.isBefore(date.add(const Duration(days: 1)))) {
-              currentdayTasks!.add(currentTasks![i]);
-            }
+
+    getCurrentEvents().then((value) => setState(() {}));
+    getTasksDueToday() {
+      return db.getTasksDue(date, date.add(const Duration(days: 1)));
+    }
+
+    getTasksDueToday().then((value) => setState(() {
+          for (var val in value.values) {
+            taskCount = val.length;
+            tasksDueToday = val;
           }
         }));
   }
@@ -47,11 +51,13 @@ class SingleDayState extends State<SingleDay> {
                     child: Column(
                       children: [
                         const Text(
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),"Tasks for today!"),
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 18),
+                            "Tasks for today!"),
                         Expanded(
                           child: ListView(
                               scrollDirection: Axis.horizontal,
-                              children: List.generate(currentTasks!.length, (index) {
+                              children: List.generate(taskCount, (index) {
                                 return Row(
                                   children: [
                                     SizedBox(
@@ -66,7 +72,16 @@ class SingleDayState extends State<SingleDay> {
                                                   context,
                                                   MaterialPageRoute(
                                                       builder: (context) =>
-                                                          singleTask(currentTasks![index].name, currentTasks![index].description)),
+                                                          taskDetails(
+                                                              tasksDueToday[
+                                                                      index]
+                                                                  .name,
+                                                              tasksDueToday[
+                                                                      index]
+                                                                  .description,
+                                                              tasksDueToday[
+                                                                      index]
+                                                                  .location)),
                                                 );
                                               },
                                               child: Padding(
@@ -77,8 +92,7 @@ class SingleDayState extends State<SingleDay> {
                                                         fontWeight:
                                                             FontWeight.bold,
                                                         fontSize: 15),
-                                                    currentdayTasks![index]
-                                                        .name),
+                                                    tasksDueToday[index].name),
                                               ),
                                             ))),
                                   ],
@@ -208,12 +222,14 @@ class AddTask extends StatelessWidget {
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController taskNameController = TextEditingController();
-  final TextEditingController taskDescriptionController = TextEditingController();
+  final TextEditingController taskDescriptionController =
+      TextEditingController();
+  final TextEditingController taskLocationController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Task')),
+      appBar: AppBar(title: const Text('Add Event')),
       body: Form(
         key: _formKey,
         child: Column(
@@ -243,15 +259,26 @@ class AddTask extends StatelessWidget {
                 taskDescriptionController.text = value!;
               },
             ),
+            TextFormField(
+              decoration: const InputDecoration(
+                hintText: 'Enter task location',
+              ),
+              controller: taskLocationController,
+              onSaved: (value) {
+                taskLocationController.text = value!;
+              },
+            ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16.0),
               child: ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    dayta.setTask(Task(
+                    db.setTask(Task(
                         name: taskNameController.text,
                         description: taskDescriptionController.text,
+                        location: taskLocationController.text,
                         timeDue: date));
+                    db.addUniqueEvent(Event());
                     Navigator.pop(context);
                   }
                 },
@@ -265,14 +292,26 @@ class AddTask extends StatelessWidget {
   }
 }
 
-class singleTask extends StatelessWidget {
-  String name;
-  String description;
-  singleTask(this.name, this.description, {super.key});
+class taskDetails extends StatelessWidget {
+  final String name;
+  final String description;
+  final String location;
+  taskDetails(this.name, this.description, this.location, {super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(title: Text(name)),
-        body: Card(child: Text(description)));
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text("Description: " + description),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text("Location: " + location),
+            ),
+          ],
+        ));
   }
 }
