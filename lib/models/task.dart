@@ -76,8 +76,7 @@ class Task extends Undertaking {
   }
 
   void moveToNextDay() {
-    timeCurrent =
-        DateTime(timeCurrent.year, timeCurrent.month, timeCurrent.day + 1);
+    timeCurrent = getDateOnly(timeCurrent, offset: 1);
   }
 
   set completed(bool newCompleted) {
