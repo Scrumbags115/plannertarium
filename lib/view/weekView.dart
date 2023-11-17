@@ -1,6 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:planner/view/dayView.dart';
 import 'package:planner/common/database.dart';
+import 'package:planner/models/event.dart';
+import 'package:planner/models/task.dart';
+
+DatabaseService db = DatabaseService();
 
 class WeekView extends StatelessWidget {
   const WeekView({super.key});
@@ -37,7 +42,25 @@ class MultiDayCard extends StatefulWidget {
 }
 
 class _MultiDayCardState extends State<MultiDayCard> {
-  _MultiDayCardState(this.index);
+  int eventCount = 0;
+  int taskCount = 0;
+  List<Event> eventsToday = [];
+  List<Task> tasksDueToday = [];
+  _MultiDayCardState(this.index) {
+    DateTime date =DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day).add(Duration(days: index));
+
+    db.getListOfEventsInDay(date: date).then((value) => setState(() {
+          eventCount = value.length;
+          eventsToday = value;
+        }));
+
+    db.getTasksDue(date, date.add(const Duration(days: 1))).then((value) => setState(() {
+          for (var val in value.values) {
+            taskCount = val.length;
+            tasksDueToday = val;
+          }
+        }));
+  }
   int index;
 
   @override
@@ -78,23 +101,103 @@ class _MultiDayCardState extends State<MultiDayCard> {
                       MaterialPageRoute(
                           builder: (context) => SingleDay(dateToDisplay)));
                 },
-                child: Expanded(child: Column(
+                child: Column(
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(textAlign: TextAlign.left, "Tasks"),
+                    const Text(style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.left, "Tasks"),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SizedBox(
+                            height: 40,
+                            child: ListView(
+                              scrollDirection: Axis.horizontal,
+                              children: List.generate(taskCount, (index) {
+                                return Row(
+                                  children: [
+                                    TaskCard(
+                                      tasksDueToday: tasksDueToday,
+                                      index: index,
+                                    )
+                                  ],
+                                );
+                              }),
+                            ),
+                          ),
+                        )
+                      ],
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(textAlign: TextAlign.left, "Events"),
-                    ),
+                    const Text(style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.left, "Events"),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SizedBox(
+                            height: 40,
+                            child: ListView(
+                              scrollDirection: Axis.horizontal,
+                              children: List.generate(eventCount, (index) {
+                                return Row(
+                                  children: [
+                                    EventCard(
+                                      eventsToday: eventsToday,
+                                      index: index,
+                                    )
+                                  ],
+                                );
+                              }),
+                            ),
+                          ),
+                        )
+                      ],
+                    )
                   ],
-                )),
+                ),
               ),
             ),
           ),
         ),
       ],
+    );
+  }
+}
+
+class EventCard extends StatefulWidget {
+  final List<Event> eventsToday;
+  final int index;
+  const EventCard({super.key, required this.eventsToday, required this.index});
+
+  @override
+  _EventCardState createState() => _EventCardState();
+}
+
+class _EventCardState extends State<EventCard> {
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 40,
+      width: 85,
+      child: Card(
+        color: Colors.amber,
+        child: InkWell(
+          onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => EventDetailsView(
+                          widget.eventsToday[widget.index].name,
+                          widget.eventsToday[widget.index].description,
+                          widget.eventsToday[widget.index].location,
+                          widget.eventsToday[widget.index].timeStart,
+                          widget.eventsToday[widget.index].timeEnd,)),
+                );
+          },
+          child: Column(
+            children: [
+              Text(widget.eventsToday[widget.index].name),
+              Text("${widget.eventsToday[widget.index].timeStart.hour}:${widget.eventsToday[widget.index].timeStart.minute} to ${widget.eventsToday[widget.index].timeEnd.hour}:${widget.eventsToday[widget.index].timeEnd.minute}"),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

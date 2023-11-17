@@ -20,22 +20,18 @@ class _SingleDayState extends State<SingleDay> {
   List<Event> currentEvents = [];
   int taskCount = 0;
   _SingleDayState(this.date) {
-    getCurrentEvents() {
-      return db.getListOfEventsInDay(date: date);
-    }
-
-    getCurrentEvents().then((value) => setState(() {}));
-
-    getTasksDueToday() {
-      return db.getTasksDue(date, date.add(const Duration(days: 1)));
-    }
-
-    getTasksDueToday().then((value) => setState(() {
-          for (var val in value.values) {
-            taskCount = val.length;
-            tasksDueToday = val;
-          }
-        }));
+    /*db.getListOfEventsInDay(date: date).then((value) => setState((){
+      print(date);
+      print(value);
+    }));*/
+    db
+        .getTasksDue(date, date.add(const Duration(days: 1)))
+        .then((value) => setState(() {
+              for (var val in value.values) {
+                taskCount = val.length;
+                tasksDueToday = val;
+              }
+            }));
   }
 
   @override
@@ -54,6 +50,7 @@ class _SingleDayState extends State<SingleDay> {
               SizedBox(
                 height: 80,
                 child: Card(
+                  color: Colors.blue,
                   child: Row(
                     children: [
                       Expanded(
@@ -61,10 +58,15 @@ class _SingleDayState extends State<SingleDay> {
                           children: [
                             const Row(
                               children: [
-                                Text(
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold, fontSize: 18),
-                                    "Tasks for today!"),
+                                Padding(
+                                  padding: EdgeInsets.only(left: 5.0, top: 8.0),
+                                  child: Text(
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 18),
+                                      "Tasks for today!"),
+                                ),
                               ],
                             ),
                             Expanded(
@@ -204,8 +206,9 @@ class TaskCard extends StatefulWidget {
 }
 
 class _TaskCardState extends State<TaskCard> {
-  Color tilecolor = Colors.amber;
+  Color tilecolor = Colors.white;
   TextDecoration dec = TextDecoration.none;
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -225,7 +228,7 @@ class _TaskCardState extends State<TaskCard> {
                 );
               },
               onLongPress: () {
-                if (tilecolor == Colors.amber) {
+                if (tilecolor == Colors.white) {
                   widget.tasksDueToday[widget.index].completed =
                       !widget.tasksDueToday[widget.index].completed;
                   db.setTask(widget.tasksDueToday[widget.index]);
@@ -238,7 +241,7 @@ class _TaskCardState extends State<TaskCard> {
                     widget.tasksDueToday[widget.index].completed =
                         !widget.tasksDueToday[widget.index].completed;
                     db.setTask(widget.tasksDueToday[widget.index]);
-                    tilecolor = Colors.amber;
+                    tilecolor = Colors.white;
                     dec = TextDecoration.none;
                   });
                 }
@@ -343,6 +346,7 @@ class TaskDetailsView extends StatelessWidget {
     return Scaffold(
         appBar: AppBar(title: Text(name)),
         body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -351,6 +355,43 @@ class TaskDetailsView extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text("Location: $location"),
+            ),
+          ],
+        ));
+  }
+}
+
+class EventDetailsView extends StatelessWidget {
+  final String name;
+  final String description;
+  final String location;
+  final DateTime start;
+  final DateTime end;
+  const EventDetailsView(
+      this.name, this.description, this.location, this.start, this.end,
+      {super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(title: Text(name)),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text("Description: $description"),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text("Location: $location"),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text("Starts at: ${start.hour}:${start.minute}"),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text("Ends at: ${end.hour}:${end.minute}"),
             ),
           ],
         ));
