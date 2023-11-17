@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/models/task.dart';
 
-DatabaseService dayta = DatabaseService(uid: "userid1");
+DatabaseService dayta = DatabaseService();
 
 //The entirety of the dayView is one SingleDay
 class SingleDay extends StatefulWidget {

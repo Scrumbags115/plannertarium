@@ -88,7 +88,7 @@ class Undertaking {
 
   /// returns a mapping with kv pairs corresponding to Firebase's
   /// possibly a better getter
-  Map<String, dynamic> toMap({keepClasses = false, includeID = true}) {
+  Map<String, dynamic> toMap({keepClasses = false, includeID = false}) {
     Map<String, dynamic> map = {
       'name': _name,
       'description': _description,
@@ -209,8 +209,7 @@ class Undertaking {
         listEquals(_tags, other._tags) &&
         _recurrenceRules == other._recurrenceRules &&
         _timeStart == other._timeStart &&
-        _timeCreated == other._timeCreated &&
-        timeModified == other.timeModified;
+        _timeCreated == other._timeCreated;
   }
 
   @override
@@ -221,8 +220,8 @@ class Undertaking {
       _description,
       _location,
       _color,
-      _tags,
-      _recurrenceRules,
+      _tags.toString(),
+      _recurrenceRules.toString(),
       _timeStart,
       _timeCreated,
     );

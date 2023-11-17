@@ -31,8 +31,8 @@ class _loginViewState extends State<loginView> {
             ElevatedButton(
               onPressed: () async {
                 User? u = await runAuthFlow();
-                DatabaseService db = DatabaseService(uid: u!.uid);
-                db.initUID(u.uid);
+                DatabaseService db = DatabaseService();
+                db.initUID(u!.uid);
                 setState(() {
                   isLogin = true;
                 });

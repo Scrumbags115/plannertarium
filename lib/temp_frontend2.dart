@@ -77,7 +77,8 @@ class MyAppState extends State<MyApp> {
       }
     });
     User? u = await runAuthFlow();
-    DatabaseService db = DatabaseService(uid: u!.uid);
+    DatabaseService db = DatabaseService();
+    db.initUID(u!.uid);
     if (event == "login") {
       await runAuthFlow();
     } else if (event == "logout") {
@@ -94,7 +95,7 @@ class MyAppState extends State<MyApp> {
     } else if (event == "add") {
       final timeStart = DateTime.now();
       final timeEnd = timeStart.add(const Duration(hours: 8));
-      await db.addUniqueEvent(Event(
+      await db.addEvent(Event(
           name: "example_event_name_2",
           tags: ["example_event_tag1"],
           timeStart: timeStart,
