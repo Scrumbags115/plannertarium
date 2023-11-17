@@ -13,7 +13,7 @@ class DatabaseService {
 
   // users collection reference
   late CollectionReference users =
-  FirebaseFirestore.instance.collection('users');
+      FirebaseFirestore.instance.collection('users');
 
   factory DatabaseService({String? uid}) {
     return _singleton;
@@ -28,40 +28,59 @@ class DatabaseService {
   }
 
   /// Assign UID. This must be ran before any other database function is called else it will crash
-  /// 
   /// takes the string ID
   initUID(String uid) {
     userid = uid;
   }
 
-  Future<DocumentSnapshot<Map<String, dynamic>>> getEvents(String eventID) {
-    return users
-        .doc(userid)
-        .collection("events")
-        .doc(eventID)
-        .get(); // turn this into a map of eventID to event objects?
+  Future<Event> getEvent(String eventID) async {
+    try {
+      DocumentSnapshot<Map<String, dynamic>> eventDocument =
+          await users.doc(userid).collection('events').doc(eventID).get();
+      if (eventDocument.exists && eventDocument.data() != null) {
+        return Event.fromMap(eventDocument.data() ?? {"getEvent Error": 1},
+            id: eventDocument.id);
+      }
+    } catch (e) {
+      rethrow;
+    }
+    throw Exception("Event not found");
   }
 
-  Future<QuerySnapshot<Map<String, dynamic>>> getAllEvents() {
-    return users
-        .doc(userid)
-        .collection("events")
-        .get();
+  Future<List<Event>> getAllEvents() async {
+    List<Event> allEvents = [];
+    final eventDocs = await users.doc(userid).collection("events").get();
+
+    for (var doc in eventDocs.docs) {
+      allEvents.add(Event.fromMap(doc.data(), id: doc.id));
+    }
+
+    return allEvents;
   }
 
-  /// Adds a unique user event
-  ///
-  /// Should use this over the other add event functions
-  /// Won't need to deal with eventIDs
-  /// Each event ID is the current creation timestamp
-  Future<void> addUniqueEvent(Event event) async {
-    final now = DateTime.now();
-    var eventID = now.toString();
-    addEvent(eventID, event);
+  /// Put a new event in database. Error if already exists
+  Future<void> addEvent(Event event) async {
+    var doc = await users.doc(userid).collection("events").doc(event.id).get();
+    if (doc.exists) {
+      throw Future.error("Event ID already exists!");
+    }
+    return await users
+        .doc(userid)
+        .collection("events")
+        .doc(event.id)
+        .set(event.toMap());
+  }
+
+  /// set an event in database
+  Future<void> setEvent(Event event) async {
+    return await users
+        .doc(userid)
+        .collection('tasks')
+        .doc(event.id)
+        .set(event.toMap());
   }
 
   /// Get all events within a date range as a Map
-  ///
   /// Returns a map, with the eventID being the key and value being an Event class
   Future<Map<String, Event>> getEventsInDateRange(
       {required DateTime dateStart, required DateTime dateEnd}) async {
@@ -173,41 +192,23 @@ class DatabaseService {
     return getListOfEventsInDateRange(dateStart: date, dateEnd: tomorrow);
   }
 
-  Future<void> addEvent(String eventID, Event event) async {
-    var doc = await users.doc(userid).collection("events").doc(eventID).get();
-    // can't add an event with the same name
-    if (doc.exists) {
-      throw Future.error("Event ID already exists!");
-    }
-    return await users
-        .doc(userid)
-        .collection("events")
-        .doc(eventID)
-        .set(event.toMap());
-  }
-
-  /// Add/set the user event. The eventID is necessary.
-  ///
-  /// Every possible option to set is an argument
-  /// required: String eventID, String eventName, Set<String> eventTags, num timeStart, num timeEnd
-  /// optional: String eventDescription,, String, eventLocation, String eventColor, bool recurrenceEnabled, num recurrenceTimeStart, num recurrenceTimeEnd, List<bool> recurrenceDates
-  Future<void> addEventArgs(
-      {required String eventID, required Event event}) async {
-    return await addEvent(eventID, event);
-  }
-
   /// Change an option in the event
   ///
   /// needs a event ID and a map of the new option
   /// map ex: {"optionName": "optionValue"}
   Future<void> updateEventOption(
       String eventID, Map<String, dynamic> newOptions) async {
-    return users.doc(userid).collection("events").doc(eventID).update(newOptions);
+    return users
+        .doc(userid)
+        .collection("events")
+        .doc(eventID)
+        .update(newOptions);
   }
 
-  Future<void> updateEventName(String oldEventID, String newEventID) async {
+  Future<void> updateEventId(String oldEventID, String newEventID) async {
     try {
-      var doc = await users.doc(userid).collection("events").doc(oldEventID).get();
+      var doc =
+          await users.doc(userid).collection("events").doc(oldEventID).get();
       Map<String, dynamic> data = {};
       if (doc.data() != null) {
         data = doc.data()!;
@@ -223,22 +224,23 @@ class DatabaseService {
   Future<bool> checkIfEventExists(String eventID) async {
     // firestore doesn't have a built in function? are we expected to maintain this locally?
     try {
-      final event = await users.doc(userid).collection("events").doc(eventID).get();
+      final event =
+          await users.doc(userid).collection("events").doc(eventID).get();
       return event.exists;
     } catch (e) {
       return false;
     }
   }
 
-  // add all recurring events in the database
+  /// add all recurring events in the database
   Future<void> setRecurringEvents(Event e) async {
     List<Event> recurringEvents = e.generateRecurringEvents();
     for (final e in recurringEvents) {
-      await addUniqueEvent(e);
+      await addEvent(e);
     }
   }
 
-  // delete all recurring events in the database given a base event
+  /// delete all recurring events in the database given a base event
   Future<void> deleteRecurringEvents(Event e) async {
     // guard case, no recurrence then don't do anything
     if (e.recurrenceRules.enabled == false) {
@@ -261,26 +263,24 @@ class DatabaseService {
 
   Future<Task> getTask(String taskID) async {
     try {
-      DocumentSnapshot<Map<String, dynamic>> taskDocument = await users.doc(
-          userid).collection('tasks').doc(taskID).get();
+      DocumentSnapshot<Map<String, dynamic>> taskDocument =
+          await users.doc(userid).collection('tasks').doc(taskID).get();
       if (taskDocument.exists) {
-        return Task.fromMap(
-            taskDocument.data() ?? {"getTask Error": 1}, id: taskDocument.id);
+        return Task.fromMap(taskDocument.data() ?? {"getTask Error": 1},
+            id: taskDocument.id);
       }
-    }
-    catch (e) {
+    } catch (e) {
       rethrow;
     }
-    throw Exception("Task not found"); // either way this function should not return a new task if the get fails as that doesnt make sense
+    throw Exception("Task not found");
   }
 
   Future<List<Task>> getTasksOfName(String taskName) async {
-    final allTasks = await users.doc(userid).collection("tasks")
-            .where("task name",  isEqualTo: taskName).get();
-    
-    if (allTasks.size == 0) {
-      return [];
-    }
+    final allTasks = await users
+        .doc(userid)
+        .collection("tasks")
+        .where("task name", isEqualTo: taskName)
+        .get();
 
     List<Task> listOfTasks = [];
     for (var doc in allTasks.docs) {
@@ -290,7 +290,7 @@ class DatabaseService {
 
     return listOfTasks;
   }
-  
+
   /// Saves a task into the database
   Future<void> setTask(Task t) async {
     return await users.doc(userid).collection('tasks').doc(t.id).set(t.toMap());

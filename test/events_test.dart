@@ -290,11 +290,8 @@ void main() async {
   group("Test creating a bunch of events works", () {
     test("Test creating an event works", () async {
       final Event e = events[0];
-      const exampleEventID = "test_event_id_1";
-      await db.addEvent(exampleEventID, e);
-      final result = await db.getEvents(exampleEventID);
-      final eventData = result.data()!;
-      final Event e2 = Event.fromMap(eventData);
+      await db.addEvent(e);
+      Event e2 = await db.getEvent(e.id);
       expect(
         e, e2
       );

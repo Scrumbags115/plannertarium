@@ -78,25 +78,6 @@ class Event extends Undertaking {
 
   DateTime get timeEnd => _timeEnd;
 
-  /// Some checks to make sure the event object is valid with recurrence and crash with a more useful error message if caught
-  /// used internally to run some basic checks before I assume things aren't null/are valid classes
-  bool _validEventWithRecurrence() {
-    // event fields must be valid, crash since something has probably gone very wrong
-    if (timeEnd == null) {
-      throw Exception("Event is malformed? No timeStart/timeEnd value is set!");
-    }
-
-    // recurrence must have its fields be populated
-    if (recurrenceRules.timeEnd == null) {
-      return false;
-    }
-    if (recurrenceRules.timeEnd == null) {
-      throw Exception(
-          "Event recurrence rules are enabled and not null, but the rest of the recurrence rules fields are unset!"); // I think this should be enforced
-    }
-    return true;
-  }
-
   /// generate recurring events as specified by the recurrence rules in the Event object
   ///
   /// to exclude generated the current event, set excludeMyself to true
@@ -104,16 +85,9 @@ class Event extends Undertaking {
   /// ex wednesday for event but recurrence is every thursday
   List<Event> generateRecurringEvents({excludeMyself = false}) {
     List<Event> eventList = [];
-    // if recurrence rules are nonexistent or disabled, there are no new events to return
-    if (recurrenceRules.enabled == null) {
-      return eventList;
-    }
+
     // if recurrence is not enabled, there are no events to return
-    if (recurrenceRules.enabled == false) {
-      return eventList;
-    }
-    // run some checks to make sure I can use this object
-    if (!_validEventWithRecurrence()) {
+    if (!recurrenceRules.enabled) {
       return eventList;
     }
 
