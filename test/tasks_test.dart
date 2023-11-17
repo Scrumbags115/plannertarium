@@ -523,14 +523,15 @@ main() async {
 task_getSet_new_user() async {
   late DatabaseService db;
   late DateTime today;
-  late Map<DateTime, List<Task>> emptyDay, emptyWeek, emptyMonth;
-  late Map<DateTime, List<Task>> dailyActiveExp, dailyCompExp, dailyDelayExp;
+  late List<Task> emptyDay;
+  late Map<DateTime, List<Task>> emptyWeek, emptyMonth;
+  late List<Task> dailyActiveExp, dailyCompExp, dailyDelayExp;
   String newUser1 = "taskUser${DateTime.now().millisecondsSinceEpoch}";
   setUp(() async {
     today = DateTime(2023, 11, 4);
     db = DatabaseService.createTest(
         uid: newUser1, firestoreObject: FakeFirebaseFirestore());
-    emptyDay = {today: <Task>[]};
+    emptyDay = [];
     emptyWeek = {
       DateTime(2023, 11, 4): [],
       DateTime(2023, 11, 5): [],
@@ -572,15 +573,9 @@ task_getSet_new_user() async {
       DateTime(2023, 12, 2): [],
       DateTime(2023, 12, 3): []
     };
-    dailyActiveExp = {
-      DateTime(2023, 11, 20): [tasks[18]]
-    };
-    dailyCompExp = {
-      DateTime(2023, 11, 20): [tasks[16], tasks[20]]
-    };
-    dailyDelayExp = {
-      DateTime(2023, 11, 20): [tasks[4], tasks[13]]
-    };
+    dailyActiveExp = [tasks[18]];
+    dailyCompExp = [tasks[16], tasks[20]];
+    dailyDelayExp = [tasks[4], tasks[13]];
   });
 
   group("Test that a new user works as expected", () {
@@ -774,32 +769,32 @@ task_move() async {
     // initially active task on 11/6/2023
     db.setTask(t0);
     weeklyActiveExp = {
-        DateTime(2023, 11, 6): [],
-        DateTime(2023, 11, 7): [],
-        DateTime(2023, 11, 8): [],
-        DateTime(2023, 11, 9): [],
-        DateTime(2023, 11, 10): [],
-        DateTime(2023, 11, 11): [],
-        DateTime(2023, 11, 12): [t6]
-      };
+      DateTime(2023, 11, 6): [],
+      DateTime(2023, 11, 7): [],
+      DateTime(2023, 11, 8): [],
+      DateTime(2023, 11, 9): [],
+      DateTime(2023, 11, 10): [],
+      DateTime(2023, 11, 11): [],
+      DateTime(2023, 11, 12): [t6]
+    };
     weeklyCompExp = {
-        DateTime(2023, 11, 6): [],
-        DateTime(2023, 11, 7): [],
-        DateTime(2023, 11, 8): [],
-        DateTime(2023, 11, 9): [],
-        DateTime(2023, 11, 10): [],
-        DateTime(2023, 11, 11): [],
-        DateTime(2023, 11, 12): []
-      };
-      weeklyDelayExp = {
-        DateTime(2023, 11, 6): [t6],
-        DateTime(2023, 11, 7): [t6],
-        DateTime(2023, 11, 8): [t6],
-        DateTime(2023, 11, 9): [t6],
-        DateTime(2023, 11, 10): [t6],
-        DateTime(2023, 11, 11): [t6],
-        DateTime(2023, 11, 12): []
-      };
+      DateTime(2023, 11, 6): [],
+      DateTime(2023, 11, 7): [],
+      DateTime(2023, 11, 8): [],
+      DateTime(2023, 11, 9): [],
+      DateTime(2023, 11, 10): [],
+      DateTime(2023, 11, 11): [],
+      DateTime(2023, 11, 12): []
+    };
+    weeklyDelayExp = {
+      DateTime(2023, 11, 6): [t6],
+      DateTime(2023, 11, 7): [t6],
+      DateTime(2023, 11, 8): [t6],
+      DateTime(2023, 11, 9): [t6],
+      DateTime(2023, 11, 10): [t6],
+      DateTime(2023, 11, 11): [t6],
+      DateTime(2023, 11, 12): []
+    };
   });
 
   group("Task delays", () {
