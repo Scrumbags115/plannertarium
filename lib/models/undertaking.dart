@@ -88,7 +88,7 @@ class Undertaking {
 
   /// returns a mapping with kv pairs corresponding to Firebase's
   /// possibly a better getter
-  Map<String, dynamic> toMap({keepClasses = false, includeID = true}) {
+  Map<String, dynamic> toMap({keepClasses = false, includeID = false}) {
     Map<String, dynamic> map = {
       'name': _name,
       'description': _description,

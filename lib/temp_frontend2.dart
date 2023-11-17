@@ -95,7 +95,7 @@ class MyAppState extends State<MyApp> {
     } else if (event == "add") {
       final timeStart = DateTime.now();
       final timeEnd = timeStart.add(const Duration(hours: 8));
-      await db.addUniqueEvent(Event(
+      await db.addEvent(Event(
           name: "example_event_name_2",
           tags: ["example_event_tag1"],
           timeStart: timeStart,
