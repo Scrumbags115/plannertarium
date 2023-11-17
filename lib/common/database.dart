@@ -423,8 +423,8 @@ class DatabaseService {
     );
   }
 
-  /// Returns a 3-tuple of List<Task>
-  /// Each list has tasks that are either active, completed, or delayed on a week
+  /// Returns a 3-tuple of Maps<DateTime, List<Task>> where each map goes from 1 week from dateStart
+  /// Each map has lists of tasks that are either active, completed, or delayed on a day
   Future<
       (
         Map<DateTime, List<Task>>,
@@ -438,8 +438,8 @@ class DatabaseService {
     return await getTaskMaps(dateStart, oneWeekLater);
   }
 
-  /// Returns a 3-tuple of List<Task>
-  /// Each list has tasks that are either active, completed, or delayed on a week
+  /// Returns a 3-tuple of Maps<DateTime, List<Task>> where each map goes from 1 month from dateStart
+  /// Each map has lists of tasks that are either active, completed, or delayed on a day
   Future<
       (
         Map<DateTime, List<Task>>,
