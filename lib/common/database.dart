@@ -28,7 +28,6 @@ class DatabaseService {
   }
 
   /// Assign UID. This must be ran before any other database function is called else it will crash
-  ///
   /// takes the string ID
   initUID(String uid) {
     userid = uid;
@@ -82,7 +81,6 @@ class DatabaseService {
   }
 
   /// Get all events within a date range as a Map
-  ///
   /// Returns a map, with the eventID being the key and value being an Event class
   Future<Map<String, Event>> getEventsInDateRange(
       {required DateTime dateStart, required DateTime dateEnd}) async {
