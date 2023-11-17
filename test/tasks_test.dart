@@ -22,9 +22,9 @@ bool mapEquals(Map<DateTime, List<Task>> m1, Map<DateTime, List<Task>> m2) {
       // print(m1[key]![0].toDetailedString());
       // print(m2[key]![0].toDetailedString());
       // print(m1[key]!.toSet());
-      // print(m1[key]![0].hashCode);
+      // print("hashcode1 ${m1[key]![0].hashCode}");
       // print(m2[key]!.toSet());
-      // print(m2[key]![0].hashCode);
+      // print("hashcode2 ${m2[key]![0].hashCode}");
       // print(setEquals(m1[key]!.toSet(), m2[key]!.toSet()));
       return false;
     }
@@ -42,6 +42,8 @@ main() async {
   await task_due_date();
 
   await task_delete();
+
+  await task_move();
 
   // print("passed test_tasks :D");
 }
@@ -318,6 +320,66 @@ task_delete() async {
     });
   });
 
+}
+
+task_move() async {
+  late DatabaseService db;
+  String newUser3 = "newUser3";
+  Task t0 = Task(name: "only task", id: "ONLY", timeStart: DateTime(2023, 11, 6), timeCurrent: DateTime(2023, 11, 6), timeCreated: DateTime(2023, 11, 6), timeModified: DateTime(2023, 11, 6));
+  setUp(() async {
+    db = DatabaseService.createTest(uid: newUser3, firestoreObject: FakeFirebaseFirestore());
+    // active task on 11/6/2023
+    db.setTask(t0);
+  });
+
+  group("Task delays", () {
+    test("Delay a task by 1 day", () async {
+      // get week of 11/6 - 11/12
+      Map<DateTime, List<Task>> weeklyActive, weeklyCompleted, weeklyDelayed;
+      (weeklyActive, weeklyCompleted, weeklyDelayed) =
+      await db.getTaskMaps(DateTime(2023, 11, 6), DateTime(2023, 11, 13));
+
+      for (int i = 0; i < 6; i++) {
+        weeklyActive[DateTime(2023, 11, 6+i)]![0].moveToNextDay();
+        db.setTask(weeklyActive[DateTime(2023, 11, 6+i)]![0]);
+        (weeklyActive, weeklyCompleted, weeklyDelayed) =
+        await db.getTaskMaps(DateTime(2023, 11, 6), DateTime(2023, 11, 13));
+      }
+      
+      Task t6 = Task(name: "only task", id: "ONLY", timeStart: DateTime(2023, 11, 6), timeCreated: DateTime(2023, 11, 6), timeCurrent: DateTime(2023, 11, 12));
+
+      Map<DateTime, List<Task>> weeklyActiveExp = {
+        DateTime(2023, 11, 6): [],
+        DateTime(2023, 11, 7): [],
+        DateTime(2023, 11, 8): [],
+        DateTime(2023, 11, 9): [],
+        DateTime(2023, 11, 10): [],
+        DateTime(2023, 11, 11): [],
+        DateTime(2023, 11, 12): [t6]
+      };
+      Map<DateTime, List<Task>> weeklyCompExp = {
+        DateTime(2023, 11, 6): [],
+        DateTime(2023, 11, 7): [],
+        DateTime(2023, 11, 8): [],
+        DateTime(2023, 11, 9): [],
+        DateTime(2023, 11, 10): [],
+        DateTime(2023, 11, 11): [],
+        DateTime(2023, 11, 12): []
+      };
+      Map<DateTime, List<Task>> weeklyDelayExp = {
+        DateTime(2023, 11, 6): [t6],
+        DateTime(2023, 11, 7): [t6],
+        DateTime(2023, 11, 8): [t6],
+        DateTime(2023, 11, 9): [t6],
+        DateTime(2023, 11, 10): [t6],
+        DateTime(2023, 11, 11): [t6],
+        DateTime(2023, 11, 12): []
+      };
+      expect(mapEquals(weeklyActive, weeklyActiveExp), true, reason: "$weeklyActive\n!=\n$weeklyActiveExp");
+      expect(mapEquals(weeklyCompleted, weeklyCompExp), true);
+      expect(mapEquals(weeklyDelayed, weeklyDelayExp), true);
+    });
+  });
 }
 
 List<Task> tasks = [
