@@ -586,21 +586,19 @@ task_getSet_new_user() async {
   group("Test that a new user works as expected", () {
     test("No active, completed, and delayed tasks for a 1 day time window",
         () async {
-      DateTime tomorrow = DateTime(2023, 11, 5);
-      Map<DateTime, List<Task>> dailyActive, dailyCompleted, dailyDelayed;
+      List<Task> dailyActive, dailyCompleted, dailyDelayed;
       (dailyActive, dailyCompleted, dailyDelayed) =
-          await db.getTaskMaps(today, tomorrow);
-      expect(mapEquals(dailyActive, emptyDay), true);
-      expect(mapEquals(dailyCompleted, emptyDay), true);
-      expect(mapEquals(dailyDelayed, emptyDay), true);
+          await db.getTaskMapsDay(today);
+      expect(dailyActive, emptyDay);
+      expect(dailyCompleted, emptyDay);
+      expect(dailyDelayed, emptyDay);
     });
 
     test("No active, completed, and delayed tasks for a 1 week time window",
         () async {
-      DateTime nextWeek = DateTime(2023, 11, 11);
       Map<DateTime, List<Task>> weeklyActive, weeklyCompleted, weeklyDelayed;
       (weeklyActive, weeklyCompleted, weeklyDelayed) =
-          await db.getTaskMaps(today, nextWeek);
+          await db.getTaskMapsWeek(today);
       assert(mapEquals(weeklyActive, emptyWeek));
       assert(mapEquals(weeklyCompleted, emptyWeek));
       assert(mapEquals(weeklyDelayed, emptyWeek));
@@ -608,10 +606,9 @@ task_getSet_new_user() async {
 
     test("No active, completed, and delayed tasks for a 1 month time window",
         () async {
-      DateTime nextMonth = DateTime(2023, 12, 4);
       Map<DateTime, List<Task>> monthlyActive, monthlyCompleted, monthlyDelayed;
       (monthlyActive, monthlyCompleted, monthlyDelayed) =
-          await db.getTaskMaps(today, nextMonth);
+          await db.getTaskMapsMonth(today);
       expect(mapEquals(monthlyActive, emptyMonth), true);
       expect(mapEquals(monthlyCompleted, emptyMonth), true);
       expect(mapEquals(monthlyDelayed, emptyMonth), true);
@@ -623,12 +620,12 @@ task_getSet_new_user() async {
       for (var t in tasks) {
         db.setTask(t);
       }
-      Map<DateTime, List<Task>> dailyActive, dailyCompleted, dailyDelayed;
+      List<Task> dailyActive, dailyCompleted, dailyDelayed;
       (dailyActive, dailyCompleted, dailyDelayed) =
-          await db.getTaskMaps(DateTime(2023, 11, 20), DateTime(2023, 11, 21));
-      expect(mapEquals(dailyActive, dailyActiveExp), true);
-      expect(mapEquals(dailyCompleted, dailyCompExp), true);
-      expect(mapEquals(dailyDelayed, dailyDelayExp), true);
+          await db.getTaskMapsDay(DateTime(2023, 11, 20));
+      expect(dailyActive, dailyActiveExp);
+      expect(dailyCompleted, dailyCompExp);
+      expect(dailyDelayed, dailyDelayExp);
     });
   });
 
@@ -686,7 +683,7 @@ task_getSet_existing_user() async {
         () async {
       Map<DateTime, List<Task>> weeklyActive, weeklyCompleted, weeklyDelayed;
       (weeklyActive, weeklyCompleted, weeklyDelayed) =
-          await db.getTaskMaps(DateTime(2023, 11, 6), DateTime(2023, 11, 13));
+          await db.getTaskMapsWeek(DateTime(2023, 11, 6));
       expect(mapEquals(weeklyActive, weeklyActiveExp), true);
       expect(mapEquals(weeklyCompleted, weeklyCompExp), true);
       expect(mapEquals(weeklyDelayed, weeklyDelayExp), true);
@@ -810,13 +807,13 @@ task_move() async {
       // get week of 11/6 - 11/12
       Map<DateTime, List<Task>> weeklyActive, weeklyCompleted, weeklyDelayed;
       (weeklyActive, weeklyCompleted, weeklyDelayed) =
-          await db.getTaskMaps(DateTime(2023, 11, 6), DateTime(2023, 11, 13));
+          await db.getTaskMapsWeek(DateTime(2023, 11, 6));
 
       for (int i = 0; i < 6; i++) {
         weeklyActive[DateTime(2023, 11, 6 + i)]![0].moveToNextDay();
         db.setTask(weeklyActive[DateTime(2023, 11, 6 + i)]![0]);
         (weeklyActive, weeklyCompleted, weeklyDelayed) =
-            await db.getTaskMaps(DateTime(2023, 11, 6), DateTime(2023, 11, 13));
+            await db.getTaskMapsWeek(DateTime(2023, 11, 6));
       }
 
       expect(mapEquals(weeklyActive, weeklyActiveExp), true,
