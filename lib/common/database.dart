@@ -162,14 +162,14 @@ class DatabaseService {
   /// returns a Map
   Future<Map<String, Event>> getEventsInDay({required DateTime date}) async {
     DateTime tomorrow = date;
-    tomorrow.add(const Duration(days: 1));
+    tomorrow = tomorrow.add(const Duration(days: 1));
     return getEventsInDateRange(dateStart: date, dateEnd: tomorrow);
   }
 
   /// Get list of events in a day
   Future<List<Event>> getListOfEventsInDay({required DateTime date}) async {
     DateTime tomorrow = date;
-    tomorrow.add(const Duration(days: 1));
+    tomorrow = tomorrow.add(const Duration(days: 1));
     return getListOfEventsInDateRange(dateStart: date, dateEnd: tomorrow);
   }
 
