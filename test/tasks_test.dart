@@ -1,386 +1,10 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, non_constant_identifier_names
 
 import 'package:flutter/foundation.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/models/task.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-
-bool mapEquals(Map<DateTime, List<Task>> m1, Map<DateTime, List<Task>> m2) {
-  if (m1.keys.length != m2.keys.length) {
-    // print('case 1');
-    return false;
-  }
-  for (DateTime key in m1.keys) {
-    if (!setEquals(m1[key]!.toSet(), m2[key]!.toSet())) {
-      // print('case 2');
-      // print("     $key");
-      // print("     ${m1.keys}");
-      // print("     ${m2.keys}");
-      // print("     " + m1[key].toString());
-      // print("     " + m2[key].toString());
-      // print(m1[key]![0].toDetailedString());
-      // print(m2[key]![0].toDetailedString());
-      // print(m1[key]!.toSet());
-      // print("hashcode1 ${m1[key]![0].hashCode}");
-      // print(m2[key]!.toSet());
-      // print("hashcode2 ${m2[key]![0].hashCode}");
-      // print(setEquals(m1[key]!.toSet(), m2[key]!.toSet()));
-      return false;
-    }
-  }
-  return true;
-}
-
-main() async {
-  // print("IN test_tasks");
-
-  await task_new_user();
-
-  await task_existing_user();
-
-  await task_due_date();
-
-  await task_delete();
-
-  await task_move();
-
-  // print("passed test_tasks :D");
-}
-
-Future<void> task_new_user() async {
-  late DatabaseService db;
-  late DateTime today;
-  String newUser1 =
-      "taskUser${DateTime.now().millisecondsSinceEpoch}";
-  setUp(() async {
-    // print("-----------------------------TEST TASKS NEW USER-----------------------------");
-    today = DateTime(2023, 11, 4);
-    // print("newUser1 is $newUser1");
-    db = DatabaseService.createTest(uid: newUser1, firestoreObject: FakeFirebaseFirestore());
-  });
-  group("Test that a new user works as expected", () {
-    test("Test that a new user with no tasks will return no daily active, completed, and delayed tasks", () async {
-      // Daily view test
-      DateTime tomorrow = DateTime(2023, 11, 5);
-      Map<DateTime, List<Task>> dailyActive, dailyCompleted, dailyDelayed;
-      (dailyActive, dailyCompleted, dailyDelayed) =
-      await db.getTaskMaps(today, tomorrow);
-      // print("Daily active:    $dailyActive");
-      // print("Daily completed: $dailyCompleted");
-      // print("Daily delayed:   $dailyDelayed");
-      Map<DateTime, List<Task>> emptyDay = {today: <Task>[]};
-      // print("Expecting:       $emptyDay");
-      expect(
-          mapEquals(dailyActive, emptyDay), true
-      );
-      expect(
-          mapEquals(dailyCompleted, emptyDay), true
-      );
-      expect(
-          mapEquals(dailyDelayed, emptyDay), true
-      );
-
-    });
-
-    test("Test that a new user with no tasks will return no weekly active, completed, and delayed tasks", () async {
-      // Weekly view test
-      DateTime nextWeek = DateTime(2023, 11, 11);
-      Map<DateTime, List<Task>> weeklyActive, weeklyCompleted, weeklyDelayed;
-      (weeklyActive, weeklyCompleted, weeklyDelayed) =
-      await db.getTaskMaps(today, nextWeek);
-      // print("Weekly active: $weeklyActive");
-      // print("Weekly completed: $weeklyCompleted");
-      // print("Weekly delayed: $weeklyDelayed");
-      Map<DateTime, List<Task>> emptyWeek = {
-        DateTime(2023, 11, 4): [],
-        DateTime(2023, 11, 5): [],
-        DateTime(2023, 11, 6): [],
-        DateTime(2023, 11, 7): [],
-        DateTime(2023, 11, 8): [],
-        DateTime(2023, 11, 9): [],
-        DateTime(2023, 11, 10): []
-      };
-      // print("expecting $emptyWeek");
-      assert(mapEquals(weeklyActive, emptyWeek));
-      assert(mapEquals(weeklyCompleted, emptyWeek));
-      assert(mapEquals(weeklyDelayed, emptyWeek));
-    });
-
-    test("Test that a new user with no tasks will return no monthy active, completed, and delayed tasks", () async {
-      // Monthly view test
-      DateTime nextMonth = DateTime(2023, 12, 4);
-      Map<DateTime, List<Task>> monthlyActive, monthlyCompleted, monthlyDelayed;
-      (monthlyActive, monthlyCompleted, monthlyDelayed) =
-      await db.getTaskMaps(today, nextMonth);
-      // print("Monthly active: $monthlyActive");
-      // print("Monthly completed: $monthlyCompleted");
-      // print("Monthly delayed: $monthlyDelayed");
-      Map<DateTime, List<Task>> emptyMonth = {
-        DateTime(2023, 11, 4): [],
-        DateTime(2023, 11, 5): [],
-        DateTime(2023, 11, 6): [],
-        DateTime(2023, 11, 7): [],
-        DateTime(2023, 11, 8): [],
-        DateTime(2023, 11, 9): [],
-        DateTime(2023, 11, 10): [],
-        DateTime(2023, 11, 11): [],
-        DateTime(2023, 11, 12): [],
-        DateTime(2023, 11, 13): [],
-        DateTime(2023, 11, 14): [],
-        DateTime(2023, 11, 15): [],
-        DateTime(2023, 11, 16): [],
-        DateTime(2023, 11, 17): [],
-        DateTime(2023, 11, 18): [],
-        DateTime(2023, 11, 19): [],
-        DateTime(2023, 11, 20): [],
-        DateTime(2023, 11, 21): [],
-        DateTime(2023, 11, 22): [],
-        DateTime(2023, 11, 23): [],
-        DateTime(2023, 11, 24): [],
-        DateTime(2023, 11, 25): [],
-        DateTime(2023, 11, 26): [],
-        DateTime(2023, 11, 27): [],
-        DateTime(2023, 11, 28): [],
-        DateTime(2023, 11, 29): [],
-        DateTime(2023, 11, 30): [],
-        DateTime(2023, 12, 1): [],
-        DateTime(2023, 12, 2): [],
-        DateTime(2023, 12, 3): []
-      };
-      // print("expecting $emptyMonth");
-      expect(mapEquals(monthlyActive, emptyMonth), true);
-      expect(mapEquals(monthlyCompleted, emptyMonth), true);
-      expect(mapEquals(monthlyDelayed, emptyMonth), true);
-    });
-  });
-
-  group("Test adding tasks works", () {
-    test("Test that adding new daily tasks works", () async {
-      // print("---------------------------------------------Setting db with tasks---------------------------------------------");
-      for (var t in tasks) {
-        db.setTask(t);
-      }
-
-      // Daily
-      Map<DateTime, List<Task>> dailyActive, dailyCompleted, dailyDelayed;
-      (dailyActive, dailyCompleted, dailyDelayed) =
-      await db.getTaskMaps(DateTime(2023, 11, 20), DateTime(2023, 11, 21));
-      Map<DateTime, List<Task>> dailyActiveExp = {
-        DateTime(2023, 11, 20): [tasks[18]]
-      };
-      Map<DateTime, List<Task>> dailyCompExp = {
-        DateTime(2023, 11, 20): [tasks[16], tasks[20]]
-      };
-      Map<DateTime, List<Task>> dailyDelayExp = {
-        DateTime(2023, 11, 20): [tasks[4], tasks[13]]
-      };
-      // print("Daily active found   : $dailyActive");
-      // print("Daily active expected: $dailyActiveExp");
-      // print("Daily completed found   : $dailyCompleted");
-      // print("Daily completed expected: $dailyCompExp");
-      // print("Daily delayed found   : $dailyDelayed");
-      // print("Daily delayed expected: $dailyDelayExp");
-      expect(mapEquals(dailyActive, dailyActiveExp), true);
-      expect(mapEquals(dailyCompleted, dailyCompExp), true);
-      expect(mapEquals(dailyDelayed, dailyDelayExp), true);
-    });
-  });
-
-
-  // eyeballed the others, seems ok
-  // TODO: fill out the rest of these tests
-  tearDown(() async {
-    // Delete the new user
-    // this may not be necessary as the mocking library means nothing persists between runs
-    for (int i = 1; i <= tasks.length; i++) {
-      await db.users.doc(newUser1).collection('tasks').doc("ID-$i").delete();
-    }
-    await db.users.doc(newUser1).delete();
-  });
-}
-
-task_existing_user() async {
-  late DatabaseService db;
-  String existingUser1 = "taskExistingUser";
-
-  setUp(() async {
-    // print("-----------------------------TEST TASKS EXISTING USER-----------------------------");
-    // print("existingUser1 is $existingUser1");
-    db = DatabaseService.createTest(uid: existingUser1, firestoreObject: FakeFirebaseFirestore());
-    for (var t in tasks2) {
-      await db.setTask(t);
-    }
-  });
-  group("Test created weekly tasks", () {
-    test("Test that weekly tasks can be retrieved", () async {
-      // Weekly
-      // db.users.collection("tasks").where()
-      Map<DateTime, List<Task>> weeklyActive, weeklyCompleted, weeklyDelayed;
-      (weeklyActive, weeklyCompleted, weeklyDelayed) =
-      await db.getTaskMaps(DateTime(2023, 11, 6), DateTime(2023, 11, 13));
-      Map<DateTime, List<Task>> weeklyActiveExp = {
-        DateTime(2023, 11, 6): [],
-        DateTime(2023, 11, 7): [],
-        DateTime(2023, 11, 8): [],
-        DateTime(2023, 11, 9): [],
-        DateTime(2023, 11, 10): [],
-        DateTime(2023, 11, 11): [],
-        DateTime(2023, 11, 12): [tasks2[7]]
-      };
-      Map<DateTime, List<Task>> weeklyCompExp = {
-        DateTime(2023, 11, 6): [],
-        DateTime(2023, 11, 7): [tasks2[2]],
-        DateTime(2023, 11, 8): [],
-        DateTime(2023, 11, 9): [tasks2[3]],
-        DateTime(2023, 11, 10): [],
-        DateTime(2023, 11, 11): [],
-        DateTime(2023, 11, 12): []
-      };
-      Map<DateTime, List<Task>> weeklyDelayExp = {
-        DateTime(2023, 11, 6): [tasks2[2], tasks2[3], tasks2[7], tasks2[6]],
-        DateTime(2023, 11, 7): [tasks2[3], tasks2[7], tasks2[6]],
-        DateTime(2023, 11, 8): [tasks2[3], tasks2[7], tasks2[6]],
-        DateTime(2023, 11, 9): [tasks2[7], tasks2[4], tasks2[6]],
-        DateTime(2023, 11, 10): [tasks2[7], tasks2[4], tasks2[6]],
-        DateTime(2023, 11, 11): [tasks2[7], tasks2[4], tasks2[6]],
-        DateTime(2023, 11, 12): [tasks2[4], tasks2[6]]
-      };
-      expect(mapEquals(weeklyActive, weeklyActiveExp), true);
-      expect(mapEquals(weeklyCompleted, weeklyCompExp), true);
-      expect(mapEquals(weeklyDelayed, weeklyDelayExp), true);
-    });
-  });
-}
-
-task_due_date() async {
-  late DatabaseService db;
-  String existingUser2 = "taskExistingUser2";
-  setUp(() async {
-    // print("existingUser2 is $existingUser2");
-    db = DatabaseService.createTest(uid: existingUser2, firestoreObject: FakeFirebaseFirestore());
-    for (var t in tasksDue) {
-      db.setTask(t);
-    }
-    // ^ Uncomment above to rewrite database info
-  });
-
-  group("Test created daily tasks", () {
-    test("Test that existing daily tasks are retrieved properly", () async {
-      // Daily (11/9/2023)
-      Map<DateTime, List<Task>> dailyTasksDue =
-      await db.getTasksDue(DateTime(2023, 11, 9), DateTime(2023, 11, 10));
-      Map<DateTime, List<Task>> dailyTasksDueExpected = {
-        DateTime(2023, 11, 9): [tasksDue[0], tasksDue[1]],
-      };
-      // print("Daily tasks due found   : $dailyTasksDue");
-      // print("Daily tasks due expected: $dailyTasksDueExpected");
-
-      expect(mapEquals(dailyTasksDue, dailyTasksDueExpected), true);
-    });
-  });
-}
-
-task_delete() async {
-  late DatabaseService db;
-  String newUser2 =
-      "taskUser${DateTime.now().millisecondsSinceEpoch}";
-  setUp(() {
-    // print("newUser1 is $newUser2");
-    db = DatabaseService.createTest(uid: newUser2, firestoreObject: FakeFirebaseFirestore());
-
-    for (var t in tasks) {
-      db.setTask(t);
-    }
-  });
-
-  group("Test deleting tasks", () {
-    test("Test that delete operations work", () async {
-
-      for (Task t in tasks) {
-        db.deleteTask(t);
-      }
-
-      Map<DateTime, List<Task>> allActive, allCompleted, allDelayed;
-      (allActive, allCompleted, allDelayed) =
-      await db.getTaskMaps(DateTime(2023, 10), DateTime(2024));
-
-      for (DateTime date in allActive.keys) {
-        expect(listEquals(allActive[date], []), true);
-      }
-      for (DateTime date in allCompleted.keys) {
-        expect(listEquals(allCompleted[date], []), true);
-      }
-      for (DateTime date in allDelayed.keys) {
-        expect(listEquals(allDelayed[date], []), true);
-      }
-
-      // Delete the new user
-      await db.users.doc(newUser2).delete();
-    });
-  });
-
-}
-
-task_move() async {
-  late DatabaseService db;
-  String newUser3 = "newUser3";
-  Task t0 = Task(name: "only task", id: "ONLY", timeStart: DateTime(2023, 11, 6), timeCurrent: DateTime(2023, 11, 6), timeCreated: DateTime(2023, 11, 6), timeModified: DateTime(2023, 11, 6));
-  setUp(() async {
-    db = DatabaseService.createTest(uid: newUser3, firestoreObject: FakeFirebaseFirestore());
-    // active task on 11/6/2023
-    db.setTask(t0);
-  });
-
-  group("Task delays", () {
-    test("Delay a task by 1 day", () async {
-      // get week of 11/6 - 11/12
-      Map<DateTime, List<Task>> weeklyActive, weeklyCompleted, weeklyDelayed;
-      (weeklyActive, weeklyCompleted, weeklyDelayed) =
-      await db.getTaskMaps(DateTime(2023, 11, 6), DateTime(2023, 11, 13));
-
-      for (int i = 0; i < 6; i++) {
-        weeklyActive[DateTime(2023, 11, 6+i)]![0].moveToNextDay();
-        db.setTask(weeklyActive[DateTime(2023, 11, 6+i)]![0]);
-        (weeklyActive, weeklyCompleted, weeklyDelayed) =
-        await db.getTaskMaps(DateTime(2023, 11, 6), DateTime(2023, 11, 13));
-      }
-      
-      Task t6 = Task(name: "only task", id: "ONLY", timeStart: DateTime(2023, 11, 6), timeCreated: DateTime(2023, 11, 6), timeCurrent: DateTime(2023, 11, 12));
-
-      Map<DateTime, List<Task>> weeklyActiveExp = {
-        DateTime(2023, 11, 6): [],
-        DateTime(2023, 11, 7): [],
-        DateTime(2023, 11, 8): [],
-        DateTime(2023, 11, 9): [],
-        DateTime(2023, 11, 10): [],
-        DateTime(2023, 11, 11): [],
-        DateTime(2023, 11, 12): [t6]
-      };
-      Map<DateTime, List<Task>> weeklyCompExp = {
-        DateTime(2023, 11, 6): [],
-        DateTime(2023, 11, 7): [],
-        DateTime(2023, 11, 8): [],
-        DateTime(2023, 11, 9): [],
-        DateTime(2023, 11, 10): [],
-        DateTime(2023, 11, 11): [],
-        DateTime(2023, 11, 12): []
-      };
-      Map<DateTime, List<Task>> weeklyDelayExp = {
-        DateTime(2023, 11, 6): [t6],
-        DateTime(2023, 11, 7): [t6],
-        DateTime(2023, 11, 8): [t6],
-        DateTime(2023, 11, 9): [t6],
-        DateTime(2023, 11, 10): [t6],
-        DateTime(2023, 11, 11): [t6],
-        DateTime(2023, 11, 12): []
-      };
-      expect(mapEquals(weeklyActive, weeklyActiveExp), true, reason: "$weeklyActive\n!=\n$weeklyActiveExp");
-      expect(mapEquals(weeklyCompleted, weeklyCompExp), true);
-      expect(mapEquals(weeklyDelayed, weeklyDelayExp), true);
-    });
-  });
-}
 
 List<Task> tasks = [
   Task(
@@ -857,3 +481,348 @@ List<Task> tasksDue = [
       timeStart: DateTime(2023, 11, 9),
       timeCreated: DateTime(2023, 11, 8)), // Just after 9th
 ];
+
+bool mapEquals(Map<DateTime, List<Task>> m1, Map<DateTime, List<Task>> m2) {
+  if (m1.keys.length != m2.keys.length) {
+    // print('unequal keys');
+    return false;
+  }
+  for (DateTime key in m1.keys) {
+    if (!setEquals(m1[key]!.toSet(), m2[key]!.toSet())) {
+      // print('differing values');
+      // print("     $key");
+      // print("     ${m1.keys}");
+      // print("     ${m2.keys}");
+      // print("     ${m1[key]}");
+      // print("     ${m2[key]}");
+      // print(m1[key]![0].toDetailedString());
+      // print(m2[key]![0].toDetailedString());
+      // print(m1[key]!.toSet());
+      // print("hashcode1 ${m1[key]![0].hashCode}");
+      // print(m2[key]!.toSet());
+      // print("hashcode2 ${m2[key]![0].hashCode}");
+      // print(setEquals(m1[key]!.toSet(), m2[key]!.toSet()));
+      return false;
+    }
+  }
+  return true;
+}
+
+main() async {
+  await task_getSet_new_user();
+
+  await task_getSet_existing_user();
+
+  await task_getTasksDue_gettingTheCorrectListOfTasksForADay();
+
+  await task_delete();
+
+  await task_move();
+}
+
+task_getSet_new_user() async {
+  late DatabaseService db;
+  late DateTime today;
+  late Map<DateTime, List<Task>> emptyDay, emptyWeek, emptyMonth;
+  late Map<DateTime, List<Task>> dailyActiveExp, dailyCompExp, dailyDelayExp;
+  String newUser1 = "taskUser${DateTime.now().millisecondsSinceEpoch}";
+  setUp(() async {
+    today = DateTime(2023, 11, 4);
+    db = DatabaseService.createTest(
+        uid: newUser1, firestoreObject: FakeFirebaseFirestore());
+    emptyDay = {today: <Task>[]};
+    emptyWeek = {
+      DateTime(2023, 11, 4): [],
+      DateTime(2023, 11, 5): [],
+      DateTime(2023, 11, 6): [],
+      DateTime(2023, 11, 7): [],
+      DateTime(2023, 11, 8): [],
+      DateTime(2023, 11, 9): [],
+      DateTime(2023, 11, 10): []
+    };
+    emptyMonth = {
+      DateTime(2023, 11, 4): [],
+      DateTime(2023, 11, 5): [],
+      DateTime(2023, 11, 6): [],
+      DateTime(2023, 11, 7): [],
+      DateTime(2023, 11, 8): [],
+      DateTime(2023, 11, 9): [],
+      DateTime(2023, 11, 10): [],
+      DateTime(2023, 11, 11): [],
+      DateTime(2023, 11, 12): [],
+      DateTime(2023, 11, 13): [],
+      DateTime(2023, 11, 14): [],
+      DateTime(2023, 11, 15): [],
+      DateTime(2023, 11, 16): [],
+      DateTime(2023, 11, 17): [],
+      DateTime(2023, 11, 18): [],
+      DateTime(2023, 11, 19): [],
+      DateTime(2023, 11, 20): [],
+      DateTime(2023, 11, 21): [],
+      DateTime(2023, 11, 22): [],
+      DateTime(2023, 11, 23): [],
+      DateTime(2023, 11, 24): [],
+      DateTime(2023, 11, 25): [],
+      DateTime(2023, 11, 26): [],
+      DateTime(2023, 11, 27): [],
+      DateTime(2023, 11, 28): [],
+      DateTime(2023, 11, 29): [],
+      DateTime(2023, 11, 30): [],
+      DateTime(2023, 12, 1): [],
+      DateTime(2023, 12, 2): [],
+      DateTime(2023, 12, 3): []
+    };
+    dailyActiveExp = {
+      DateTime(2023, 11, 20): [tasks[18]]
+    };
+    dailyCompExp = {
+      DateTime(2023, 11, 20): [tasks[16], tasks[20]]
+    };
+    dailyDelayExp = {
+      DateTime(2023, 11, 20): [tasks[4], tasks[13]]
+    };
+  });
+
+  group("Test that a new user works as expected", () {
+    test("No active, completed, and delayed tasks for a 1 day time window",
+        () async {
+      DateTime tomorrow = DateTime(2023, 11, 5);
+      Map<DateTime, List<Task>> dailyActive, dailyCompleted, dailyDelayed;
+      (dailyActive, dailyCompleted, dailyDelayed) =
+          await db.getTaskMaps(today, tomorrow);
+      expect(mapEquals(dailyActive, emptyDay), true);
+      expect(mapEquals(dailyCompleted, emptyDay), true);
+      expect(mapEquals(dailyDelayed, emptyDay), true);
+    });
+
+    test("No active, completed, and delayed tasks for a 1 week time window",
+        () async {
+      DateTime nextWeek = DateTime(2023, 11, 11);
+      Map<DateTime, List<Task>> weeklyActive, weeklyCompleted, weeklyDelayed;
+      (weeklyActive, weeklyCompleted, weeklyDelayed) =
+          await db.getTaskMaps(today, nextWeek);
+      assert(mapEquals(weeklyActive, emptyWeek));
+      assert(mapEquals(weeklyCompleted, emptyWeek));
+      assert(mapEquals(weeklyDelayed, emptyWeek));
+    });
+
+    test("No active, completed, and delayed tasks for a 1 month time window",
+        () async {
+      DateTime nextMonth = DateTime(2023, 12, 4);
+      Map<DateTime, List<Task>> monthlyActive, monthlyCompleted, monthlyDelayed;
+      (monthlyActive, monthlyCompleted, monthlyDelayed) =
+          await db.getTaskMaps(today, nextMonth);
+      expect(mapEquals(monthlyActive, emptyMonth), true);
+      expect(mapEquals(monthlyCompleted, emptyMonth), true);
+      expect(mapEquals(monthlyDelayed, emptyMonth), true);
+    });
+  });
+
+  group("Test setTask works for new user", () {
+    test("Test that setting a new daily tasks works", () async {
+      for (var t in tasks) {
+        db.setTask(t);
+      }
+      Map<DateTime, List<Task>> dailyActive, dailyCompleted, dailyDelayed;
+      (dailyActive, dailyCompleted, dailyDelayed) =
+          await db.getTaskMaps(DateTime(2023, 11, 20), DateTime(2023, 11, 21));
+      expect(mapEquals(dailyActive, dailyActiveExp), true);
+      expect(mapEquals(dailyCompleted, dailyCompExp), true);
+      expect(mapEquals(dailyDelayed, dailyDelayExp), true);
+    });
+  });
+
+  tearDown(() async {
+    // this may not be necessary as the mocking library means nothing persists between runs
+    for (int i = 1; i <= tasks.length; i++) {
+      await db.users.doc(newUser1).collection('tasks').doc("ID-$i").delete();
+    }
+    await db.users.doc(newUser1).delete();
+  });
+}
+
+task_getSet_existing_user() async {
+  late DatabaseService db;
+  String existingUser1 = "taskExistingUser";
+  late Map<DateTime, List<Task>> weeklyActiveExp, weeklyCompExp, weeklyDelayExp;
+
+  setUp(() async {
+    db = DatabaseService.createTest(
+        uid: existingUser1, firestoreObject: FakeFirebaseFirestore());
+    for (var t in tasks2) {
+      await db.setTask(t);
+    }
+    weeklyActiveExp = {
+      DateTime(2023, 11, 6): [],
+      DateTime(2023, 11, 7): [],
+      DateTime(2023, 11, 8): [],
+      DateTime(2023, 11, 9): [],
+      DateTime(2023, 11, 10): [],
+      DateTime(2023, 11, 11): [],
+      DateTime(2023, 11, 12): [tasks2[7]]
+    };
+    weeklyCompExp = {
+      DateTime(2023, 11, 6): [],
+      DateTime(2023, 11, 7): [tasks2[2]],
+      DateTime(2023, 11, 8): [],
+      DateTime(2023, 11, 9): [tasks2[3]],
+      DateTime(2023, 11, 10): [],
+      DateTime(2023, 11, 11): [],
+      DateTime(2023, 11, 12): []
+    };
+    weeklyDelayExp = {
+      DateTime(2023, 11, 6): [tasks2[2], tasks2[3], tasks2[7], tasks2[6]],
+      DateTime(2023, 11, 7): [tasks2[3], tasks2[7], tasks2[6]],
+      DateTime(2023, 11, 8): [tasks2[3], tasks2[7], tasks2[6]],
+      DateTime(2023, 11, 9): [tasks2[7], tasks2[4], tasks2[6]],
+      DateTime(2023, 11, 10): [tasks2[7], tasks2[4], tasks2[6]],
+      DateTime(2023, 11, 11): [tasks2[7], tasks2[4], tasks2[6]],
+      DateTime(2023, 11, 12): [tasks2[4], tasks2[6]]
+    };
+  });
+
+  group("Getting tasks", () {
+    test("Test that getting tasks works correctly for a 1 week window",
+        () async {
+      Map<DateTime, List<Task>> weeklyActive, weeklyCompleted, weeklyDelayed;
+      (weeklyActive, weeklyCompleted, weeklyDelayed) =
+          await db.getTaskMaps(DateTime(2023, 11, 6), DateTime(2023, 11, 13));
+      expect(mapEquals(weeklyActive, weeklyActiveExp), true);
+      expect(mapEquals(weeklyCompleted, weeklyCompExp), true);
+      expect(mapEquals(weeklyDelayed, weeklyDelayExp), true);
+    });
+  });
+}
+
+task_getTasksDue_gettingTheCorrectListOfTasksForADay() async {
+  late DatabaseService db;
+  String existingUser2 = "taskExistingUser2";
+  late Map<DateTime, List<Task>> dailyTasksDueExpected;
+  setUp(() async {
+    db = DatabaseService.createTest(
+        uid: existingUser2, firestoreObject: FakeFirebaseFirestore());
+    for (var t in tasksDue) {
+      db.setTask(t);
+    }
+    dailyTasksDueExpected = {
+      DateTime(2023, 11, 9): [tasksDue[0], tasksDue[1]],
+    };
+  });
+
+  group("Test getting correct due dates", () {
+    test("Test correct task due on 11/9 in list tasksDue", () async {
+      Map<DateTime, List<Task>> dailyTasksDue =
+          await db.getTasksDue(DateTime(2023, 11, 9), DateTime(2023, 11, 10));
+      expect(mapEquals(dailyTasksDue, dailyTasksDueExpected), true);
+    });
+  });
+}
+
+task_delete() async {
+  late DatabaseService db;
+  String newUser2 = "taskUser${DateTime.now().millisecondsSinceEpoch}";
+  setUp(() {
+    db = DatabaseService.createTest(
+        uid: newUser2, firestoreObject: FakeFirebaseFirestore());
+    for (var t in tasks) {
+      db.setTask(t);
+    }
+  });
+
+  group("Test deleting tasks", () {
+    test("Test that delete operations work", () async {
+      for (Task t in tasks) {
+        db.deleteTask(t);
+      }
+
+      Map<DateTime, List<Task>> allActive, allCompleted, allDelayed;
+      (allActive, allCompleted, allDelayed) =
+          await db.getTaskMaps(DateTime(2023, 10), DateTime(2024));
+
+      for (DateTime date in allActive.keys) {
+        expect(listEquals(allActive[date], []), true);
+      }
+      for (DateTime date in allCompleted.keys) {
+        expect(listEquals(allCompleted[date], []), true);
+      }
+      for (DateTime date in allDelayed.keys) {
+        expect(listEquals(allDelayed[date], []), true);
+      }
+
+      await db.users.doc(newUser2).delete();
+    });
+  });
+}
+
+task_move() async {
+  late DatabaseService db;
+  String newUser3 = "newUser3";
+  Task t0 = Task(
+      name: "only task",
+      id: "ONLY",
+      timeStart: DateTime(2023, 11, 6),
+      timeCurrent: DateTime(2023, 11, 6),
+      timeCreated: DateTime(2023, 11, 6),
+      timeModified: DateTime(2023, 11, 6));
+  Task t6 = Task(
+      name: "only task",
+      id: "ONLY",
+      timeStart: DateTime(2023, 11, 6),
+      timeCurrent: DateTime(2023, 11, 12),
+      timeCreated: DateTime(2023, 11, 6));
+  late Map<DateTime, List<Task>> weeklyActiveExp, weeklyCompExp, weeklyDelayExp;
+  setUp(() async {
+    db = DatabaseService.createTest(
+        uid: newUser3, firestoreObject: FakeFirebaseFirestore());
+    // initially active task on 11/6/2023
+    db.setTask(t0);
+    weeklyActiveExp = {
+        DateTime(2023, 11, 6): [],
+        DateTime(2023, 11, 7): [],
+        DateTime(2023, 11, 8): [],
+        DateTime(2023, 11, 9): [],
+        DateTime(2023, 11, 10): [],
+        DateTime(2023, 11, 11): [],
+        DateTime(2023, 11, 12): [t6]
+      };
+    weeklyCompExp = {
+        DateTime(2023, 11, 6): [],
+        DateTime(2023, 11, 7): [],
+        DateTime(2023, 11, 8): [],
+        DateTime(2023, 11, 9): [],
+        DateTime(2023, 11, 10): [],
+        DateTime(2023, 11, 11): [],
+        DateTime(2023, 11, 12): []
+      };
+      weeklyDelayExp = {
+        DateTime(2023, 11, 6): [t6],
+        DateTime(2023, 11, 7): [t6],
+        DateTime(2023, 11, 8): [t6],
+        DateTime(2023, 11, 9): [t6],
+        DateTime(2023, 11, 10): [t6],
+        DateTime(2023, 11, 11): [t6],
+        DateTime(2023, 11, 12): []
+      };
+  });
+
+  group("Task delays", () {
+    test("Delay a task by 1 day each day for a week 11/6 - 11/12", () async {
+      // get week of 11/6 - 11/12
+      Map<DateTime, List<Task>> weeklyActive, weeklyCompleted, weeklyDelayed;
+      (weeklyActive, weeklyCompleted, weeklyDelayed) =
+          await db.getTaskMaps(DateTime(2023, 11, 6), DateTime(2023, 11, 13));
+
+      for (int i = 0; i < 6; i++) {
+        weeklyActive[DateTime(2023, 11, 6 + i)]![0].moveToNextDay();
+        db.setTask(weeklyActive[DateTime(2023, 11, 6 + i)]![0]);
+        (weeklyActive, weeklyCompleted, weeklyDelayed) =
+            await db.getTaskMaps(DateTime(2023, 11, 6), DateTime(2023, 11, 13));
+      }
+
+      expect(mapEquals(weeklyActive, weeklyActiveExp), true,
+          reason: "$weeklyActive\n!=\n$weeklyActiveExp");
+      expect(mapEquals(weeklyCompleted, weeklyCompExp), true);
+      expect(mapEquals(weeklyDelayed, weeklyDelayExp), true);
+    });
+  });
+}
