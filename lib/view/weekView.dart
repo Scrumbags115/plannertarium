@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:planner/view/dayView.dart';
 import 'package:planner/common/database.dart';
-DatabaseService dayta = DatabaseService(uid: "userid1");
+DatabaseService dayta = DatabaseService();
 
 class weekView extends StatelessWidget {
   const weekView({super.key});

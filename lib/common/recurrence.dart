@@ -126,9 +126,6 @@ class Recurrence {
   int get hashCode {
     return Object.hash(
       enabled,
-      timeStart,
-      timeEnd,
-      dates,
       id,
     );
   }
