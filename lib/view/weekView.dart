@@ -4,6 +4,7 @@ import 'package:planner/view/dayView.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/models/task.dart';
+import 'package:planner/common/time_management.dart';
 
 DatabaseService db = DatabaseService();
 
@@ -20,6 +21,7 @@ class WeekView extends StatelessWidget {
           }
         },
         child: Scaffold(
+          appBar: AppBar(title: Text("Week View")),
           body: ListView(
             children: List.generate(7, (index) {
               //This generates 7 MultiDayCard in a vertical list
@@ -47,14 +49,14 @@ class _MultiDayCardState extends State<MultiDayCard> {
   List<Event> eventsToday = [];
   List<Task> tasksDueToday = [];
   _MultiDayCardState(this.index) {
-    DateTime date =DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day).add(Duration(days: index));
-
-    db.getListOfEventsInDay(date: date).then((value) => setState(() {
+    DateTime date = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day).add(Duration(days: index));
+    
+    db.getListOfEventsInDay(date: getDateOnly(DateTime.now(), offset:index)).then((value) => setState(() {
           eventCount = value.length;
           eventsToday = value;
         }));
 
-    db.getTasksDue(date, date.add(const Duration(days: 1))).then((value) => setState(() {
+    db.getTasksDue(getDateOnly(DateTime.now(), offset:index), date.add(const Duration(days: 1))).then((value) => setState(() {
           for (var val in value.values) {
             taskCount = val.length;
             tasksDueToday = val;

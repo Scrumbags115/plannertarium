@@ -17,13 +17,14 @@ class SingleDay extends StatefulWidget {
 class _SingleDayState extends State<SingleDay> {
   DateTime date;
   List<Task> tasksDueToday = [];
-  List<Event> currentEvents = [];
+  List<Event> eventsToday = [];
   int taskCount = 0;
+  int eventCount = 0;
   _SingleDayState(this.date) {
-    /*db.getListOfEventsInDay(date: date).then((value) => setState((){
-      print(date);
-      print(value);
-    }));*/
+    db.getListOfEventsInDay(date: date).then((value) => setState(() {
+          eventCount = value.length;
+          eventsToday = value;
+        }));
     db
         .getTasksDue(date, date.add(const Duration(days: 1)))
         .then((value) => setState(() {
@@ -44,13 +45,14 @@ class _SingleDayState extends State<SingleDay> {
           }
         },
         child: Scaffold(
+          appBar: AppBar(title: Text("Day View")),
           body: Column(
             children: [
               //Displays the tasks for the day, along with the add task button
               SizedBox(
                 height: 80,
                 child: Card(
-                  color: Colors.blue,
+                  color: Colors.white,
                   child: Row(
                     children: [
                       Expanded(
@@ -62,7 +64,7 @@ class _SingleDayState extends State<SingleDay> {
                                   padding: EdgeInsets.only(left: 5.0, top: 8.0),
                                   child: Text(
                                       style: TextStyle(
-                                          color: Colors.white,
+                                          color: Colors.black,
                                           fontWeight: FontWeight.bold,
                                           fontSize: 18),
                                       "Tasks for today!"),
@@ -171,28 +173,48 @@ class _SingleDayState extends State<SingleDay> {
               child: Center(),
             ),
           ),
-          Expanded(
-            child: Container(
+          Stack(children: [
+            Container(
               decoration: const BoxDecoration(),
               child: SizedBox(
                 height: 50,
-                child: InkWell(
-                  splashColor: Colors.red.withAlpha(30),
-                  onTap: () {},
-                  child: const Center(
-                    child: Column(
-                      children: [],
-                    ),
-                  ),
+                child: Row(
+                  children: [],
                 ),
               ),
             ),
-          ),
+            generateEventsInHour(counter),
+          ]),
         ],
       );
     } else {
       return const Row();
     }
+  }
+
+  Row generateEventsInHour(hour) {
+    List<Event> eventsInHour = [];
+    for (var event in eventsToday) {
+      if (event.timeStart.isAfter(date.add(Duration(hours: hour))) && event.timeEnd.isBefore(date.add(Duration(hours: hour+2)))) {
+        eventsInHour.add(event);
+        print(date.add(Duration(hours: hour)));
+        print(date.add(Duration(hours: hour + 2)));
+        print(event.timeStart);
+        print(event.timeEnd);
+      }
+    }
+    return Row(
+      children: eventsInHour.map((item) => new Text("$item")).toList()
+      /*SizedBox(
+              height: 40,
+              width: 40,
+              child: Card(color: Colors.red, child: Text("$hour"))),
+        SizedBox(
+            height: 40,
+            width: 40,
+            child: Card(color: Colors.red, child: Text("hi")))*/
+      ,
+    );
   }
 }
 
@@ -321,7 +343,6 @@ class AddTaskView extends StatelessWidget {
                         description: taskDescriptionController.text,
                         location: taskLocationController.text,
                         timeDue: date));
-                    db.addUniqueEvent(Event());
                     Navigator.pop(context);
                   }
                 },
