@@ -6,6 +6,7 @@ import 'package:planner/models/task.dart';
 import 'dart:async';
 import 'package:planner/view/weekView.dart';
 import 'package:planner/view/weeklyTaskView.dart';
+import 'package:planner/view/monthlyTaskView.dart';
 
 class taskView extends StatefulWidget {
   const taskView({super.key});
@@ -308,7 +309,7 @@ class _taskViewState extends State<taskView> {
           print('swipe detected');
           if (details.primaryVelocity! < 0) {
             Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => const WeeklyTaskView(),
+              builder: (context) =>  MonthlyTaskView(),
             ));
           }
         },
