@@ -7,6 +7,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/view/eventView.dart';
+import 'package:planner/common/canvas.dart';
 
 var auth = FirebaseAuth.instanceFor(
     app: Firebase.app(), persistence: Persistence.LOCAL);
@@ -123,6 +124,8 @@ class MyAppState extends State<MyApp> {
       }
       Event e = eventList.first;
       await db.deleteRecurringEvents(e);
+    } else if (event == "canvas") {
+      await getCanvasEvents();
     } else {
       // final current_user = auth.currentUser;
       // final current_uid = current_user!.uid;
