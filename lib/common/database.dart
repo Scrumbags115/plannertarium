@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ffi';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:planner/common/time_management.dart';
@@ -205,21 +206,6 @@ class DatabaseService {
         .update(newOptions);
   }
 
-  Future<void> updateEventId(String oldEventID, String newEventID) async {
-    try {
-      var doc =
-          await users.doc(userid).collection("events").doc(oldEventID).get();
-      Map<String, dynamic> data = {};
-      if (doc.data() != null) {
-        data = doc.data()!;
-      }
-      users.doc(userid).collection("events").doc(newEventID).set(data);
-      users.doc(userid).collection("events").doc(oldEventID).delete();
-    } catch (e) {
-      return;
-    }
-  }
-
   /// Check if an event exists in the db
   Future<bool> checkIfEventExists(String eventID) async {
     // firestore doesn't have a built in function? are we expected to maintain this locally?
@@ -417,6 +403,52 @@ class DatabaseService {
       }
     }
     return (activeMap, completedMap, delayedMap);
+  }
+
+  /// Returns a 3-tuple of List<Task>
+  /// Each list has tasks that are either active, completed, or delayed in a time window
+  Future<(List<Task>, List<Task>, List<Task>)> getTaskMapsDay(
+      DateTime dateStart) async {
+    dateStart = getDateOnly(dateStart);
+    int oneDayLater = 1;
+
+    Map<DateTime, List<Task>> dayActiveMap, dayCompMap, dayDelayMap;
+    (dayActiveMap, dayCompMap, dayDelayMap) = await getTaskMaps(
+        dateStart, getDateOnly(dateStart, offset: oneDayLater));
+
+    return (
+      dayActiveMap[dateStart] ?? [],
+      dayCompMap[dateStart] ?? [],
+      dayDelayMap[dateStart] ?? []
+    );
+  }
+
+  /// Returns a 3-tuple of Maps<DateTime, List<Task>> where each map goes from 1 week from dateStart
+  /// Each map has lists of tasks that are either active, completed, or delayed on a day
+  Future<
+      (
+        Map<DateTime, List<Task>>,
+        Map<DateTime, List<Task>>,
+        Map<DateTime, List<Task>>
+      )> getTaskMapsWeek(DateTime dateStart) async {
+    dateStart = getDateOnly(dateStart);
+    int daysToNextWeek = 7;
+    DateTime oneWeekLater = getDateOnly(dateStart, offset: daysToNextWeek);
+
+    return await getTaskMaps(dateStart, oneWeekLater);
+  }
+
+  /// Returns a 3-tuple of Maps<DateTime, List<Task>> where each map goes from 1 month from dateStart
+  /// Each map has lists of tasks that are either active, completed, or delayed on a day
+  Future<
+      (
+        Map<DateTime, List<Task>>,
+        Map<DateTime, List<Task>>,
+        Map<DateTime, List<Task>>
+      )> getTaskMapsMonth(DateTime dateStart) async {
+    dateStart = getDateOnly(dateStart);
+    DateTime nextMonth = DateTime(dateStart.year, dateStart.month + 1, dateStart.day);
+    return getTaskMaps(dateStart, nextMonth);
   }
 
   /// All tasks that are due in the time window [dateStart, dateEnd)
