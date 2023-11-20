@@ -312,6 +312,10 @@ class _taskViewState extends State<taskView> {
               builder: (context) =>  MonthlyTaskView(),
             ));
           }
+          if (details.primaryVelocity! > 0) {
+            Navigator.of(context)
+                .push(MaterialPageRoute(builder: (context) => WeekView()));
+          }
         },
         child: Column(
           children: [
@@ -366,13 +370,12 @@ class _TaskCardState extends State<TaskCard> {
   Widget build(BuildContext context) {
     return Dismissible(
       key: UniqueKey(),
-      onDismissed: (direction) async{
+      onDismissed: (direction) async {
         if (direction == DismissDirection.startToEnd) {
           setState(() {
             widget.task.moveToNextDay();
             db.setTask(widget.task);
             print('move to next day completed');
-            
           });
         } else if (direction == DismissDirection.endToStart) {
           showDialog(

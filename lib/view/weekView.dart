@@ -1,45 +1,79 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:planner/view/dayView.dart';
 import 'package:planner/common/database.dart';
-DatabaseService dayta = DatabaseService();
+import 'package:planner/models/event.dart';
+import 'package:planner/models/task.dart';
+import 'package:planner/common/time_management.dart';
 
-class weekView extends StatelessWidget {
-  const weekView({super.key});
+DatabaseService db = DatabaseService();
+
+class WeekView extends StatelessWidget {
+  const WeekView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: ListView(
-        children: List.generate(7, (index) {
-          //This generates 7 MultiDayCard in a vertical list
-          return MultiDayCard(index);
-        }),
+    return SafeArea(
+      child: GestureDetector(
+        onHorizontalDragEnd: (details) {
+          if (details.primaryVelocity! > 0) {
+            Navigator.of(context).pop();
+          }
+        },
+        child: Scaffold(
+          appBar: AppBar(title: const Text("Week")),
+          body: ListView(
+            children: List.generate(7, (index) {
+              //This generates 7 MultiDayCard in a vertical list
+              return MultiDayCard(index);
+            }),
+          ),
+        ),
       ),
     );
   }
 }
 
-///Each one of these is a day in the week view, consisting of the placeholder date and card to its right
+//Each of these navigates to dayView when tapped
 class MultiDayCard extends StatefulWidget {
   const MultiDayCard(this.index, {super.key});
   final int index;
+
   @override
-  State<StatefulWidget> createState() => MultiDayCardState(index);
+  State<StatefulWidget> createState() => _MultiDayCardState(index);
 }
 
-class MultiDayCardState extends State<MultiDayCard> {
-  MultiDayCardState(this.index);
+class _MultiDayCardState extends State<MultiDayCard> {
+  int eventCount = 0;
+  int taskCount = 0;
+  List<Event> eventsToday = [];
+  List<Task> tasksDueToday = [];
+  _MultiDayCardState(this.index) {
+    DateTime date = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day).add(Duration(days: index));
+    
+    db.getListOfEventsInDay(date: getDateOnly(DateTime.now(), offset:index)).then((value) => setState(() {
+          eventCount = value.length;
+          eventsToday = value;
+        }));
+
+    db.getTasksDue(getDateOnly(DateTime.now(), offset:index), date.add(const Duration(days: 1))).then((value) => setState(() {
+          for (var val in value.values) {
+            taskCount = val.length;
+            tasksDueToday = val;
+          }
+        }));
+  }
   int index;
 
   @override
   Widget build(BuildContext context) {
-    DateTime dateToDisplay = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day).add(Duration(days: index));
+    DateTime dateToDisplay =
+        DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day)
+            .add(Duration(days: index));
     String monthDayDisplayed = "${dateToDisplay.month}/${dateToDisplay.day}";
     return Row(
-      //This row contains: date, card
       children: [
         Flexible(
-          //This widget and Expanded work together to make the card on the right stretch to fill space, works on mobile and web
           flex: 0,
           child: SizedBox(
             width: 70,
@@ -53,7 +87,6 @@ class MultiDayCardState extends State<MultiDayCard> {
           child: SizedBox(
             height: 140,
             child: Card(
-              //Not sure how to connect the backend to this kind of setup, but it looks kind of ok
               clipBehavior: Clip.hardEdge,
               elevation: 2,
               shape: const RoundedRectangleBorder(
@@ -63,27 +96,110 @@ class MultiDayCardState extends State<MultiDayCard> {
                 borderRadius: BorderRadius.all(Radius.circular(5)),
               ),
               child: InkWell(
-                //Makes the splash effect when clicked/tapped, also navigates to the dayView
                 splashColor: Colors.blue.withAlpha(30),
                 onTap: () {
                   Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => SingleDay(dateToDisplay)),
-                  );
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => SingleDay(dateToDisplay)));
                 },
-                child: const Center(
-                  child: Column(
-                    children: [
-                      //Text("Placeholder"), //Placeholder text
-                    ],
-                  ),
+                child: Column(
+                  children: [
+                    const Text(style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.left, "Tasks"),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SizedBox(
+                            height: 40,
+                            child: ListView(
+                              scrollDirection: Axis.horizontal,
+                              children: List.generate(taskCount, (index) {
+                                return Row(
+                                  children: [
+                                    TaskCard(
+                                      tasksDueToday: tasksDueToday,
+                                      index: index,
+                                    )
+                                  ],
+                                );
+                              }),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                    const Text(style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.left, "Events"),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SizedBox(
+                            height: 40,
+                            child: ListView(
+                              scrollDirection: Axis.horizontal,
+                              children: List.generate(eventCount, (index) {
+                                return Row(
+                                  children: [
+                                    EventCard(
+                                      eventsToday: eventsToday,
+                                      index: index,
+                                    )
+                                  ],
+                                );
+                              }),
+                            ),
+                          ),
+                        )
+                      ],
+                    )
+                  ],
                 ),
               ),
             ),
           ),
         ),
       ],
+    );
+  }
+}
+
+class EventCard extends StatefulWidget {
+  final List<Event> eventsToday;
+  final int index;
+  const EventCard({super.key, required this.eventsToday, required this.index});
+
+  @override
+  _EventCardState createState() => _EventCardState();
+}
+
+class _EventCardState extends State<EventCard> {
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 40,
+      width: 100,
+      child: Card(
+        color: Colors.amber,
+        child: InkWell(
+          onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => EventDetailsView(
+                          widget.eventsToday[widget.index].name,
+                          widget.eventsToday[widget.index].description,
+                          widget.eventsToday[widget.index].location,
+                          widget.eventsToday[widget.index].timeStart,
+                          widget.eventsToday[widget.index].timeEnd,)),
+                );
+          },
+          child: Column(
+            children: [
+              Text(widget.eventsToday[widget.index].name),
+              Text("${widget.eventsToday[widget.index].timeStart.hour}:${widget.eventsToday[widget.index].timeStart.minute} to ${widget.eventsToday[widget.index].timeEnd.hour}:${widget.eventsToday[widget.index].timeEnd.minute}"),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
