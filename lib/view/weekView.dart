@@ -21,7 +21,7 @@ class WeekView extends StatelessWidget {
           }
         },
         child: Scaffold(
-          appBar: AppBar(title: Text("Week View")),
+          appBar: AppBar(title: const Text("Week")),
           body: ListView(
             children: List.generate(7, (index) {
               //This generates 7 MultiDayCard in a vertical list
@@ -176,7 +176,7 @@ class _EventCardState extends State<EventCard> {
   Widget build(BuildContext context) {
     return SizedBox(
       height: 40,
-      width: 85,
+      width: 100,
       child: Card(
         color: Colors.amber,
         child: InkWell(

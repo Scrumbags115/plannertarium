@@ -523,14 +523,15 @@ main() async {
 task_getSet_new_user() async {
   late DatabaseService db;
   late DateTime today;
-  late Map<DateTime, List<Task>> emptyDay, emptyWeek, emptyMonth;
-  late Map<DateTime, List<Task>> dailyActiveExp, dailyCompExp, dailyDelayExp;
+  late List<Task> emptyDay;
+  late Map<DateTime, List<Task>> emptyWeek, emptyMonth;
+  late List<Task> dailyActiveExp, dailyCompExp, dailyDelayExp;
   String newUser1 = "taskUser${DateTime.now().millisecondsSinceEpoch}";
   setUp(() async {
     today = DateTime(2023, 11, 4);
     db = DatabaseService.createTest(
         uid: newUser1, firestoreObject: FakeFirebaseFirestore());
-    emptyDay = {today: <Task>[]};
+    emptyDay = [];
     emptyWeek = {
       DateTime(2023, 11, 4): [],
       DateTime(2023, 11, 5): [],
@@ -572,35 +573,27 @@ task_getSet_new_user() async {
       DateTime(2023, 12, 2): [],
       DateTime(2023, 12, 3): []
     };
-    dailyActiveExp = {
-      DateTime(2023, 11, 20): [tasks[18]]
-    };
-    dailyCompExp = {
-      DateTime(2023, 11, 20): [tasks[16], tasks[20]]
-    };
-    dailyDelayExp = {
-      DateTime(2023, 11, 20): [tasks[4], tasks[13]]
-    };
+    dailyActiveExp = [tasks[18]];
+    dailyCompExp = [tasks[16], tasks[20]];
+    dailyDelayExp = [tasks[4], tasks[13]];
   });
 
   group("Test that a new user works as expected", () {
     test("No active, completed, and delayed tasks for a 1 day time window",
         () async {
-      DateTime tomorrow = DateTime(2023, 11, 5);
-      Map<DateTime, List<Task>> dailyActive, dailyCompleted, dailyDelayed;
+      List<Task> dailyActive, dailyCompleted, dailyDelayed;
       (dailyActive, dailyCompleted, dailyDelayed) =
-          await db.getTaskMaps(today, tomorrow);
-      expect(mapEquals(dailyActive, emptyDay), true);
-      expect(mapEquals(dailyCompleted, emptyDay), true);
-      expect(mapEquals(dailyDelayed, emptyDay), true);
+          await db.getTaskMapsDay(today);
+      expect(dailyActive, emptyDay);
+      expect(dailyCompleted, emptyDay);
+      expect(dailyDelayed, emptyDay);
     });
 
     test("No active, completed, and delayed tasks for a 1 week time window",
         () async {
-      DateTime nextWeek = DateTime(2023, 11, 11);
       Map<DateTime, List<Task>> weeklyActive, weeklyCompleted, weeklyDelayed;
       (weeklyActive, weeklyCompleted, weeklyDelayed) =
-          await db.getTaskMaps(today, nextWeek);
+          await db.getTaskMapsWeek(today);
       assert(mapEquals(weeklyActive, emptyWeek));
       assert(mapEquals(weeklyCompleted, emptyWeek));
       assert(mapEquals(weeklyDelayed, emptyWeek));
@@ -608,10 +601,9 @@ task_getSet_new_user() async {
 
     test("No active, completed, and delayed tasks for a 1 month time window",
         () async {
-      DateTime nextMonth = DateTime(2023, 12, 4);
       Map<DateTime, List<Task>> monthlyActive, monthlyCompleted, monthlyDelayed;
       (monthlyActive, monthlyCompleted, monthlyDelayed) =
-          await db.getTaskMaps(today, nextMonth);
+          await db.getTaskMapsMonth(today);
       expect(mapEquals(monthlyActive, emptyMonth), true);
       expect(mapEquals(monthlyCompleted, emptyMonth), true);
       expect(mapEquals(monthlyDelayed, emptyMonth), true);
@@ -623,12 +615,12 @@ task_getSet_new_user() async {
       for (var t in tasks) {
         db.setTask(t);
       }
-      Map<DateTime, List<Task>> dailyActive, dailyCompleted, dailyDelayed;
+      List<Task> dailyActive, dailyCompleted, dailyDelayed;
       (dailyActive, dailyCompleted, dailyDelayed) =
-          await db.getTaskMaps(DateTime(2023, 11, 20), DateTime(2023, 11, 21));
-      expect(mapEquals(dailyActive, dailyActiveExp), true);
-      expect(mapEquals(dailyCompleted, dailyCompExp), true);
-      expect(mapEquals(dailyDelayed, dailyDelayExp), true);
+          await db.getTaskMapsDay(DateTime(2023, 11, 20));
+      expect(dailyActive, dailyActiveExp);
+      expect(dailyCompleted, dailyCompExp);
+      expect(dailyDelayed, dailyDelayExp);
     });
   });
 
@@ -686,7 +678,7 @@ task_getSet_existing_user() async {
         () async {
       Map<DateTime, List<Task>> weeklyActive, weeklyCompleted, weeklyDelayed;
       (weeklyActive, weeklyCompleted, weeklyDelayed) =
-          await db.getTaskMaps(DateTime(2023, 11, 6), DateTime(2023, 11, 13));
+          await db.getTaskMapsWeek(DateTime(2023, 11, 6));
       expect(mapEquals(weeklyActive, weeklyActiveExp), true);
       expect(mapEquals(weeklyCompleted, weeklyCompExp), true);
       expect(mapEquals(weeklyDelayed, weeklyDelayExp), true);
@@ -777,32 +769,32 @@ task_move() async {
     // initially active task on 11/6/2023
     db.setTask(t0);
     weeklyActiveExp = {
-        DateTime(2023, 11, 6): [],
-        DateTime(2023, 11, 7): [],
-        DateTime(2023, 11, 8): [],
-        DateTime(2023, 11, 9): [],
-        DateTime(2023, 11, 10): [],
-        DateTime(2023, 11, 11): [],
-        DateTime(2023, 11, 12): [t6]
-      };
+      DateTime(2023, 11, 6): [],
+      DateTime(2023, 11, 7): [],
+      DateTime(2023, 11, 8): [],
+      DateTime(2023, 11, 9): [],
+      DateTime(2023, 11, 10): [],
+      DateTime(2023, 11, 11): [],
+      DateTime(2023, 11, 12): [t6]
+    };
     weeklyCompExp = {
-        DateTime(2023, 11, 6): [],
-        DateTime(2023, 11, 7): [],
-        DateTime(2023, 11, 8): [],
-        DateTime(2023, 11, 9): [],
-        DateTime(2023, 11, 10): [],
-        DateTime(2023, 11, 11): [],
-        DateTime(2023, 11, 12): []
-      };
-      weeklyDelayExp = {
-        DateTime(2023, 11, 6): [t6],
-        DateTime(2023, 11, 7): [t6],
-        DateTime(2023, 11, 8): [t6],
-        DateTime(2023, 11, 9): [t6],
-        DateTime(2023, 11, 10): [t6],
-        DateTime(2023, 11, 11): [t6],
-        DateTime(2023, 11, 12): []
-      };
+      DateTime(2023, 11, 6): [],
+      DateTime(2023, 11, 7): [],
+      DateTime(2023, 11, 8): [],
+      DateTime(2023, 11, 9): [],
+      DateTime(2023, 11, 10): [],
+      DateTime(2023, 11, 11): [],
+      DateTime(2023, 11, 12): []
+    };
+    weeklyDelayExp = {
+      DateTime(2023, 11, 6): [t6],
+      DateTime(2023, 11, 7): [t6],
+      DateTime(2023, 11, 8): [t6],
+      DateTime(2023, 11, 9): [t6],
+      DateTime(2023, 11, 10): [t6],
+      DateTime(2023, 11, 11): [t6],
+      DateTime(2023, 11, 12): []
+    };
   });
 
   group("Task delays", () {
@@ -810,13 +802,13 @@ task_move() async {
       // get week of 11/6 - 11/12
       Map<DateTime, List<Task>> weeklyActive, weeklyCompleted, weeklyDelayed;
       (weeklyActive, weeklyCompleted, weeklyDelayed) =
-          await db.getTaskMaps(DateTime(2023, 11, 6), DateTime(2023, 11, 13));
+          await db.getTaskMapsWeek(DateTime(2023, 11, 6));
 
       for (int i = 0; i < 6; i++) {
         weeklyActive[DateTime(2023, 11, 6 + i)]![0].moveToNextDay();
         db.setTask(weeklyActive[DateTime(2023, 11, 6 + i)]![0]);
         (weeklyActive, weeklyCompleted, weeklyDelayed) =
-            await db.getTaskMaps(DateTime(2023, 11, 6), DateTime(2023, 11, 13));
+            await db.getTaskMapsWeek(DateTime(2023, 11, 6));
       }
 
       expect(mapEquals(weeklyActive, weeklyActiveExp), true,

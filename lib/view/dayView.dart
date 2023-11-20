@@ -45,7 +45,7 @@ class _SingleDayState extends State<SingleDay> {
           }
         },
         child: Scaffold(
-          appBar: AppBar(title: Text("Day View")),
+          appBar: AppBar(title: Text("${date.month}/${date.day}")),
           body: Column(
             children: [
               //Displays the tasks for the day, along with the add task button
@@ -142,8 +142,8 @@ class _SingleDayState extends State<SingleDay> {
                             ),
                             const Expanded(
                               child: Divider(
-                                height: 10,
-                                thickness: 2.5,
+                                height: 1,
+                                thickness: 2,
                                 color: Colors.lightBlueAccent,
                               ),
                             ),
@@ -173,18 +173,24 @@ class _SingleDayState extends State<SingleDay> {
               child: Center(),
             ),
           ),
-          Stack(children: [
-            Container(
-              decoration: const BoxDecoration(),
-              child: SizedBox(
-                height: 50,
-                child: Row(
-                  children: [],
-                ),
+          Expanded(
+            child: Stack(children: [
+              Container(
+                decoration: const BoxDecoration(),
+                child: SizedBox(
+                    height: 50,
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => AddEventView(date)));
+                      },
+                    )),
               ),
-            ),
-            generateEventsInHour(counter),
-          ]),
+              generateEventsInHour(counter),
+            ]),
+          ),
         ],
       );
     } else {
@@ -195,29 +201,36 @@ class _SingleDayState extends State<SingleDay> {
   Row generateEventsInHour(hour) {
     List<Event> eventsInHour = [];
     for (var event in eventsToday) {
-      if (event.timeStart.isAfter(date.add(Duration(hours: hour))) && event.timeEnd.isBefore(date.add(Duration(hours: hour+2)))) {
+      if (event.timeStart.hour <= hour && event.timeEnd.hour >= hour + 1) {
         eventsInHour.add(event);
-        print(date.add(Duration(hours: hour)));
-        print(date.add(Duration(hours: hour + 2)));
-        print(event.timeStart);
-        print(event.timeEnd);
       }
     }
     return Row(
-      children: eventsInHour.map((item) => new Text("$item")).toList()
-      /*SizedBox(
-              height: 40,
-              width: 40,
-              child: Card(color: Colors.red, child: Text("$hour"))),
-        SizedBox(
-            height: 40,
-            width: 40,
-            child: Card(color: Colors.red, child: Text("hi")))*/
-      ,
-    );
+        children: eventsInHour
+            .map((item) => Expanded(
+                  child: SizedBox(
+                      height: 50,
+                      child: Card(
+                          color: Colors.amber,
+                          child: InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => EventDetailsView(
+                                            item.name,
+                                            item.description,
+                                            item.location,
+                                            item.timeStart,
+                                            item.timeEnd)));
+                              },
+                              child: Center(child: Text(item.name))))),
+                ))
+            .toList());
   }
 }
 
+//TODO: make this a dialog instead of a full page
 class TaskCard extends StatefulWidget {
   final List<Task> tasksDueToday;
   final int index;
@@ -281,6 +294,7 @@ class _TaskCardState extends State<TaskCard> {
   }
 }
 
+//TODO: make this a dialog instead of a full page
 class AddTaskView extends StatelessWidget {
   final DateTime date;
   AddTaskView(this.date, {super.key});
@@ -356,6 +370,99 @@ class AddTaskView extends StatelessWidget {
   }
 }
 
+//TODO: make this a dialog instead of a full page
+class AddEventView extends StatelessWidget {
+  final DateTime date;
+  AddEventView(this.date, {super.key});
+
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController eventNameController = TextEditingController();
+  final TextEditingController eventDescriptionController =
+      TextEditingController();
+  final TextEditingController eventLocationController = TextEditingController();
+  final TextEditingController tempTimeStartController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Add Event')),
+      body: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            TextFormField(
+              decoration: const InputDecoration(
+                hintText: 'Enter event name',
+              ),
+              validator: (String? value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a name for this event';
+                }
+                return null;
+              },
+              controller: eventNameController,
+              onSaved: (value) {
+                eventNameController.text = value!;
+              },
+            ),
+            TextFormField(
+              decoration: const InputDecoration(
+                hintText: 'Enter event description',
+              ),
+              controller: eventDescriptionController,
+              onSaved: (value) {
+                eventDescriptionController.text = value!;
+              },
+            ),
+            TextFormField(
+              decoration: const InputDecoration(
+                hintText: 'Enter event location',
+              ),
+              controller: eventLocationController,
+              onSaved: (value) {
+                eventLocationController.text = value!;
+              },
+            ),
+            TextFormField(
+              decoration: const InputDecoration(
+                hintText: 'Enter event start time',
+              ),
+              controller: tempTimeStartController,
+              onSaved: (value) {
+                tempTimeStartController.text = value!;
+              },
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    //Will have to replace this with a real time picker later
+                    var temptimestart = DateTime(DateTime.now().year,
+                            DateTime.now().month, DateTime.now().day)
+                        .add(Duration(
+                            hours: int.parse(tempTimeStartController.text)));
+                    db.addEvent(Event(
+                        name: eventNameController.text,
+                        description: eventDescriptionController.text,
+                        location: eventLocationController.text,
+                        timeStart: temptimestart,
+                        timeEnd: temptimestart.add(Duration(hours: 1))));
+                    Navigator.pop(context);
+                  }
+                },
+                child: const Text('Save'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+//TODO: make this a dialog instead of a full page
 class TaskDetailsView extends StatelessWidget {
   final String name;
   final String description;
