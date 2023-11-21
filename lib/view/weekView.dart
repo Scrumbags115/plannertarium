@@ -5,6 +5,9 @@ import 'package:planner/common/database.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/common/time_management.dart';
+import 'package:planner/view/taskDialogs.dart';
+import 'package:planner/view/eventDialogs.dart';
+import 'dart:async';
 
 DatabaseService db = DatabaseService();
 
@@ -49,19 +52,26 @@ class _MultiDayCardState extends State<MultiDayCard> {
   List<Event> eventsToday = [];
   List<Task> tasksDueToday = [];
   _MultiDayCardState(this.index) {
-    DateTime date = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day).add(Duration(days: index));
-    
-    db.getListOfEventsInDay(date: getDateOnly(DateTime.now(), offset:index)).then((value) => setState(() {
-          eventCount = value.length;
-          eventsToday = value;
-        }));
+    DateTime date =
+        DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day)
+            .add(Duration(days: index));
 
-    db.getTasksDue(getDateOnly(DateTime.now(), offset:index), date.add(const Duration(days: 1))).then((value) => setState(() {
-          for (var val in value.values) {
-            taskCount = val.length;
-            tasksDueToday = val;
-          }
-        }));
+    db
+        .getListOfEventsInDay(date: getDateOnly(DateTime.now(), offset: index))
+        .then((value) => setState(() {
+              eventCount = value.length;
+              eventsToday = value;
+            }));
+
+    db
+        .getTasksDue(getDateOnly(DateTime.now(), offset: index),
+            date.add(const Duration(days: 1)))
+        .then((value) => setState(() {
+              for (var val in value.values) {
+                taskCount = val.length;
+                tasksDueToday = val;
+              }
+            }));
   }
   int index;
 
@@ -105,51 +115,95 @@ class _MultiDayCardState extends State<MultiDayCard> {
                 },
                 child: Column(
                   children: [
-                    const Text(style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.left, "Tasks"),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: SizedBox(
-                            height: 40,
-                            child: ListView(
-                              scrollDirection: Axis.horizontal,
-                              children: List.generate(taskCount, (index) {
-                                return Row(
-                                  children: [
-                                    TaskCard(
-                                      tasksDueToday: tasksDueToday,
-                                      index: index,
-                                    )
-                                  ],
-                                );
-                              }),
+                    const Text(
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.left,
+                        "Tasks"),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: SizedBox(
+                              height: 40,
+                              child: ListView(
+                                scrollDirection: Axis.horizontal,
+                                children: List.generate(taskCount, (index) {
+                                  return Row(
+                                    children: [
+                                      TaskCard(
+                                        tasksDueToday: tasksDueToday,
+                                        index: index,
+                                      )
+                                    ],
+                                  );
+                                }),
+                              ),
                             ),
                           ),
-                        )
-                      ],
+                          Flexible(
+                              flex: 0,
+                              child: SizedBox(
+                                  height: 40,
+                                  width: 40,
+                                  child: Card(
+                                      child: InkWell(
+                                          onTap: () async {
+                                            await addTaskFormForDay(
+                                                context, dateToDisplay);
+                                          },
+                                          child: const Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Icon(Icons.add_box)
+                                              ])))))
+                        ],
+                      ),
                     ),
-                    const Text(style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.left, "Events"),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: SizedBox(
-                            height: 40,
-                            child: ListView(
-                              scrollDirection: Axis.horizontal,
-                              children: List.generate(eventCount, (index) {
-                                return Row(
-                                  children: [
-                                    EventCard(
-                                      eventsToday: eventsToday,
-                                      index: index,
-                                    )
-                                  ],
-                                );
-                              }),
+                    const Text(
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.left,
+                        "Events"),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: SizedBox(
+                              height: 40,
+                              child: ListView(
+                                scrollDirection: Axis.horizontal,
+                                children: List.generate(eventCount, (index) {
+                                  return Row(
+                                    children: [
+                                      EventCard(
+                                        eventsToday: eventsToday,
+                                        index: index,
+                                      )
+                                    ],
+                                  );
+                                }),
+                              ),
                             ),
                           ),
-                        )
-                      ],
+                          Flexible(
+                              flex: 0,
+                              child: SizedBox(
+                                  height: 40,
+                                  width: 40,
+                                  child: Card(
+                                      child: InkWell(
+                                          onTap: () async {
+                                            await addEventFormForDay(
+                                                context, dateToDisplay);
+                                          },
+                                          child: const Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Icon(Icons.add_box)
+                                              ])))))
+                        ],
+                      ),
                     )
                   ],
                 ),
@@ -181,21 +235,23 @@ class _EventCardState extends State<EventCard> {
         color: Colors.amber,
         child: InkWell(
           onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => EventDetailsView(
-                          widget.eventsToday[widget.index].name,
-                          widget.eventsToday[widget.index].description,
-                          widget.eventsToday[widget.index].location,
-                          widget.eventsToday[widget.index].timeStart,
-                          widget.eventsToday[widget.index].timeEnd,)),
-                );
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => EventDetailsView(
+                        widget.eventsToday[widget.index].name,
+                        widget.eventsToday[widget.index].description,
+                        widget.eventsToday[widget.index].location,
+                        widget.eventsToday[widget.index].timeStart,
+                        widget.eventsToday[widget.index].timeEnd,
+                      )),
+            );
           },
           child: Column(
             children: [
               Text(widget.eventsToday[widget.index].name),
-              Text("${widget.eventsToday[widget.index].timeStart.hour}:${widget.eventsToday[widget.index].timeStart.minute} to ${widget.eventsToday[widget.index].timeEnd.hour}:${widget.eventsToday[widget.index].timeEnd.minute}"),
+              Text(
+                  "${widget.eventsToday[widget.index].timeStart.hour}:${widget.eventsToday[widget.index].timeStart.minute} to ${widget.eventsToday[widget.index].timeEnd.hour}:${widget.eventsToday[widget.index].timeEnd.minute}"),
             ],
           ),
         ),

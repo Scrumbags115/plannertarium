@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/models/event.dart';
+import 'package:planner/view/taskDialogs.dart';
+import 'package:planner/view/eventDialogs.dart';
+import 'dart:async';
 
 DatabaseService db = DatabaseService();
 
@@ -87,13 +90,10 @@ class _SingleDayState extends State<SingleDay> {
                           ],
                         ),
                       ),
-                      //Takes you to the screen to add a task
+                      //Opens a dialog form to add a task for the day that is being viewed
                       TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => AddTaskView(date)));
+                        onPressed: () async {
+                          await addTaskFormForDay(context, date);
                         },
                         child: Container(
                           color: Colors.black,
@@ -180,11 +180,12 @@ class _SingleDayState extends State<SingleDay> {
                 child: SizedBox(
                     height: 50,
                     child: InkWell(
-                      onTap: () {
-                        Navigator.push(
+                      onTap: () async {
+                        /*Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => AddEventView(date)));
+                                builder: (context) => AddEventView(date)));*/
+                        await addEventFormForDay(context, date);
                       },
                     )),
               ),
