@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:planner/models/task.dart';
+import 'package:planner/view/eventView.dart';
 import 'dart:async';
 import 'package:planner/view/weekView.dart';
 import 'package:planner/view/weeklyTaskView.dart';
@@ -21,7 +22,7 @@ class _taskViewState extends State<taskView> {
   final User? user = FirebaseAuth.instance.currentUser;
   DatabaseService db = DatabaseService();
   List<Task> todayTasks = [];
-
+  bool forEvents = false;
   @override
   void initState() {
     super.initState();
@@ -231,16 +232,44 @@ class _taskViewState extends State<taskView> {
     return Scaffold(
       key: scaffoldKey,
       appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
         leading: IconButton(
-          icon: const Icon(Icons.menu),
+          icon: const Icon(Icons.menu,color: Colors.black),
           onPressed: () {
             scaffoldKey.currentState?.openDrawer();
           },
         ),
-        title: const Text('Task'),
+        title: const Text(
+          'Task',
+          style: TextStyle(
+            color: Colors.black,
+          ),
+          ),
+
         actions: <Widget>[
+          Switch(
+              // thumb color (round icon)
+              activeColor: Colors.white,
+              activeTrackColor: Colors.cyan,
+              inactiveThumbColor: Colors.blueGrey.shade600,
+              inactiveTrackColor: Colors.grey.shade400,
+              splashRadius: 50.0,
+              value: forEvents,
+              onChanged: (value) {
+                setState(() {
+                  forEvents = value;
+                });
+                if (forEvents) {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const weekView(),
+                    ),
+                  );
+                }
+              }),
           IconButton(
-            icon: const Icon(Icons.search),
+            icon: const Icon(Icons.search,color: Colors.black,),
             onPressed: () {
               showSearchBar(context);
             },
@@ -309,7 +338,7 @@ class _taskViewState extends State<taskView> {
           print('swipe detected');
           if (details.primaryVelocity! < 0) {
             Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) =>  MonthlyTaskView(),
+              builder: (context) => WeeklyTaskView(),
             ));
           }
         },
@@ -364,69 +393,68 @@ class _TaskCardState extends State<TaskCard> {
   DatabaseService db = DatabaseService();
   @override
   Widget build(BuildContext context) {
-    return Dismissible(
-      key: UniqueKey(),
-      onDismissed: (direction) async{
-        if (direction == DismissDirection.startToEnd) {
-          setState(() {
-            widget.task.moveToNextDay();
-            db.setTask(widget.task);
-            print('move to next day completed');
-            
-          });
-        } else if (direction == DismissDirection.endToStart) {
-          showDialog(
-            context: context,
-            builder: (context) {
-              return AlertDialog(
-                title: const Text('Confirm Deletion'),
-                content:
-                    const Text('Are you sure you want to delete this task?'),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Cancel'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      // Delete the task and close the dialog
-                      db.deleteTask(widget.task);
-                      print('swipe right!');
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Delete'),
-                  ),
-                ],
-              );
-            },
-          );
-        }
-      },
-      background: Container(
-        color: Colors.green, // Swipe right background color
-        alignment: Alignment.centerLeft,
-        child: const Icon(
-          Icons.check,
-          color: Colors.white,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Dismissible(
+        key: UniqueKey(),
+        onDismissed: (direction) async {
+          if (direction == DismissDirection.startToEnd) {
+            setState(() {
+              widget.task.moveToNextDay();
+              db.setTask(widget.task);
+              print('move to next day completed');
+            });
+          } else if (direction == DismissDirection.endToStart) {
+            showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  title: const Text('Confirm Deletion'),
+                  content:
+                      const Text('Are you sure you want to delete this task?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        db.deleteTask(widget.task);
+                        print('swipe right!');
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text('Delete'),
+                    ),
+                  ],
+                );
+              },
+            );
+          }
+        },
+        background: Container(
+          color: Colors.green,
+          alignment: Alignment.centerLeft,
+          child: const Icon(
+            Icons.check,
+            color: Colors.white,
+          ),
         ),
-      ),
-      secondaryBackground: Container(
-        color: Colors.red, // Swipe left background color
-        alignment: Alignment.centerRight,
-        child: const Icon(
-          Icons.delete,
-          color: Colors.white,
+        secondaryBackground: Container(
+          color: Colors.red,
+          alignment: Alignment.centerRight,
+          child: const Icon(
+            Icons.delete,
+            color: Colors.white,
+          ),
         ),
-      ),
-      child: Card(
-        elevation: 0,
-        margin: const EdgeInsets.all(1.0),
-        child: InkWell(
-          onTap: () {
-            _showDetailPopup(context);
-          },
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 8.0),
+          decoration: BoxDecoration(
+            color: Colors.white70, // Change the color to white gray
+            borderRadius: BorderRadius.circular(10.0),
+          ),
           child: ListTile(
             leading: InkWell(
               onTap: () {

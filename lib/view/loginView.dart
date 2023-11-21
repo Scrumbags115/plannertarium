@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:planner/common/login.dart';
 import 'package:planner/view/taskView.dart';
+import 'package:slider_button/slider_button.dart';
+
 
 class loginView extends StatefulWidget {
   const loginView({super.key});
@@ -11,7 +13,7 @@ class loginView extends StatefulWidget {
 }
 
 class _loginViewState extends State<loginView> {
-  bool isLogin = false; // Set this based on your login logic
+  bool isLogin = false; // Assuming this is a state variable
 
   @override
   Widget build(BuildContext context) {
@@ -27,24 +29,35 @@ class _loginViewState extends State<loginView> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 20.0),
-            ElevatedButton(
-              onPressed: () async {
-                User? u = await runAuthFlow();
+            const SizedBox(height: 500),
+            // Replace ElevatedButton with SliderButton
+            Center(
+              child: SliderButton(
+                width: 200,
+                height: 60,
+                action:() async {
+                  User? u = await runAuthFlow();
                 DatabaseService db = DatabaseService();
                 db.initUID(u!.uid);
                 setState(() {
                   isLogin = true;
                 });
-                // Navigate to the next page after authentication
-                Navigator.push(
+                  Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => const taskView(),
                   ),
                 );
-              },
-              child: const Text('Login'),
+                },
+                label: Text(
+                  "Slide to login!",
+                  style: TextStyle(
+                    color: Color(0xff4a4a4a),
+                    fontWeight: FontWeight.w500,
+                    fontSize: 17,
+                  ),
+                ),
+              ),
             ),
           ],
         ),

@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/view/taskView.dart';
+import 'package:planner/view/monthlyTaskView.dart';
 
 class WeeklyTaskView extends StatefulWidget {
   const WeeklyTaskView({Key? key}) : super(key: key);
@@ -17,8 +18,7 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   DatabaseService _db = DatabaseService();
   List<Task> _allTasks = [];
-  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
-      GlobalKey<RefreshIndicatorState>();
+  
   @override
   void initState() {
     super.initState();
@@ -76,27 +76,38 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
       });
 
       dayWidgets.add(
-        Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(10),
-              child: Text(
-                '${currentDate.month}/${currentDate.day}',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-            if (uniqueTasksForDay.isNotEmpty)
-              Column(
-                children: uniqueTasksForDay
-                    .map((task) => TaskCard(task: task))
-                    .toList(),
-              ),
-            if (uniqueTasksForDay.isEmpty)
+        Container(
+          width: double.infinity,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text('No tasks for this day'),
+                padding: const EdgeInsets.all(10),
+                child: Text(
+                  '${currentDate.month}/${currentDate.day}',
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.left,
+                ),
               ),
-          ],
+              if (uniqueTasksForDay.isNotEmpty)
+                Column(
+                  children: uniqueTasksForDay
+                      .map((task) => TaskCard(task: task))
+                      .toList(),
+                ),
+              if (uniqueTasksForDay.isEmpty)
+                const SizedBox(
+                  width: double.infinity,
+                  child: Padding(
+                    padding:  EdgeInsets.all(8.0),
+                    child: Text(
+                      'No tasks for this day',
+                      textAlign: TextAlign.center, // Center align this text
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       );
     }
@@ -105,9 +116,15 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
       appBar: AppBar(
         title: Text('Your Weekly Tasks'),
       ),
-      body: RefreshIndicator(
-        key: _refreshIndicatorKey,
-        onRefresh: () => fetchData(), // Function to call when refreshed
+      body: GestureDetector(
+        onHorizontalDragEnd: (details) {
+          print('swipe detected');
+          if (details.primaryVelocity! < 0) {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => MonthlyTaskView(),
+            ));
+          }
+        },
         child: ListView(
           children: dayWidgets,
         ),

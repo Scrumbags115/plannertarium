@@ -11,33 +11,58 @@ class MonthlyTaskView extends StatefulWidget {
 }
 
 class _MonthlyTaskViewState extends State<MonthlyTaskView> {
-  CalendarFormat _calendarFormat = CalendarFormat.month;
+  final CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   DatabaseService db = DatabaseService();
   List<Task> todayTasks = [];
-
-  // Add a PageController for handling page navigation
-   PageController _pageController = PageController();
+  final PageController _pageController = PageController();
+  Map<DateTime, List<Task>> active = {};
 
   @override
   void initState() {
     super.initState();
-    // Add a listener to the PageController to update the focusedDay
-    _pageController.addListener(() {
-      setState(() {
-        _focusedDay = _pageController.page == 0
-            ? _focusedDay.subtract(Duration(days: 30))
-            : _focusedDay.add(Duration(days: 30));
-      });
-    });
+    fetchMonthlyTasks(DateTime.now());
   }
 
   @override
   void dispose() {
-    // Dispose of the PageController to prevent memory leaks
     _pageController.dispose();
     super.dispose();
+  }
+
+  bool hasTasks(
+      DateTime date,
+      Map<DateTime, List<Task>> activeMap,
+      Map<DateTime, List<Task>> delayedMap,
+      Map<DateTime, List<Task>> completedMap) {
+    List<Task> tasks = [
+      ...?activeMap[date],
+      ...?delayedMap[date],
+      ...?completedMap[date]
+    ];
+    return tasks.isNotEmpty;
+  }
+
+  // This function returns a new DateTime object with only year, month, and day
+  DateTime _toDay(DateTime dateTime) {
+    return DateTime(dateTime.year, dateTime.month, dateTime.day);
+  }
+
+// Use this function when you're setting and getting tasks from the active map
+  void fetchMonthlyTasks(DateTime selectedDate) async {
+    DateTime dateStart = _toDay(selectedDate);
+    Map<DateTime, List<Task>> activeMap, delayedMap, completedMap;
+    (activeMap, delayedMap, completedMap) =
+        await db.getTaskMapsMonth(dateStart);
+
+    active = activeMap.map((key, value) => MapEntry(
+        _toDay(key), value)); // Use _toDay when setting tasks in the active map
+    todayTasks = active[_toDay(selectedDate)] ??
+        []; // Use _toDay when getting tasks from the active map
+
+    setState(() {});
+    print(todayTasks);
   }
 
   void fetchTodayTasks(DateTime selectedDate) async {
@@ -48,27 +73,37 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
     (activeMap, delayedMap, completedMap) =
         await db.getTaskMaps(dateStart, dateEnd);
 
+    // print(
+    //     'Active tasks from DB: $activeMap'); // Print the tasks fetched from the database
+
+    // print('delayed task from DB: $delayedMap');
+    // print('completed task from DB: $completedMap');
+
+    //active = activeMap;
     todayTasks = [
       ...?activeMap[dateStart],
       ...?delayedMap[dateStart],
       ...?completedMap[dateStart]
     ];
 
+    // print(
+    //     'Active tasks after insertion: $active'); // Print the active map after inserting the tasks
+
     setState(() {});
-    print(todayTasks);
+    print('todayTasks: $todayTasks');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Monthly View'),
+        title: const Text('Monthly View'),
       ),
       body: Column(
         children: [
           TableCalendar(
-            firstDay: DateTime(DateTime.now().year, DateTime.now().month, 1),
-            lastDay: DateTime(DateTime.now().year, DateTime.now().month + 1, 0),
+            firstDay: DateTime.utc(2020, 10, 16),
+            lastDay: DateTime.utc(2030, 3, 14),
             focusedDay: _focusedDay,
             calendarFormat: _calendarFormat,
             selectedDayPredicate: (day) {
@@ -79,66 +114,42 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
                 setState(() {
                   _selectedDay = selectedDay;
                   _focusedDay = focusedDay;
-                });
-
-                // Call the fetchTodayTasks function without await
-                fetchTodayTasks(selectedDay);
-              }
-            },
-            onFormatChanged: (format) {
-              if (_calendarFormat != format) {
-                setState(() {
-                  _calendarFormat = format;
+                  fetchTodayTasks(selectedDay);
                 });
               }
             },
             onPageChanged: (focusedDay) {
-              // Update the focusedDay when navigating to previous/next months
-              setState(() {
-                _focusedDay = focusedDay;
-              });
+              _focusedDay = focusedDay;
+            },
+            eventLoader: (day) {
+              var taskForDay = active[_toDay(day)] ?? [];
+              print('TDate:$day, Task:$taskForDay');
+              return taskForDay;
             },
             calendarBuilders: CalendarBuilders(
-              todayBuilder: (context, date, events) {
-                return Container(
-                  margin: const EdgeInsets.all(4.0),
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: Colors.transparent, // No color for today
-                    shape: BoxShape.circle,
-                  ),
-                  child: Text(
-                    '${date.day}',
-                    style: TextStyle(color: Colors.black),
-                  ),
-                );
+              markerBuilder: (context, date, tasks) {
+                //print("Date: $date, Tasks: $tasks");
+                if (tasks.isNotEmpty) {
+                  return Positioned(
+                    right: 1,
+                    bottom: 1,
+                    child: Container(
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.red,
+                      ),
+                    ),
+                  );
+                }
+                return Container();
               },
             ),
-            headerStyle: HeaderStyle(
-              titleCentered: true, // Center the title
-              formatButtonVisible: false, // Hide the format button
-              leftChevronIcon: GestureDetector(
-                onTap: () {
-                  _pageController.previousPage(
-                    duration: Duration(milliseconds: 300),
-                    curve: Curves.easeOut,
-                  );
-                },
-                child: Icon(Icons.arrow_back),
-              ), // Set custom left chevron icon
-              rightChevronIcon: GestureDetector(
-                onTap: () {
-                  _pageController.nextPage(
-                    duration: Duration(milliseconds: 300),
-                    curve: Curves.easeOut,
-                  );
-                },
-                child: Icon(Icons.arrow_forward),
-              ), // Set custom right chevron icon
+            headerStyle: const HeaderStyle(
+              titleCentered: true,
+              formatButtonVisible: false,
             ),
-          ),
-          SizedBox(
-            height: 16,
           ),
           Expanded(
             child: ListView.builder(
