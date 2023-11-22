@@ -6,6 +6,7 @@ import 'package:planner/models/task.dart';
 import 'package:planner/view/eventView.dart';
 import 'dart:async';
 import 'package:planner/view/weekView.dart';
+import 'package:planner/view/weeklyTaskView.dart';
 import 'package:planner/view/monthlyTaskView.dart';
 import 'package:planner/view/dayView.dart';
 
@@ -34,11 +35,7 @@ class _taskViewState extends State<taskView> {
     (activeList, delayedList, completedList) =
         await db.getTaskMapsDay(DateTime.now());
 
-    todayTasks = [
-      ...activeList,
-      ...delayedList,
-      ...completedList
-    ];
+    todayTasks = [...activeList, ...delayedList, ...completedList];
 
     setState(() {});
     print(todayTasks);
@@ -108,9 +105,9 @@ class _taskViewState extends State<taskView> {
                 String description = descriptionController.text;
 
                 Task newTask = Task(
-                    name: name,
-                    description: description,
-                    );
+                  name: name,
+                  description: description,
+                );
 
                 db.setTask(newTask);
 
@@ -237,33 +234,51 @@ class _taskViewState extends State<taskView> {
             scaffoldKey.currentState?.openDrawer();
           },
         ),
-        title: const Text(
-          'Task',
-          style: TextStyle(
-            color: Colors.black,
-          ),
+        title: Row(
+          children: <Widget>[
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  const Text(
+                    'Tasks ',
+                    style: TextStyle(
+                      color: Colors.black,
+                    ),
+                  ),
+                  Switch(
+                    // thumb color (round icon)
+                    activeColor: Colors.white,
+                    activeTrackColor: Colors.cyan,
+                    inactiveThumbColor: Colors.blueGrey.shade600,
+                    inactiveTrackColor: Colors.grey.shade400,
+                    splashRadius: 50.0,
+                    value: forEvents,
+                    onChanged: (value) {
+                      setState(() {
+                        forEvents = value;
+                      });
+                      if (forEvents) {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => WeekView(),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                  const Text(
+                    ' Events',
+                    style: TextStyle(
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
         actions: <Widget>[
-          Switch(
-              // thumb color (round icon)
-              activeColor: Colors.white,
-              activeTrackColor: Colors.cyan,
-              inactiveThumbColor: Colors.blueGrey.shade600,
-              inactiveTrackColor: Colors.grey.shade400,
-              splashRadius: 50.0,
-              value: forEvents,
-              onChanged: (value) {
-                setState(() {
-                  forEvents = value;
-                });
-                if (forEvents) {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const eventView(),
-                    ),
-                  );
-                }
-              }),
           IconButton(
             icon: const Icon(
               Icons.search,
@@ -337,12 +352,12 @@ class _taskViewState extends State<taskView> {
           print('swipe detected');
           if (details.primaryVelocity! < 0) {
             Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) =>  MonthlyTaskView(),
+              builder: (context) => WeeklyTaskView(),
             ));
           }
           if (details.primaryVelocity! > 0) {
-            Navigator.of(context)
-                .push(MaterialPageRoute(builder: (context) => const WeekView()));
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => const WeeklyTaskView()));
           }
         },
         child: Column(
@@ -385,7 +400,6 @@ class _taskViewState extends State<taskView> {
 
 class TaskCard extends StatefulWidget {
   final Task task;
-
   const TaskCard({super.key, required this.task});
 
   @override
@@ -398,13 +412,12 @@ class _TaskCardState extends State<TaskCard> {
   Widget build(BuildContext context) {
     return Dismissible(
       key: UniqueKey(),
-      onDismissed: (direction) async{
+      onDismissed: (direction) async {
         if (direction == DismissDirection.startToEnd) {
           setState(() {
             widget.task.moveToNextDay();
             db.setTask(widget.task);
             print('move to next day completed');
-            
           });
         } else if (direction == DismissDirection.endToStart) {
           showDialog(

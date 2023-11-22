@@ -39,15 +39,23 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
 
     // Fetch task maps for the specified week
     (activeMap, delayedMap, completedMap) = await _db.getTaskMapsWeek(today);
+    Map<DateTime, List<Task>> dueTasksMap = await _db.getTasksDueWeek(today);
 
     List<Task> allTasks = [
       ...?activeMap[today],
       ...?delayedMap[today],
       ...?completedMap[today],
+      ...?dueTasksMap[today],
     ];
     print('All tasks for the week: $allTasks');
 
     return allTasks;
+  }
+
+  bool isTaskDueOnCurrentDay(Task task, DateTime currentDate) {
+    DateTime taskDay = DateTime(
+        task.timeCurrent.year, task.timeCurrent.month, task.timeCurrent.day);
+    return taskDay.isAtSameMomentAs(currentDate);
   }
 
   @override
@@ -82,9 +90,23 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
             ),
             if (uniqueTasksForDay.isNotEmpty)
               Column(
-                children: uniqueTasksForDay
-                    .map((task) => TaskCard(task: task))
-                    .toList(),
+                children: uniqueTasksForDay.map((task) {
+                  bool isDueOnCurrentDay =
+                      isTaskDueOnCurrentDay(task, currentDate);
+                  return Column(
+                    children: [
+                      TaskCard(task: task),
+                      if (isDueOnCurrentDay)
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            'Due today!',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ),
+                    ],
+                  );
+                }).toList(),
               ),
             if (uniqueTasksForDay.isEmpty)
               Padding(
