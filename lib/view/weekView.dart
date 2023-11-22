@@ -51,25 +51,21 @@ class _MultiDayCardState extends State<MultiDayCard> {
   _MultiDayCardState(this.index) {
     DateTime date = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day).add(Duration(days: index));
     
-    db.getListOfEventsInDay(date: getDateOnly(DateTime.now(), offset:index)).then((value) => setState(() {
+    db.getListOfEventsInDay(date: getDateOnly(DateTime.now(), offsetDays:index)).then((value) => setState(() {
           eventCount = value.length;
           eventsToday = value;
         }));
 
-    db.getTasksDue(getDateOnly(DateTime.now(), offset:index), date.add(const Duration(days: 1))).then((value) => setState(() {
-          for (var val in value.values) {
-            taskCount = val.length;
-            tasksDueToday = val;
-          }
+    db.getTasksDueDay(DateTime.now()).then((value) => setState(() {
+          taskCount = value.length;
+          tasksDueToday = value;
         }));
   }
   int index;
 
   @override
   Widget build(BuildContext context) {
-    DateTime dateToDisplay =
-        DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day)
-            .add(Duration(days: index));
+    DateTime dateToDisplay = getDateOnly(DateTime.now(), offsetDays: index);
     String monthDayDisplayed = "${dateToDisplay.month}/${dateToDisplay.day}";
     return Row(
       children: [

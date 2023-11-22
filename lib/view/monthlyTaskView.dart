@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:planner/common/database.dart';
+import 'package:planner/common/time_management.dart';
 import 'package:planner/models/task.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:planner/view/taskView.dart';
@@ -27,8 +28,8 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
     _pageController.addListener(() {
       setState(() {
         _focusedDay = _pageController.page == 0
-            ? _focusedDay.subtract(Duration(days: 30))
-            : _focusedDay.add(Duration(days: 30));
+            ? _focusedDay = getDateOnly(_focusedDay, offsetMonths: -1)
+            : _focusedDay = getDateOnly(_focusedDay, offsetMonths: 1);
       });
     });
   }
@@ -41,17 +42,14 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
   }
 
   void fetchTodayTasks(DateTime selectedDate) async {
-    DateTime dateStart =
-        DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
-    DateTime dateEnd = dateStart.add(const Duration(days: 1));
-    Map<DateTime, List<Task>> activeMap, delayedMap, completedMap;
-    (activeMap, delayedMap, completedMap) =
-        await db.getTaskMaps(dateStart, dateEnd);
+    List<Task> activeList, delayedList, completedList;
+    (activeList, delayedList, completedList) =
+        await db.getTaskMapsDay(selectedDate);
 
     todayTasks = [
-      ...?activeMap[dateStart],
-      ...?delayedMap[dateStart],
-      ...?completedMap[dateStart]
+      ...activeList,
+      ...delayedList,
+      ...completedList
     ];
 
     setState(() {});
@@ -67,8 +65,8 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
       body: Column(
         children: [
           TableCalendar(
-            firstDay: DateTime(DateTime.now().year, DateTime.now().month, 1),
-            lastDay: DateTime(DateTime.now().year, DateTime.now().month + 1, 0),
+            firstDay: getMonthAsDateTime(DateTime.now()),
+            lastDay: getNextMonthAsDateTime(DateTime.now()),
             focusedDay: _focusedDay,
             calendarFormat: _calendarFormat,
             selectedDayPredicate: (day) {

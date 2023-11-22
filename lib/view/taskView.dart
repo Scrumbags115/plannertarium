@@ -29,17 +29,14 @@ class _taskViewState extends State<taskView> {
   }
 
   void fetchTodayTasks() async {
-    DateTime today = DateTime.now();
-    DateTime dateStart = DateTime(today.year, today.month, today.day);
-    DateTime dateEnd = dateStart.add(const Duration(days: 1));
-    Map<DateTime, List<Task>> activeMap, delayedMap, completedMap;
-    (activeMap, delayedMap, completedMap) =
-        await db.getTaskMaps(dateStart, dateEnd);
+    List<Task> activeList, delayedList, completedList;
+    (activeList, delayedList, completedList) =
+        await db.getTaskMapsDay(DateTime.now());
 
     todayTasks = [
-      ...?activeMap[dateStart],
-      ...?delayedMap[dateStart],
-      ...?completedMap[dateStart]
+      ...activeList,
+      ...delayedList,
+      ...completedList
     ];
 
     setState(() {});
@@ -112,7 +109,7 @@ class _taskViewState extends State<taskView> {
                 Task newTask = Task(
                     name: name,
                     description: description,
-                    timeStart: DateTime.now());
+                    );
 
                 db.setTask(newTask);
 
