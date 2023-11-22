@@ -28,12 +28,10 @@ class _SingleDayState extends State<SingleDay> {
           eventsToday = value;
         }));
     db
-        .getTasksDue(date, date.add(const Duration(days: 1)))
-        .then((value) => setState(() {
-              for (var val in value.values) {
-                taskCount = val.length;
-                tasksDueToday = val;
-              }
+        .getTasksDueDay(date)
+        .then((taskList) => setState(() {
+              taskCount = taskList.length;
+              tasksDueToday = taskList;
             }));
   }
 

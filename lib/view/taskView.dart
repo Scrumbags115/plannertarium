@@ -5,7 +5,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:planner/models/task.dart';
 import 'dart:async';
 import 'package:planner/view/weekView.dart';
-import 'package:planner/view/weeklyTaskView.dart';
 import 'package:planner/view/monthlyTaskView.dart';
 
 class taskView extends StatefulWidget {
@@ -29,17 +28,14 @@ class _taskViewState extends State<taskView> {
   }
 
   void fetchTodayTasks() async {
-    DateTime today = DateTime.now();
-    DateTime dateStart = DateTime(today.year, today.month, today.day);
-    DateTime dateEnd = dateStart.add(const Duration(days: 1));
-    Map<DateTime, List<Task>> activeMap, delayedMap, completedMap;
-    (activeMap, delayedMap, completedMap) =
-        await db.getTaskMaps(dateStart, dateEnd);
+    List<Task> activeList, delayedList, completedList;
+    (activeList, delayedList, completedList) =
+        await db.getTaskMapsDay(DateTime.now());
 
     todayTasks = [
-      ...?activeMap[dateStart],
-      ...?delayedMap[dateStart],
-      ...?completedMap[dateStart]
+      ...activeList,
+      ...delayedList,
+      ...completedList
     ];
 
     setState(() {});
@@ -112,7 +108,7 @@ class _taskViewState extends State<taskView> {
                 Task newTask = Task(
                     name: name,
                     description: description,
-                    timeStart: DateTime.now());
+                    );
 
                 db.setTask(newTask);
 
@@ -309,12 +305,12 @@ class _taskViewState extends State<taskView> {
           print('swipe detected');
           if (details.primaryVelocity! < 0) {
             Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) =>  MonthlyTaskView(),
+              builder: (context) =>  const MonthlyTaskView(),
             ));
           }
           if (details.primaryVelocity! > 0) {
             Navigator.of(context)
-                .push(MaterialPageRoute(builder: (context) => WeekView()));
+                .push(MaterialPageRoute(builder: (context) => const WeekView()));
           }
         },
         child: Column(

@@ -6,6 +6,8 @@ import 'package:planner/models/event.dart';
 import 'package:planner/view/weekView.dart';
 
 class MonthView extends StatefulWidget {
+  const MonthView({super.key});
+
   @override
   _MonthViewState createState() => _MonthViewState();
 }
@@ -19,7 +21,7 @@ class _MonthViewState extends State<MonthView> {
   List<Event> todayEvents = [];
 
   // Add a PageController for handling page navigation
-  PageController _pageController = PageController();
+  final PageController _pageController = PageController();
 
   @override
   void initState() {
@@ -28,8 +30,8 @@ class _MonthViewState extends State<MonthView> {
     _pageController.addListener(() {
       setState(() {
         _focusedDay = _pageController.page == 0
-            ? _focusedDay.subtract(Duration(days: 30))
-            : _focusedDay.add(Duration(days: 30));
+            ? _focusedDay.subtract(const Duration(days: 30))
+            : _focusedDay.add(const Duration(days: 30));
       });
     });
   }
@@ -53,7 +55,7 @@ class _MonthViewState extends State<MonthView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Monthly View'),
+        title: const Text('Monthly View'),
       ),
       body: Column(
         children: [
@@ -94,13 +96,13 @@ class _MonthViewState extends State<MonthView> {
                 return Container(
                   margin: const EdgeInsets.all(4.0),
                   alignment: Alignment.center,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: Colors.transparent, // No color for today
                     shape: BoxShape.circle,
                   ),
                   child: Text(
                     '${date.day}',
-                    style: TextStyle(color: Colors.black),
+                    style: const TextStyle(color: Colors.black),
                   ),
                 );
               },
@@ -111,24 +113,24 @@ class _MonthViewState extends State<MonthView> {
               leftChevronIcon: GestureDetector(
                 onTap: () {
                   _pageController.previousPage(
-                    duration: Duration(milliseconds: 300),
+                    duration: const Duration(milliseconds: 300),
                     curve: Curves.easeOut,
                   );
                 },
-                child: Icon(Icons.arrow_back),
+                child: const Icon(Icons.arrow_back),
               ), // Set custom left chevron icon
               rightChevronIcon: GestureDetector(
                 onTap: () {
                   _pageController.nextPage(
-                    duration: Duration(milliseconds: 300),
+                    duration: const Duration(milliseconds: 300),
                     curve: Curves.easeOut,
                   );
                 },
-                child: Icon(Icons.arrow_forward),
+                child: const Icon(Icons.arrow_forward),
               ), // Set custom right chevron icon
             ),
           ),
-          SizedBox(
+          const SizedBox(
             height: 16,
           ),
           Expanded(

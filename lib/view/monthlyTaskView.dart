@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:planner/common/database.dart';
+import 'package:planner/common/time_management.dart';
 import 'package:planner/models/task.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:planner/view/taskView.dart';
 
 class MonthlyTaskView extends StatefulWidget {
+  const MonthlyTaskView({super.key});
+
   @override
   _MonthlyTaskViewState createState() => _MonthlyTaskViewState();
 }
@@ -18,7 +20,7 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
   List<Task> todayTasks = [];
 
   // Add a PageController for handling page navigation
-   PageController _pageController = PageController();
+   final PageController _pageController = PageController();
 
   @override
   void initState() {
@@ -27,8 +29,8 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
     _pageController.addListener(() {
       setState(() {
         _focusedDay = _pageController.page == 0
-            ? _focusedDay.subtract(Duration(days: 30))
-            : _focusedDay.add(Duration(days: 30));
+            ? _focusedDay = getDateOnly(_focusedDay, offsetMonths: -1)
+            : _focusedDay = getDateOnly(_focusedDay, offsetMonths: 1);
       });
     });
   }
@@ -41,17 +43,14 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
   }
 
   void fetchTodayTasks(DateTime selectedDate) async {
-    DateTime dateStart =
-        DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
-    DateTime dateEnd = dateStart.add(const Duration(days: 1));
-    Map<DateTime, List<Task>> activeMap, delayedMap, completedMap;
-    (activeMap, delayedMap, completedMap) =
-        await db.getTaskMaps(dateStart, dateEnd);
+    List<Task> activeList, delayedList, completedList;
+    (activeList, delayedList, completedList) =
+        await db.getTaskMapsDay(selectedDate);
 
     todayTasks = [
-      ...?activeMap[dateStart],
-      ...?delayedMap[dateStart],
-      ...?completedMap[dateStart]
+      ...activeList,
+      ...delayedList,
+      ...completedList
     ];
 
     setState(() {});
@@ -62,13 +61,13 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Monthly View'),
+        title: const Text('Monthly View'),
       ),
       body: Column(
         children: [
           TableCalendar(
-            firstDay: DateTime(DateTime.now().year, DateTime.now().month, 1),
-            lastDay: DateTime(DateTime.now().year, DateTime.now().month + 1, 0),
+            firstDay: getMonthAsDateTime(DateTime.now()),
+            lastDay: getNextMonthAsDateTime(DateTime.now()),
             focusedDay: _focusedDay,
             calendarFormat: _calendarFormat,
             selectedDayPredicate: (day) {
@@ -103,13 +102,13 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
                 return Container(
                   margin: const EdgeInsets.all(4.0),
                   alignment: Alignment.center,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: Colors.transparent, // No color for today
                     shape: BoxShape.circle,
                   ),
                   child: Text(
                     '${date.day}',
-                    style: TextStyle(color: Colors.black),
+                    style: const TextStyle(color: Colors.black),
                   ),
                 );
               },
@@ -120,24 +119,24 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
               leftChevronIcon: GestureDetector(
                 onTap: () {
                   _pageController.previousPage(
-                    duration: Duration(milliseconds: 300),
+                    duration: const Duration(milliseconds: 300),
                     curve: Curves.easeOut,
                   );
                 },
-                child: Icon(Icons.arrow_back),
+                child: const Icon(Icons.arrow_back),
               ), // Set custom left chevron icon
               rightChevronIcon: GestureDetector(
                 onTap: () {
                   _pageController.nextPage(
-                    duration: Duration(milliseconds: 300),
+                    duration: const Duration(milliseconds: 300),
                     curve: Curves.easeOut,
                   );
                 },
-                child: Icon(Icons.arrow_forward),
+                child: const Icon(Icons.arrow_forward),
               ), // Set custom right chevron icon
             ),
           ),
-          SizedBox(
+          const SizedBox(
             height: 16,
           ),
           Expanded(
