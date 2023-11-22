@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:planner/view/dayView.dart';
 import 'package:planner/common/database.dart';
@@ -7,7 +6,7 @@ import 'package:planner/models/task.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/view/taskDialogs.dart';
 import 'package:planner/view/eventDialogs.dart';
-import 'dart:async';
+import 'package:planner/view/monthView.dart';
 
 DatabaseService db = DatabaseService();
 
@@ -20,7 +19,9 @@ class WeekView extends StatelessWidget {
       child: GestureDetector(
         onHorizontalDragEnd: (details) {
           if (details.primaryVelocity! > 0) {
-            Navigator.of(context).pop();
+            //Navigator.of(context).pop();
+            Navigator.of(context)
+                .push(MaterialPageRoute(builder: (context) => MonthView()));
           }
         },
         child: Scaffold(
@@ -176,9 +177,9 @@ class _MultiDayCardState extends State<MultiDayCard> {
                                   return Row(
                                     children: [
                                       EventCard(
-                                        eventsToday: eventsToday,
-                                        index: index,
-                                      )
+                                          eventsToday: eventsToday,
+                                          index: index,
+                                          date: dateToDisplay)
                                     ],
                                   );
                                 }),
@@ -219,7 +220,12 @@ class _MultiDayCardState extends State<MultiDayCard> {
 class EventCard extends StatefulWidget {
   final List<Event> eventsToday;
   final int index;
-  const EventCard({super.key, required this.eventsToday, required this.index});
+  final DateTime date;
+  const EventCard(
+      {super.key,
+      required this.eventsToday,
+      required this.index,
+      required this.date});
 
   @override
   _EventCardState createState() => _EventCardState();
@@ -228,6 +234,7 @@ class EventCard extends StatefulWidget {
 class _EventCardState extends State<EventCard> {
   @override
   Widget build(BuildContext context) {
+    Event event = widget.eventsToday[widget.index];
     return SizedBox(
       height: 40,
       width: 100,
@@ -235,23 +242,13 @@ class _EventCardState extends State<EventCard> {
         color: Colors.amber,
         child: InkWell(
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => EventDetailsView(
-                        widget.eventsToday[widget.index].name,
-                        widget.eventsToday[widget.index].description,
-                        widget.eventsToday[widget.index].location,
-                        widget.eventsToday[widget.index].timeStart,
-                        widget.eventsToday[widget.index].timeEnd,
-                      )),
-            );
+            showEventDetailPopup(context, event, widget.date);
           },
           child: Column(
             children: [
-              Text(widget.eventsToday[widget.index].name),
+              Text(event.name),
               Text(
-                  "${widget.eventsToday[widget.index].timeStart.hour}:${widget.eventsToday[widget.index].timeStart.minute} to ${widget.eventsToday[widget.index].timeEnd.hour}:${widget.eventsToday[widget.index].timeEnd.minute}"),
+                  "${event.timeStart.hour}:${event.timeStart.minute} to ${event.timeEnd.hour}:${event.timeEnd.minute}"),
             ],
           ),
         ),
