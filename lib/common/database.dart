@@ -76,7 +76,7 @@ class DatabaseService {
   Future<void> setEvent(Event event) async {
     return await users
         .doc(userid)
-        .collection('tasks')
+        .collection('events')
         .doc(event.id)
         .set(event.toMap());
   }
