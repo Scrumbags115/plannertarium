@@ -14,11 +14,9 @@ class WeeklyTaskView extends StatefulWidget {
 }
 
 class _WeeklyTaskViewState extends State<WeeklyTaskView> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  DatabaseService _db = DatabaseService();
+  final DatabaseService _db = DatabaseService();
   List<Task> _allTasks = [];
-  
+
   @override
   void initState() {
     super.initState();
@@ -47,7 +45,6 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
       ...?delayedMap[start],
       ...?completedMap[start],
     ];
-
     print('All tasks for the week: $allTasks');
 
     return allTasks;
@@ -85,7 +82,8 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
                 padding: const EdgeInsets.all(10),
                 child: Text(
                   '${currentDate.month}/${currentDate.day}',
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.left,
                 ),
               ),
@@ -99,7 +97,7 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
                 const SizedBox(
                   width: double.infinity,
                   child: Padding(
-                    padding:  EdgeInsets.all(8.0),
+                    padding: EdgeInsets.all(8.0),
                     child: Text(
                       'No tasks for this day',
                       textAlign: TextAlign.center, // Center align this text

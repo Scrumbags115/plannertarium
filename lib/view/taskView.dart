@@ -8,6 +8,7 @@ import 'dart:async';
 import 'package:planner/view/weekView.dart';
 import 'package:planner/view/weeklyTaskView.dart';
 import 'package:planner/view/monthlyTaskView.dart';
+import 'package:planner/view/dayView.dart';
 
 class taskView extends StatefulWidget {
   const taskView({super.key});
@@ -235,7 +236,7 @@ class _taskViewState extends State<taskView> {
         elevation: 0,
         backgroundColor: Colors.white,
         leading: IconButton(
-          icon: const Icon(Icons.menu,color: Colors.black),
+          icon: const Icon(Icons.menu, color: Colors.black),
           onPressed: () {
             scaffoldKey.currentState?.openDrawer();
           },
@@ -245,8 +246,7 @@ class _taskViewState extends State<taskView> {
           style: TextStyle(
             color: Colors.black,
           ),
-          ),
-
+        ),
         actions: <Widget>[
           Switch(
               // thumb color (round icon)
@@ -269,7 +269,10 @@ class _taskViewState extends State<taskView> {
                 }
               }),
           IconButton(
-            icon: const Icon(Icons.search,color: Colors.black,),
+            icon: const Icon(
+              Icons.search,
+              color: Colors.black,
+            ),
             onPressed: () {
               showSearchBar(context);
             },
