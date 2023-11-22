@@ -7,7 +7,7 @@ import 'package:planner/models/task.dart';
 import 'package:planner/view/taskView.dart';
 
 class WeeklyTaskView extends StatefulWidget {
-  const WeeklyTaskView({Key? key}) : super(key: key);
+  const WeeklyTaskView({super.key});
 
   @override
   _WeeklyTaskViewState createState() => _WeeklyTaskViewState();
@@ -16,7 +16,7 @@ class WeeklyTaskView extends StatefulWidget {
 class _WeeklyTaskViewState extends State<WeeklyTaskView> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  DatabaseService _db = DatabaseService();
+  final DatabaseService _db = DatabaseService();
   List<Task> _allTasks = [];
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
@@ -60,7 +60,7 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
       DateTime currentDate = getDateOnly(today, offsetDays: i);
 
       // Use a Set to store unique tasks for each day
-      Set<Task> uniqueTasksForDay = Set<Task>();
+      Set<Task> uniqueTasksForDay = <Task>{};
 
       // Filter tasks for the current day and add them to the Set
       _allTasks.where((task) {
@@ -78,7 +78,7 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
               padding: const EdgeInsets.all(10),
               child: Text(
                 '${currentDate.month}/${currentDate.day}',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
             if (uniqueTasksForDay.isNotEmpty)
@@ -88,8 +88,8 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
                     .toList(),
               ),
             if (uniqueTasksForDay.isEmpty)
-              Padding(
-                padding: const EdgeInsets.all(8.0),
+              const Padding(
+                padding: EdgeInsets.all(8.0),
                 child: Text('No tasks for this day'),
               ),
           ],
@@ -99,7 +99,7 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Your Weekly Tasks'),
+        title: const Text('Your Weekly Tasks'),
       ),
       body: RefreshIndicator(
         key: _refreshIndicatorKey,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/models/task.dart';
@@ -7,6 +6,8 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:planner/view/taskView.dart';
 
 class MonthlyTaskView extends StatefulWidget {
+  const MonthlyTaskView({super.key});
+
   @override
   _MonthlyTaskViewState createState() => _MonthlyTaskViewState();
 }
@@ -19,7 +20,7 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
   List<Task> todayTasks = [];
 
   // Add a PageController for handling page navigation
-   PageController _pageController = PageController();
+   final PageController _pageController = PageController();
 
   @override
   void initState() {
@@ -60,7 +61,7 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Monthly View'),
+        title: const Text('Monthly View'),
       ),
       body: Column(
         children: [
@@ -101,13 +102,13 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
                 return Container(
                   margin: const EdgeInsets.all(4.0),
                   alignment: Alignment.center,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: Colors.transparent, // No color for today
                     shape: BoxShape.circle,
                   ),
                   child: Text(
                     '${date.day}',
-                    style: TextStyle(color: Colors.black),
+                    style: const TextStyle(color: Colors.black),
                   ),
                 );
               },
@@ -118,24 +119,24 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
               leftChevronIcon: GestureDetector(
                 onTap: () {
                   _pageController.previousPage(
-                    duration: Duration(milliseconds: 300),
+                    duration: const Duration(milliseconds: 300),
                     curve: Curves.easeOut,
                   );
                 },
-                child: Icon(Icons.arrow_back),
+                child: const Icon(Icons.arrow_back),
               ), // Set custom left chevron icon
               rightChevronIcon: GestureDetector(
                 onTap: () {
                   _pageController.nextPage(
-                    duration: Duration(milliseconds: 300),
+                    duration: const Duration(milliseconds: 300),
                     curve: Curves.easeOut,
                   );
                 },
-                child: Icon(Icons.arrow_forward),
+                child: const Icon(Icons.arrow_forward),
               ), // Set custom right chevron icon
             ),
           ),
-          SizedBox(
+          const SizedBox(
             height: 16,
           ),
           Expanded(

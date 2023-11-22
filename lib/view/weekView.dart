@@ -1,10 +1,12 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:planner/view/dayView.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/common/time_management.dart';
+import 'package:planner/view/taskDialogs.dart';
+import 'package:planner/view/eventDialogs.dart';
+import 'package:planner/view/monthView.dart';
 
 DatabaseService db = DatabaseService();
 
@@ -17,7 +19,9 @@ class WeekView extends StatelessWidget {
       child: GestureDetector(
         onHorizontalDragEnd: (details) {
           if (details.primaryVelocity! > 0) {
-            Navigator.of(context).pop();
+            //Navigator.of(context).pop();
+            Navigator.of(context)
+                .push(MaterialPageRoute(builder: (context) => const MonthView()));
           }
         },
         child: Scaffold(
@@ -50,12 +54,11 @@ class _MultiDayCardState extends State<MultiDayCard> {
   List<Task> tasksDueToday = [];
   _MultiDayCardState(this.index) {
     DateTime date = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day).add(Duration(days: index));
-    
+
     db.getListOfEventsInDay(date: getDateOnly(DateTime.now(), offsetDays:index)).then((value) => setState(() {
           eventCount = value.length;
           eventsToday = value;
         }));
-
     db.getTasksDueDay(DateTime.now()).then((value) => setState(() {
           taskCount = value.length;
           tasksDueToday = value;
@@ -101,51 +104,95 @@ class _MultiDayCardState extends State<MultiDayCard> {
                 },
                 child: Column(
                   children: [
-                    const Text(style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.left, "Tasks"),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: SizedBox(
-                            height: 40,
-                            child: ListView(
-                              scrollDirection: Axis.horizontal,
-                              children: List.generate(taskCount, (index) {
-                                return Row(
-                                  children: [
-                                    TaskCard(
-                                      tasksDueToday: tasksDueToday,
-                                      index: index,
-                                    )
-                                  ],
-                                );
-                              }),
+                    const Text(
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.left,
+                        "Tasks"),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: SizedBox(
+                              height: 40,
+                              child: ListView(
+                                scrollDirection: Axis.horizontal,
+                                children: List.generate(taskCount, (index) {
+                                  return Row(
+                                    children: [
+                                      TaskCard(
+                                        tasksDueToday: tasksDueToday,
+                                        index: index,
+                                      )
+                                    ],
+                                  );
+                                }),
+                              ),
                             ),
                           ),
-                        )
-                      ],
+                          Flexible(
+                              flex: 0,
+                              child: SizedBox(
+                                  height: 40,
+                                  width: 40,
+                                  child: Card(
+                                      child: InkWell(
+                                          onTap: () async {
+                                            await addTaskFormForDay(
+                                                context, dateToDisplay);
+                                          },
+                                          child: const Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Icon(Icons.add_box)
+                                              ])))))
+                        ],
+                      ),
                     ),
-                    const Text(style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.left, "Events"),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: SizedBox(
-                            height: 40,
-                            child: ListView(
-                              scrollDirection: Axis.horizontal,
-                              children: List.generate(eventCount, (index) {
-                                return Row(
-                                  children: [
-                                    EventCard(
-                                      eventsToday: eventsToday,
-                                      index: index,
-                                    )
-                                  ],
-                                );
-                              }),
+                    const Text(
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.left,
+                        "Events"),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: SizedBox(
+                              height: 40,
+                              child: ListView(
+                                scrollDirection: Axis.horizontal,
+                                children: List.generate(eventCount, (index) {
+                                  return Row(
+                                    children: [
+                                      EventCard(
+                                          eventsToday: eventsToday,
+                                          index: index,
+                                          date: dateToDisplay)
+                                    ],
+                                  );
+                                }),
+                              ),
                             ),
                           ),
-                        )
-                      ],
+                          Flexible(
+                              flex: 0,
+                              child: SizedBox(
+                                  height: 40,
+                                  width: 40,
+                                  child: Card(
+                                      child: InkWell(
+                                          onTap: () async {
+                                            await addEventFormForDay(
+                                                context, dateToDisplay);
+                                          },
+                                          child: const Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Icon(Icons.add_box)
+                                              ])))))
+                        ],
+                      ),
                     )
                   ],
                 ),
@@ -161,7 +208,12 @@ class _MultiDayCardState extends State<MultiDayCard> {
 class EventCard extends StatefulWidget {
   final List<Event> eventsToday;
   final int index;
-  const EventCard({super.key, required this.eventsToday, required this.index});
+  final DateTime date;
+  const EventCard(
+      {super.key,
+      required this.eventsToday,
+      required this.index,
+      required this.date});
 
   @override
   _EventCardState createState() => _EventCardState();
@@ -170,6 +222,7 @@ class EventCard extends StatefulWidget {
 class _EventCardState extends State<EventCard> {
   @override
   Widget build(BuildContext context) {
+    Event event = widget.eventsToday[widget.index];
     return SizedBox(
       height: 40,
       width: 100,
@@ -177,21 +230,13 @@ class _EventCardState extends State<EventCard> {
         color: Colors.amber,
         child: InkWell(
           onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => EventDetailsView(
-                          widget.eventsToday[widget.index].name,
-                          widget.eventsToday[widget.index].description,
-                          widget.eventsToday[widget.index].location,
-                          widget.eventsToday[widget.index].timeStart,
-                          widget.eventsToday[widget.index].timeEnd,)),
-                );
+            showEventDetailPopup(context, event, widget.date);
           },
           child: Column(
             children: [
-              Text(widget.eventsToday[widget.index].name),
-              Text("${widget.eventsToday[widget.index].timeStart.hour}:${widget.eventsToday[widget.index].timeStart.minute} to ${widget.eventsToday[widget.index].timeEnd.hour}:${widget.eventsToday[widget.index].timeEnd.minute}"),
+              Text(event.name),
+              Text(
+                  "${event.timeStart.hour}:${event.timeStart.minute} to ${event.timeEnd.hour}:${event.timeEnd.minute}"),
             ],
           ),
         ),

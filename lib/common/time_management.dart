@@ -22,7 +22,7 @@ DateTime getDateOnly(DateTime dateTime, {int offsetDays = 0, int offsetMonths = 
 
 void verifyDateStartEnd(DateTime start, DateTime end) {
   if (!start.isBefore(end)) {
-    throw Exception("Bad time window, start: ${start} is not before end: ${end}");
+    throw Exception("Bad time window, start: $start is not before end: $end");
   }
 }
 

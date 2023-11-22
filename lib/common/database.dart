@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ffi';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:planner/common/time_management.dart';
@@ -76,7 +75,7 @@ class DatabaseService {
   Future<void> setEvent(Event event) async {
     return await users
         .doc(userid)
-        .collection('tasks')
+        .collection('events')
         .doc(event.id)
         .set(event.toMap());
   }

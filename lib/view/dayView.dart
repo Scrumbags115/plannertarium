@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/models/event.dart';
+import 'package:planner/view/taskDialogs.dart';
+import 'package:planner/view/eventDialogs.dart';
 
 DatabaseService db = DatabaseService();
 
@@ -85,13 +87,10 @@ class _SingleDayState extends State<SingleDay> {
                           ],
                         ),
                       ),
-                      //Takes you to the screen to add a task
+                      //Opens a dialog form to add a task for the day that is being viewed
                       TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => AddTaskView(date)));
+                        onPressed: () async {
+                          await addTaskFormForDay(context, date);
                         },
                         child: Container(
                           color: Colors.black,
@@ -178,11 +177,8 @@ class _SingleDayState extends State<SingleDay> {
                 child: SizedBox(
                     height: 50,
                     child: InkWell(
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => AddEventView(date)));
+                      onTap: () async {
+                        await addEventFormForDay(context, date);
                       },
                     )),
               ),
@@ -212,15 +208,7 @@ class _SingleDayState extends State<SingleDay> {
                           color: Colors.amber,
                           child: InkWell(
                               onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => EventDetailsView(
-                                            item.name,
-                                            item.description,
-                                            item.location,
-                                            item.timeStart,
-                                            item.timeEnd)));
+                                showEventDetailPopup(context, item, date);
                               },
                               child: Center(child: Text(item.name))))),
                 ))
@@ -228,7 +216,6 @@ class _SingleDayState extends State<SingleDay> {
   }
 }
 
-//TODO: make this a dialog instead of a full page
 class TaskCard extends StatefulWidget {
   final List<Task> tasksDueToday;
   final int index;
@@ -239,41 +226,36 @@ class TaskCard extends StatefulWidget {
 }
 
 class _TaskCardState extends State<TaskCard> {
-  Color tilecolor = Colors.white;
   TextDecoration dec = TextDecoration.none;
 
   @override
   Widget build(BuildContext context) {
+    Task task = widget.tasksDueToday[widget.index];
+    Color tilecolor = Colors.white;
+    if (task.completed) {
+      tilecolor = Colors.green;
+    }
     return SizedBox(
         height: 40,
         child: Card(
             color: tilecolor,
             child: InkWell(
               splashColor: Colors.blue.withAlpha(30),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => TaskDetailsView(
-                          widget.tasksDueToday[widget.index].name,
-                          widget.tasksDueToday[widget.index].description,
-                          widget.tasksDueToday[widget.index].location)),
-                );
+              onTap: () async {
+                showTaskDetailPopup(context, task);
               },
               onLongPress: () {
                 if (tilecolor == Colors.white) {
-                  widget.tasksDueToday[widget.index].completed =
-                      !widget.tasksDueToday[widget.index].completed;
-                  db.setTask(widget.tasksDueToday[widget.index]);
+                  task.completed = !task.completed;
+                  db.setTask(task);
                   setState(() {
                     tilecolor = Colors.green;
                     dec = TextDecoration.lineThrough;
                   });
                 } else {
                   setState(() {
-                    widget.tasksDueToday[widget.index].completed =
-                        !widget.tasksDueToday[widget.index].completed;
-                    db.setTask(widget.tasksDueToday[widget.index]);
+                    task.completed = !task.completed;
+                    db.setTask(task);
                     tilecolor = Colors.white;
                     dec = TextDecoration.none;
                   });
@@ -286,240 +268,8 @@ class _TaskCardState extends State<TaskCard> {
                         decoration: dec,
                         fontWeight: FontWeight.bold,
                         fontSize: 15),
-                    widget.tasksDueToday[widget.index].name),
+                    task.name),
               ),
             )));
-  }
-}
-
-//TODO: make this a dialog instead of a full page
-class AddTaskView extends StatelessWidget {
-  final DateTime date;
-  AddTaskView(this.date, {super.key});
-
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController taskNameController = TextEditingController();
-  final TextEditingController taskDescriptionController =
-      TextEditingController();
-  final TextEditingController taskLocationController = TextEditingController();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Add Task')),
-      body: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            TextFormField(
-              decoration: const InputDecoration(
-                hintText: 'Enter task name',
-              ),
-              validator: (String? value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a name for this task';
-                }
-                return null;
-              },
-              controller: taskNameController,
-              onSaved: (value) {
-                taskNameController.text = value!;
-              },
-            ),
-            TextFormField(
-              decoration: const InputDecoration(
-                hintText: 'Enter task description',
-              ),
-              controller: taskDescriptionController,
-              onSaved: (value) {
-                taskDescriptionController.text = value!;
-              },
-            ),
-            TextFormField(
-              decoration: const InputDecoration(
-                hintText: 'Enter task location',
-              ),
-              controller: taskLocationController,
-              onSaved: (value) {
-                taskLocationController.text = value!;
-              },
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
-              child: ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    db.setTask(Task(
-                        name: taskNameController.text,
-                        description: taskDescriptionController.text,
-                        location: taskLocationController.text,
-                        timeDue: date));
-                    Navigator.pop(context);
-                  }
-                },
-                child: const Text('Save'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-//TODO: make this a dialog instead of a full page
-class AddEventView extends StatelessWidget {
-  final DateTime date;
-  AddEventView(this.date, {super.key});
-
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController eventNameController = TextEditingController();
-  final TextEditingController eventDescriptionController =
-      TextEditingController();
-  final TextEditingController eventLocationController = TextEditingController();
-  final TextEditingController tempTimeStartController = TextEditingController();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Add Event')),
-      body: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            TextFormField(
-              decoration: const InputDecoration(
-                hintText: 'Enter event name',
-              ),
-              validator: (String? value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a name for this event';
-                }
-                return null;
-              },
-              controller: eventNameController,
-              onSaved: (value) {
-                eventNameController.text = value!;
-              },
-            ),
-            TextFormField(
-              decoration: const InputDecoration(
-                hintText: 'Enter event description',
-              ),
-              controller: eventDescriptionController,
-              onSaved: (value) {
-                eventDescriptionController.text = value!;
-              },
-            ),
-            TextFormField(
-              decoration: const InputDecoration(
-                hintText: 'Enter event location',
-              ),
-              controller: eventLocationController,
-              onSaved: (value) {
-                eventLocationController.text = value!;
-              },
-            ),
-            TextFormField(
-              decoration: const InputDecoration(
-                hintText: 'Enter event start time',
-              ),
-              controller: tempTimeStartController,
-              onSaved: (value) {
-                tempTimeStartController.text = value!;
-              },
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
-              child: ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    //Will have to replace this with a real time picker later
-                    var temptimestart = DateTime(DateTime.now().year,
-                            DateTime.now().month, DateTime.now().day)
-                        .add(Duration(
-                            hours: int.parse(tempTimeStartController.text)));
-                    db.addEvent(Event(
-                        name: eventNameController.text,
-                        description: eventDescriptionController.text,
-                        location: eventLocationController.text,
-                        timeStart: temptimestart,
-                        timeEnd: temptimestart.add(Duration(hours: 1))));
-                    Navigator.pop(context);
-                  }
-                },
-                child: const Text('Save'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-//TODO: make this a dialog instead of a full page
-class TaskDetailsView extends StatelessWidget {
-  final String name;
-  final String description;
-  final String location;
-  const TaskDetailsView(this.name, this.description, this.location,
-      {super.key});
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(title: Text(name)),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text("Description: $description"),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text("Location: $location"),
-            ),
-          ],
-        ));
-  }
-}
-
-class EventDetailsView extends StatelessWidget {
-  final String name;
-  final String description;
-  final String location;
-  final DateTime start;
-  final DateTime end;
-  const EventDetailsView(
-      this.name, this.description, this.location, this.start, this.end,
-      {super.key});
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(title: Text(name)),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text("Description: $description"),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text("Location: $location"),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text("Starts at: ${start.hour}:${start.minute}"),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text("Ends at: ${end.hour}:${end.minute}"),
-            ),
-          ],
-        ));
   }
 }
