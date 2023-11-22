@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ffi';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:planner/common/time_management.dart';
@@ -76,7 +75,7 @@ class DatabaseService {
   Future<void> setEvent(Event event) async {
     return await users
         .doc(userid)
-        .collection('tasks')
+        .collection('events')
         .doc(event.id)
         .set(event.toMap());
   }
@@ -291,7 +290,6 @@ class DatabaseService {
   /// where task.timeCureent is in a date range [dateStart, dateEnd) for all tasks in either list
   Future<(List<Task>, List<Task>)> _getTasksActiveOrCompleted(
       DateTime dateStart, DateTime dateEnd) async {
-    assert(dateStart.isBefore(dateEnd));
     Timestamp timestampStart = Timestamp.fromDate(dateStart);
     Timestamp timestampEnd = Timestamp.fromDate(dateEnd);
     QuerySnapshot<Map<String, dynamic>> allTasks = await users
@@ -319,7 +317,6 @@ class DatabaseService {
   /// Returns a list of tasks with delays in the time window in order of current date
   Future<List<Task>> _getTasksDelayed(
       DateTime dateStart, DateTime dateEnd) async {
-    assert(dateStart.isBefore(dateEnd));
     Timestamp timestampStart = Timestamp.fromDate(dateStart);
     QuerySnapshot<Map<String, dynamic>> candidateTasks = await users
         .doc(userid)
@@ -353,15 +350,15 @@ class DatabaseService {
         Map<DateTime, List<Task>>,
         Map<DateTime, List<Task>>
       )> getTaskMaps(DateTime dateStart, DateTime dateEnd) async {
-    assert(dateStart.isBefore(dateEnd));
-    assert(dateStart.isAtSameMomentAs(getDateOnly(dateStart)));
-    assert(dateEnd.isAtSameMomentAs(getDateOnly(dateEnd)));
+    dateStart = getDateOnly(dateStart);
+    dateEnd = getDateOnly(dateEnd);
+    verifyDateStartEnd(dateStart, dateEnd);
 
     Map<DateTime, List<Task>> activeMap = {};
     Map<DateTime, List<Task>> completedMap = {};
     Map<DateTime, List<Task>> delayedMap = {};
     for (int i = 0; i < dateEnd.difference(dateStart).inDays; i++) {
-      DateTime newDay = getDateOnly(dateStart, offset: i);
+      DateTime newDay = getDateOnly(dateStart, offsetDays: i);
       activeMap[newDay] = [];
       completedMap[newDay] = [];
       delayedMap[newDay] = [];
@@ -395,7 +392,7 @@ class DatabaseService {
       loopStart = getDateOnly(loopStart);
       loopEnd = getDateOnly(loopEnd);
       for (int i = 0; i < loopEnd.difference(loopStart).inDays; i++) {
-        DateTime date = getDateOnly(loopStart, offset: i);
+        DateTime date = getDateOnly(loopStart, offsetDays: i);
         if (delayedMap[date] == null) {
           continue;
         }
@@ -410,11 +407,10 @@ class DatabaseService {
   Future<(List<Task>, List<Task>, List<Task>)> getTaskMapsDay(
       DateTime dateStart) async {
     dateStart = getDateOnly(dateStart);
-    int oneDayLater = 1;
 
     Map<DateTime, List<Task>> dayActiveMap, dayCompMap, dayDelayMap;
     (dayActiveMap, dayCompMap, dayDelayMap) = await getTaskMaps(
-        dateStart, getDateOnly(dateStart, offset: oneDayLater));
+        dateStart, getDateOnly(dateStart, offsetDays: 1));
 
     return (
       dayActiveMap[dateStart] ?? [],
@@ -431,10 +427,8 @@ class DatabaseService {
         Map<DateTime, List<Task>>,
         Map<DateTime, List<Task>>
       )> getTaskMapsWeek(DateTime dateStart) async {
-    dateStart = getDateOnly(dateStart);
     int daysToNextWeek = 7;
-    DateTime oneWeekLater = getDateOnly(dateStart, offset: daysToNextWeek);
-
+    DateTime oneWeekLater = getDateOnly(dateStart, offsetDays: daysToNextWeek);
     return await getTaskMaps(dateStart, oneWeekLater);
   }
 
@@ -446,7 +440,6 @@ class DatabaseService {
         Map<DateTime, List<Task>>,
         Map<DateTime, List<Task>>
       )> getTaskMapsMonth(DateTime dateStart) async {
-    dateStart = getDateOnly(dateStart);
     DateTime nextMonth = DateTime(dateStart.year, dateStart.month + 1, dateStart.day);
     return getTaskMaps(dateStart, nextMonth);
   }
@@ -455,9 +448,9 @@ class DatabaseService {
   /// Returns a map from each day in the window to a list of tasks due that day
   Future<Map<DateTime, List<Task>>> getTasksDue(
       DateTime dateStart, DateTime dateEnd) async {
-    assert(dateStart.isBefore(dateEnd));
-    assert(dateStart.isAtSameMomentAs(getDateOnly(dateStart)));
-    assert(dateEnd.isAtSameMomentAs(getDateOnly(dateEnd)));
+    dateStart = getDateOnly(dateStart);
+    dateEnd = getDateOnly(dateEnd);
+    verifyDateStartEnd(dateStart, dateEnd);
 
     Timestamp timestampStart = Timestamp.fromDate(dateStart);
     Timestamp timestampEnd = Timestamp.fromDate(dateEnd);
@@ -470,7 +463,7 @@ class DatabaseService {
 
     Map<DateTime, List<Task>> dueDateMap = {};
     for (int i = 0; i < dateEnd.difference(dateStart).inDays; i++) {
-      DateTime newDay = getDateOnly(dateStart, offset: i);
+      DateTime newDay = getDateOnly(dateStart, offsetDays: i);
       dueDateMap[newDay] = [];
     }
 
@@ -483,5 +476,33 @@ class DatabaseService {
     }
 
     return dueDateMap;
+  }
+  
+  /// Returns a 3-tuple of List<Task>
+  /// Each list has tasks that are either active, completed, or delayed in a time window
+  Future<List<Task>> getTasksDueDay(
+      DateTime dateStart) async {
+    dateStart = getDateOnly(dateStart);
+
+    Map<DateTime, List<Task>> tasksDueMap;
+    tasksDueMap = await getTasksDue(
+        dateStart, getDateOnly(dateStart, offsetDays: 1));
+
+    return tasksDueMap[dateStart] ?? [];
+  }
+
+  /// Returns a 3-tuple of Maps<DateTime, List<Task>> where each map goes from 1 week from dateStart
+  /// Each map has lists of tasks that are either active, completed, or delayed on a day
+  Future<Map<DateTime, List<Task>>> getTasksDueWeek(DateTime dateStart) async {
+    int daysToNextWeek = 7;
+    DateTime oneWeekLater = getDateOnly(dateStart, offsetDays: daysToNextWeek);
+    return await getTasksDue(dateStart, oneWeekLater);
+  }
+
+  /// Returns a 3-tuple of Maps<DateTime, List<Task>> where each map goes from 1 month from dateStart
+  /// Each map has lists of tasks that are either active, completed, or delayed on a day
+  Future<Map<DateTime, List<Task>>> getTasksDueMonth(DateTime dateStart) async {
+    DateTime nextMonth = DateTime(dateStart.year, dateStart.month + 1, dateStart.day);
+    return getTasksDue(dateStart, nextMonth);
   }
 }

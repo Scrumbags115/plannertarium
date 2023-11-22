@@ -6,7 +6,6 @@ import 'package:planner/models/task.dart';
 import 'package:planner/view/eventView.dart';
 import 'dart:async';
 import 'package:planner/view/weekView.dart';
-import 'package:planner/view/weeklyTaskView.dart';
 import 'package:planner/view/monthlyTaskView.dart';
 import 'package:planner/view/dayView.dart';
 
@@ -31,17 +30,14 @@ class _taskViewState extends State<taskView> {
   }
 
   void fetchTodayTasks() async {
-    DateTime today = DateTime.now();
-    DateTime dateStart = DateTime(today.year, today.month, today.day);
-    DateTime dateEnd = dateStart.add(const Duration(days: 1));
-    Map<DateTime, List<Task>> activeMap, delayedMap, completedMap;
-    (activeMap, delayedMap, completedMap) =
-        await db.getTaskMaps(dateStart, dateEnd);
+    List<Task> activeList, delayedList, completedList;
+    (activeList, delayedList, completedList) =
+        await db.getTaskMapsDay(DateTime.now());
 
     todayTasks = [
-      ...?activeMap[dateStart],
-      ...?delayedMap[dateStart],
-      ...?completedMap[dateStart]
+      ...activeList,
+      ...delayedList,
+      ...completedList
     ];
 
     setState(() {});
@@ -114,7 +110,7 @@ class _taskViewState extends State<taskView> {
                 Task newTask = Task(
                     name: name,
                     description: description,
-                    timeStart: DateTime.now());
+                    );
 
                 db.setTask(newTask);
 
@@ -263,7 +259,7 @@ class _taskViewState extends State<taskView> {
                 if (forEvents) {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => const weekView(),
+                      builder: (context) => const eventView(),
                     ),
                   );
                 }
@@ -341,8 +337,12 @@ class _taskViewState extends State<taskView> {
           print('swipe detected');
           if (details.primaryVelocity! < 0) {
             Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => WeeklyTaskView(),
+              builder: (context) =>  MonthlyTaskView(),
             ));
+          }
+          if (details.primaryVelocity! > 0) {
+            Navigator.of(context)
+                .push(MaterialPageRoute(builder: (context) => const WeekView()));
           }
         },
         child: Column(
@@ -396,68 +396,69 @@ class _TaskCardState extends State<TaskCard> {
   DatabaseService db = DatabaseService();
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Dismissible(
-        key: UniqueKey(),
-        onDismissed: (direction) async {
-          if (direction == DismissDirection.startToEnd) {
-            setState(() {
-              widget.task.moveToNextDay();
-              db.setTask(widget.task);
-              print('move to next day completed');
-            });
-          } else if (direction == DismissDirection.endToStart) {
-            showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  title: const Text('Confirm Deletion'),
-                  content:
-                      const Text('Are you sure you want to delete this task?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text('Cancel'),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        db.deleteTask(widget.task);
-                        print('swipe right!');
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text('Delete'),
-                    ),
-                  ],
-                );
-              },
-            );
-          }
-        },
-        background: Container(
-          color: Colors.green,
-          alignment: Alignment.centerLeft,
-          child: const Icon(
-            Icons.check,
-            color: Colors.white,
-          ),
+    return Dismissible(
+      key: UniqueKey(),
+      onDismissed: (direction) async{
+        if (direction == DismissDirection.startToEnd) {
+          setState(() {
+            widget.task.moveToNextDay();
+            db.setTask(widget.task);
+            print('move to next day completed');
+            
+          });
+        } else if (direction == DismissDirection.endToStart) {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: const Text('Confirm Deletion'),
+                content:
+                    const Text('Are you sure you want to delete this task?'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      // Delete the task and close the dialog
+                      db.deleteTask(widget.task);
+                      print('swipe right!');
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Delete'),
+                  ),
+                ],
+              );
+            },
+          );
+        }
+      },
+      background: Container(
+        color: Colors.green, // Swipe right background color
+        alignment: Alignment.centerLeft,
+        child: const Icon(
+          Icons.check,
+          color: Colors.white,
         ),
-        secondaryBackground: Container(
-          color: Colors.red,
-          alignment: Alignment.centerRight,
-          child: const Icon(
-            Icons.delete,
-            color: Colors.white,
-          ),
+      ),
+      secondaryBackground: Container(
+        color: Colors.red, // Swipe left background color
+        alignment: Alignment.centerRight,
+        child: const Icon(
+          Icons.delete,
+          color: Colors.white,
         ),
-        child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 8.0),
-          decoration: BoxDecoration(
-            color: Colors.white70, // Change the color to white gray
-            borderRadius: BorderRadius.circular(10.0),
-          ),
+      ),
+      child: Card(
+        elevation: 0,
+        margin: const EdgeInsets.all(1.0),
+        child: InkWell(
+          onTap: () {
+            _showDetailPopup(context);
+          },
           child: ListTile(
             leading: InkWell(
               onTap: () {
