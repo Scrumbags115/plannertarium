@@ -60,7 +60,7 @@ Future<User> triggerAuthFlowWeb() async {
 }
 
 Future<User> triggerAuthFlowAndroid() async {
-  UserCredential u = await signInWithGoogleMobile();
+  UserCredential u = await signInWithGoogleAndroid();
   User? user = u.user;
   if (user == null) {
 // sign in did not work or cancelled
@@ -68,6 +68,18 @@ Future<User> triggerAuthFlowAndroid() async {
   }
   return user;
 }
+
+Future<User> triggerAuthFlowiOS() async {
+  UserCredential u = await signInWithGoogleiOS();
+  User? user = u.user;
+  if (user == null) {
+// sign in did not work or cancelled
+    throw Exception("Something in the login procedure failed!");
+  }
+  return user;
+}
+
+
 
 /// Sign in with Google SSO, taken from documentation
 Future<UserCredential> signInWithGoogleWeb() async {
@@ -84,9 +96,29 @@ Future<UserCredential> signInWithGoogleWeb() async {
 // return FirebaseAuth.instance.signInWithRedirect(googleProvider);
 }
 
-Future<UserCredential> signInWithGoogleMobile() async {
+Future<UserCredential> signInWithGoogleAndroid() async {
 // Trigger the authentication flow
   final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+// Obtain the auth details from the request
+  final GoogleSignInAuthentication? googleAuth =
+      await googleUser?.authentication;
+
+// Create a new credential
+  final credential = GoogleAuthProvider.credential(
+    accessToken: googleAuth?.accessToken,
+    idToken: googleAuth?.idToken,
+  );
+
+// Once signed in, return the UserCredential
+  return await FirebaseAuth.instance.signInWithCredential(credential);
+}
+
+Future<UserCredential> signInWithGoogleiOS() async {
+// Trigger the authentication flow
+  final GoogleSignInAccount? googleUser = await GoogleSignIn(
+    clientId: "86325497409-ql5gu7ulc1gsvl2vvvssvgqvoj25men0.apps.googleusercontent.com"
+  ).signIn();
 
 // Obtain the auth details from the request
   final GoogleSignInAuthentication? googleAuth =
@@ -110,7 +142,7 @@ Future<User> triggerAuthFlow() async {
     case TargetPlatform.android:
       return triggerAuthFlowAndroid();
     case TargetPlatform.iOS:
-      throw UnsupportedError("iOS is not supported!");
+      return triggerAuthFlowiOS();
     case TargetPlatform.macOS:
       throw UnsupportedError("macOS is not supported!");
     case TargetPlatform.windows:
