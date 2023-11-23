@@ -522,6 +522,26 @@ class DatabaseService {
     return (todayTasks, active);
   }
 
+  /// Get weekly tasks as a single list
+  Future<List<Task>> fetchWeeklyTask() async {
+    DateTime today = getDateOnly(DateTime.now());
+    Map<DateTime, List<Task>> activeMap, delayedMap, completedMap;
+
+    // Fetch task maps for the specified week
+    (activeMap, delayedMap, completedMap) = await getTaskMapsWeek(today);
+    Map<DateTime, List<Task>> dueTasksMap = await getTasksDueWeek(today);
+
+    List<Task> allTasks = [
+      ...?activeMap[today],
+      ...?delayedMap[today],
+      ...?completedMap[today],
+      ...?dueTasksMap[today],
+    ];
+    // print('All tasks for the week: $allTasks');
+
+    return allTasks;
+  }
+
   /// Get daily tasks for a day as a single list
   /// returns a list of tasks
   Future<List<Task>> fetchTodayTasks(DateTime selectedDate) async {

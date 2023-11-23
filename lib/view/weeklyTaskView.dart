@@ -27,29 +27,10 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
   }
 
   Future<void> fetchData() async {
-    List<Task> tasks = await fetchWeeklyTask();
+    List<Task> tasks = await _db.fetchWeeklyTask();
     setState(() {
       _allTasks = tasks;
     });
-  }
-
-  Future<List<Task>> fetchWeeklyTask() async {
-    DateTime today = getDateOnly(DateTime.now());
-    Map<DateTime, List<Task>> activeMap, delayedMap, completedMap;
-
-    // Fetch task maps for the specified week
-    (activeMap, delayedMap, completedMap) = await _db.getTaskMapsWeek(today);
-    Map<DateTime, List<Task>> dueTasksMap = await _db.getTasksDueWeek(today);
-
-    List<Task> allTasks = [
-      ...?activeMap[today],
-      ...?delayedMap[today],
-      ...?completedMap[today],
-      ...?dueTasksMap[today],
-    ];
-    print('All tasks for the week: $allTasks');
-
-    return allTasks;
   }
 
   bool isTaskDueOnCurrentDay(Task task, DateTime currentDate) {
