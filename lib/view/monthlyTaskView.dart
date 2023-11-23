@@ -32,19 +32,6 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
     super.dispose();
   }
 
-  bool hasTasks(
-      DateTime date,
-      Map<DateTime, List<Task>> activeMap,
-      Map<DateTime, List<Task>> delayedMap,
-      Map<DateTime, List<Task>> completedMap) {
-    List<Task> tasks = [
-      ...?activeMap[date],
-      ...?delayedMap[date],
-      ...?completedMap[date]
-    ];
-    return tasks.isNotEmpty;
-  }
-
 // Use this function when you're setting and getting tasks from the active map
   void fetchMonthlyTasks(DateTime selectedDate) async {
     DateTime dateStart = getDateOnly(selectedDate);
