@@ -23,54 +23,20 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
   @override
   void initState() {
     super.initState();
-    fetchMonthlyTasks(DateTime.now());
+    asyncInitState();
   }
-
+  void asyncInitState() async {
+    final List<Task> newTodayTasks;
+    final Map<DateTime, List<Task>> newMonthlyTasks;
+    (newTodayTasks, newMonthlyTasks) = await db.fetchMonthlyTasks(DateTime.now());
+    todayTasks = newTodayTasks;
+    active = newMonthlyTasks;
+    setState(() {});
+  }
   @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
-  }
-
-// Use this function when you're setting and getting tasks from the active map
-  void fetchMonthlyTasks(DateTime selectedDate) async {
-    DateTime dateStart = getDateOnly(selectedDate);
-    Map<DateTime, List<Task>> activeMap, delayedMap, completedMap;
-    (activeMap, delayedMap, completedMap) =
-        await db.getTaskMapsMonth(dateStart);
-
-    active = activeMap.map((key, value) => MapEntry(
-        getDateOnly(key), value)); // Use getDateOnly when setting tasks in the active map
-    todayTasks = active[getDateOnly(selectedDate)] ??
-        []; // Use getDateOnly when getting tasks from the active map
-
-    setState(() {});
-    print(todayTasks);
-  }
-
-  void fetchTodayTasks(DateTime selectedDate) async {
-    List<Task> activeList, delayedList, completedList;
-      (activeList, delayedList, completedList) =
-        await db.getTaskMapsDay(selectedDate);
-
-    // print(
-    //     'Active tasks from DB: $activeMap'); // Print the tasks fetched from the database
-
-    // print('delayed task from DB: $delayedMap');
-    // print('completed task from DB: $completedMap');
-
-    //active = activeMap;
-    todayTasks = [
-      ...activeList,
-      ...delayedList,
-      ...completedList
-    ];
-
-    // print(
-    //     'Active tasks after insertion: $active'); // Print the active map after inserting the tasks
-
-    setState(() {});
-    print('todayTasks: $todayTasks');
   }
 
   @override
@@ -91,10 +57,11 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
             },
             onDaySelected: (selectedDay, focusedDay) {
               if (!isSameDay(_selectedDay, selectedDay)) {
-                setState(() {
+                setState(() async {
                   _selectedDay = selectedDay;
                   _focusedDay = focusedDay;
-                  fetchTodayTasks(selectedDay);
+                  todayTasks = await db.fetchTodayTasks(selectedDay);
+                  setState(() {});  // this is duplicative?
                 });
               }
             },

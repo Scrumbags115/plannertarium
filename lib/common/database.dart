@@ -505,4 +505,38 @@ class DatabaseService {
     DateTime nextMonth = DateTime(dateStart.year, dateStart.month + 1, dateStart.day);
     return getTasksDue(dateStart, nextMonth);
   }
+
+
+  /// Get daily and monthly tasks from a day as a single collection for each
+  /// return value is (List of daily tasks, map of monthly tasks)
+  Future<(List<Task>, Map<DateTime, List<Task>>)> fetchMonthlyTasks(DateTime selectedDate) async {
+    DateTime dateStart = getDateOnly(selectedDate);
+    Map<DateTime, List<Task>> activeMap, delayedMap, completedMap;
+    (activeMap, delayedMap, completedMap) =
+    await getTaskMapsMonth(dateStart);
+
+    var active = activeMap.map((key, value) => MapEntry(
+        getDateOnly(key), value)); // Use getDateOnly when setting tasks in the active map
+    final todayTasks = active[getDateOnly(selectedDate)] ??
+        []; // Use getDateOnly when getting tasks from the active map
+
+    return (todayTasks, active);
+  }
+
+  /// Get daily tasks for a day as a single list
+  /// returns a list of tasks
+  Future<List<Task>> fetchTodayTasks(DateTime selectedDate) async {
+    List<Task> activeList, delayedList, completedList;
+    (activeList, delayedList, completedList) =
+    await getTaskMapsDay(selectedDate);
+
+    //active = activeMap;
+    final todayTasks = [
+      ...activeList,
+      ...delayedList,
+      ...completedList
+    ];
+
+    return todayTasks;
+  }
 }
