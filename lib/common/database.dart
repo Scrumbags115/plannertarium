@@ -512,6 +512,7 @@ class DatabaseService {
   /// Takes a query string and value to limit number of outputs number, user collection key, and document key to search with
   /// Returns found elements that the query is a substring of, with the amount in, with amount specified by limit
   /// This substring search only works if the value of the document key is type string
+  /// Note: this is not a true substring search, more of a prefix-substring search. See: https://github.com/Scrumbags115/plannertarium/pull/50#issuecomment-1823732365
   Future<QuerySnapshot<Map<String, dynamic>>> _substringQuery(String query, int limit, String collectionKey, String documentKey) async {
     // One downside is that this is apparently case sensitive, we probably can't do much about that unless we create new fields where all text is lowercase/consistent case
     // \uf8ff is used as that is just a large unicode value and tells firestore to use a high upper range
