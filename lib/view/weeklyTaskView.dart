@@ -53,9 +53,10 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
   }
 
   bool isTaskDueOnCurrentDay(Task task, DateTime currentDate) {
-    DateTime taskDay = DateTime(
-        task.timeCurrent.year, task.timeCurrent.month, task.timeCurrent.day);
-    return taskDay.isAtSameMomentAs(currentDate);
+    if (task.timeDue == null) {
+      return false;
+    }
+    return getDateOnly(task.timeDue ?? currentDate).isAtSameMomentAs(currentDate);
   }
 
   @override
