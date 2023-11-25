@@ -108,11 +108,9 @@ task_add_tags() async {
     test("Test that adding and reading a tag to a task works", () async {
       // add a tag to the task
       await db.addTagToTask(tasks[0], testTag);
-      final a = db.firestoreObject.dump();
-      // var gettingTestTag = await db.getTag(testTag.id);
-      // printOnFailure("gettingTestTag: $gettingTestTag \n\ntestTag: $testTag");
-      // expect(gettingTestTag, testTag, reason: "Tag should be added to task");
-      print("a" + a);
+      var gettingTestTag = await db.getTag(testTag.id);
+      printOnFailure("gettingTestTag: $gettingTestTag \n\ntestTag: $testTag");
+      expect(gettingTestTag, testTag, reason: "Tag should be added to task");
     });
 
     // test that removing a tag from a task works

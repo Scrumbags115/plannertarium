@@ -1,3 +1,5 @@
+import 'package:collection/collection.dart';
+
 class Tag {
   late String _name = ""; // tag name
   late final String _id; // tag id
@@ -68,16 +70,17 @@ class Tag {
 
   /// Operators
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Tag &&
-          runtimeType == other.runtimeType && // might be unnecessary?
-          _name == other._name &&
-          _id == other._id &&
-          _color == other._color &&
-          _includedIDs == other._includedIDs;
+  bool operator ==(Object other) {
+    Function eq = const ListEquality().equals;
+    return identical(this, other) ||
+        (other is Tag &&
+            _name == other._name &&
+            _id == other._id &&
+            _color == other._color &&
+            eq(_includedIDs, other._includedIDs)) || super == other;
+  }
 
   @override
   // TODO: implement hashCode
-  int get hashCode => super.hashCode;
+  int get hashCode => Object.hash(_name, _id, _color, _includedIDs);
 }
