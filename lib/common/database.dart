@@ -643,7 +643,7 @@ class DatabaseService {
   /// Just a wrapper for addTagToUndertaking()
   /// TODO: Add a check to make sure that the event is not recurring
   Future<void> addTagToEvent(Event event, Tag tag) async {
-    addTagToUndertaking(event, tag);
+    await addTagToUndertaking(event, tag);
   }
 
   /// Remove a tag from an undertaking
@@ -676,12 +676,12 @@ class DatabaseService {
   /// Just a wrapper for removeTagFromUndertaking()
   /// TODO: Add a check to make sure that the event is not recurring
   Future<void> removeTagFromEvent(Event event, Tag tag) async {
-    removeTagFromUndertaking(event, tag);
+    await removeTagFromUndertaking(event, tag);
   }
 
   /// Just a wrapper for removeTagFromUndertaking()
   Future<void> removeTagFromTask(Task task, Tag tag) async {
-    removeTagFromUndertaking(task, tag);
+    await removeTagFromUndertaking(task, tag);
   }
 
   /// Delete a tag from the database
