@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ffi';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/models/task.dart';
@@ -636,7 +637,7 @@ class DatabaseService {
 
   /// Just a wrapper for addTagToUndertaking()
   Future<void> addTagToTask(Task task, Tag tag) async {
-    addTagToUndertaking(task, tag);
+    await addTagToUndertaking(task, tag);
   }
 
   /// Just a wrapper for addTagToUndertaking()
