@@ -1,12 +1,11 @@
-
 import 'package:planner/common/database.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:planner/models/task.dart';
 import 'dart:async';
-
 import 'package:planner/view/weekView.dart';
+import 'package:planner/view/monthlyTaskView.dart';
 
 class taskView extends StatefulWidget {
   const taskView({super.key});
@@ -29,73 +28,18 @@ class _taskViewState extends State<taskView> {
   }
 
   void fetchTodayTasks() async {
-    DateTime today = DateTime.now();
-    DateTime dateStart = DateTime(today.year, today.month, today.day);
-    DateTime dateEnd = dateStart.add(const Duration(days: 1));
-    Map<DateTime, List<Task>> activeMap, delayedMap, completedMap;
-    (activeMap, delayedMap, completedMap) =
-        await db.getTaskMaps(dateStart, dateEnd);
+    List<Task> activeList, delayedList, completedList;
+    (activeList, delayedList, completedList) =
+        await db.getTaskMapsDay(DateTime.now());
 
-    todayTasks = [...?activeMap[dateStart], ...?delayedMap[dateStart], ...?completedMap[dateStart]]
-      
-      
-      ;
+    todayTasks = [
+      ...activeList,
+      ...delayedList,
+      ...completedList
+    ];
 
     setState(() {});
     print(todayTasks);
-  }
-
-  void _showTaskDetailsDialog(List<Task> tasks) {
-    showDialog(
-      context: scaffoldKey.currentState!.context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Task Details'),
-          content: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: tasks.map((task) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Task ID: ${task.id}'),
-                  Text('Name: ${task.name}'),
-                  Text('Description: ${task.description}'),
-                  const Divider(),
-                ],
-              );
-            }).toList(),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Close'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _showTaskNotFoundDialog() {
-    showDialog(
-      context: scaffoldKey.currentState!.context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Task Not Found'),
-          content: const Text('The task with ID was not found.'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   Future<Task?> addButtonForm(BuildContext context) async {
@@ -164,7 +108,7 @@ class _taskViewState extends State<taskView> {
                 Task newTask = Task(
                     name: name,
                     description: description,
-                    timeStart: DateTime.now());
+                    );
 
                 db.setTask(newTask);
 
@@ -209,11 +153,66 @@ class _taskViewState extends State<taskView> {
                 List<Task> searchTask = await db.getTasksOfName(searchQuery);
 
                 if (searchTask != null) {
+                  print('i am here');
                   _showTaskDetailsDialog(searchTask);
                 } else {
+                  print('maybe');
                   _showTaskNotFoundDialog();
                 }
               },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showTaskDetailsDialog(List<Task> tasks) {
+    showDialog(
+      context: scaffoldKey.currentState!.context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Task Details'),
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: tasks.map((task) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Task ID: ${task.id}'),
+                  Text('Name: ${task.name}'),
+                  Text('Description: ${task.description}'),
+                  const Divider(),
+                ],
+              );
+            }).toList(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showTaskNotFoundDialog() {
+    showDialog(
+      context: scaffoldKey.currentState!.context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Task Not Found'),
+          content: const Text('The task with ID was not found.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
             ),
           ],
         );
@@ -306,8 +305,12 @@ class _taskViewState extends State<taskView> {
           print('swipe detected');
           if (details.primaryVelocity! < 0) {
             Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => const weekView(),
+              builder: (context) =>  const MonthlyTaskView(),
             ));
+          }
+          if (details.primaryVelocity! > 0) {
+            Navigator.of(context)
+                .push(MaterialPageRoute(builder: (context) => const WeekView()));
           }
         },
         child: Column(
@@ -363,7 +366,7 @@ class _TaskCardState extends State<TaskCard> {
   Widget build(BuildContext context) {
     return Dismissible(
       key: UniqueKey(),
-      onDismissed: (direction) {
+      onDismissed: (direction) async {
         if (direction == DismissDirection.startToEnd) {
           setState(() {
             widget.task.moveToNextDay();
@@ -436,7 +439,7 @@ class _TaskCardState extends State<TaskCard> {
                     widget.task.completed ? Colors.green : Colors.blue,
                 child: widget.task.completed
                     ? const Icon(Icons.check, color: Colors.white)
-                    : const Icon(Icons.circle, color: Colors.white),
+                    : const Icon(Icons.circle, color: Colors.blue),
               ),
             ),
             title: Text(widget.task.name),

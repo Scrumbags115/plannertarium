@@ -1,27 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
+import 'package:planner/common/time_management.dart';
 import 'package:planner/models/task.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:planner/models/event.dart';
-import 'package:planner/view/weekView.dart';
+import 'package:planner/view/taskView.dart';
 
-class MonthView extends StatefulWidget {
-  const MonthView({super.key});
+class MonthlyTaskView extends StatefulWidget {
+  const MonthlyTaskView({super.key});
 
   @override
-  _MonthViewState createState() => _MonthViewState();
+  _MonthlyTaskViewState createState() => _MonthlyTaskViewState();
 }
 
-class _MonthViewState extends State<MonthView> {
+class _MonthlyTaskViewState extends State<MonthlyTaskView> {
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   DatabaseService db = DatabaseService();
   List<Task> todayTasks = [];
-  List<Event> todayEvents = [];
 
   // Add a PageController for handling page navigation
-  final PageController _pageController = PageController();
+   final PageController _pageController = PageController();
 
   @override
   void initState() {
@@ -30,8 +29,8 @@ class _MonthViewState extends State<MonthView> {
     _pageController.addListener(() {
       setState(() {
         _focusedDay = _pageController.page == 0
-            ? _focusedDay.subtract(const Duration(days: 30))
-            : _focusedDay.add(const Duration(days: 30));
+            ? _focusedDay = getDateOnly(_focusedDay, offsetMonths: -1)
+            : _focusedDay = getDateOnly(_focusedDay, offsetMonths: 1);
       });
     });
   }
@@ -43,12 +42,19 @@ class _MonthViewState extends State<MonthView> {
     super.dispose();
   }
 
-  void fetchTodayEvents(DateTime selectedDate) async {
-    DateTime dateStart =
-        DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
-    todayEvents = await db.getListOfEventsInDay(date: dateStart);
+  void fetchTodayTasks(DateTime selectedDate) async {
+    List<Task> activeList, delayedList, completedList;
+    (activeList, delayedList, completedList) =
+        await db.getTaskMapsDay(selectedDate);
+
+    todayTasks = [
+      ...activeList,
+      ...delayedList,
+      ...completedList
+    ];
 
     setState(() {});
+    print(todayTasks);
   }
 
   @override
@@ -60,8 +66,8 @@ class _MonthViewState extends State<MonthView> {
       body: Column(
         children: [
           TableCalendar(
-            firstDay: DateTime(DateTime.now().year, DateTime.now().month, 1),
-            lastDay: DateTime(DateTime.now().year, DateTime.now().month + 1, 0),
+            firstDay: getMonthAsDateTime(DateTime.now()),
+            lastDay: getNextMonthAsDateTime(DateTime.now()),
             focusedDay: _focusedDay,
             calendarFormat: _calendarFormat,
             selectedDayPredicate: (day) {
@@ -75,7 +81,7 @@ class _MonthViewState extends State<MonthView> {
                 });
 
                 // Call the fetchTodayTasks function without await
-                fetchTodayEvents(selectedDay);
+                fetchTodayTasks(selectedDay);
               }
             },
             onFormatChanged: (format) {
@@ -135,9 +141,10 @@ class _MonthViewState extends State<MonthView> {
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: todayEvents.length,
+              itemCount: todayTasks.length,
               itemBuilder: (context, index) {
-                return EventCard(eventsToday: todayEvents, index: index, date: _selectedDay!);
+                Task task = todayTasks[index];
+                return TaskCard(task: task);
               },
             ),
           ),

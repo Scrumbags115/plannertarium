@@ -234,7 +234,7 @@ class eventViewState extends State<eventView> {
                 child: TaskEventCard(
                   event: TaskEvent(
                     title: 'Sample Task',
-                    description: 'This is a sample task description',
+                    description: 'This is a sample event description',
                     startTime: DateTime.now(),
                     endTime: DateTime.now().add(const Duration(hours: 1)),
                   ),
@@ -246,7 +246,7 @@ class eventViewState extends State<eventView> {
               child: TaskEventCard(
                 event: TaskEvent(
                   title: 'Sample Task',
-                  description: 'This is a sample task description',
+                  description: 'This is a sample event description',
                   startTime: DateTime.now(),
                   endTime: DateTime.now().add(const Duration(hours: 1)),
                 ),
@@ -291,8 +291,8 @@ class TaskEvent {
     return TaskEvent(
       title: data['title'],
       description: data['description'],
-      startTime: (data['event time start'] as Timestamp).toDate(),
-      endTime: (data['event time end'] as Timestamp).toDate(),
+      startTime: (data['time start'] as Timestamp).toDate(),
+      endTime: (data['time end'] as Timestamp).toDate(),
     );
   }
 }
