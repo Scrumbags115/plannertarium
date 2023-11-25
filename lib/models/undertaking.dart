@@ -144,6 +144,11 @@ class Undertaking {
     _tags = newTags;
   }
 
+  void addTag(String newTag) {
+    timeModified = DateTime.now();
+    _tags.add(newTag);
+  }
+
   List<String> get tags => _tags;
 
   set recurrenceRules(Recurrence newRecurrence) {

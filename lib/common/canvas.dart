@@ -1,6 +1,6 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:planner/CANVAS_SECRET_AUTH_TOKEN_DO_NOT_PUSH.dart' as canvas_secret;
+import 'package:planner/canvassecret.dart' as canvas_secret;
 
 const canvas_url = "canvas.ucsc.edu";
 Future<void> getCanvasEvents() async {

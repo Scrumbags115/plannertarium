@@ -5,6 +5,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/models/task.dart';
+import 'package:planner/models/event.dart';
+import 'package:planner/models/tag.dart';
+import 'package:planner/models/undertaking.dart';
 
 class DatabaseService {
   static final DatabaseService _singleton = DatabaseService._internal();
@@ -33,6 +36,8 @@ class DatabaseService {
   initUID(String uid) {
     userid = uid;
   }
+
+////////////////////////////////////////////////////
 
   Future<Event> getEvent(String eventID) async {
     try {
@@ -247,6 +252,8 @@ class DatabaseService {
     }
   }
 
+////////////////////////////////////////////////////
+
   Future<Task> getTask(String taskID) async {
     try {
       DocumentSnapshot<Map<String, dynamic>> taskDocument =
@@ -447,7 +454,8 @@ class DatabaseService {
         Map<DateTime, List<Task>>
       )> getTaskMapsMonth(DateTime dateStart) async {
     dateStart = getDateOnly(dateStart);
-    DateTime nextMonth = DateTime(dateStart.year, dateStart.month + 1, dateStart.day);
+    DateTime nextMonth =
+        DateTime(dateStart.year, dateStart.month + 1, dateStart.day);
     return getTaskMaps(dateStart, nextMonth);
   }
 
@@ -483,5 +491,148 @@ class DatabaseService {
     }
 
     return dueDateMap;
+  }
+
+////////////////////////////////////////////////////
+
+  // TODO: Maybe create an getUndertakingsWithTags()
+
+  Future<void> updateTag(Tag tag) async {
+    return await users
+        .doc(userid)
+        .collection("tags")
+        .doc(tag.id)
+        .update(tag.toMap());
+  }
+
+  Future<Tag> getTag(String tagID) async {
+    try {
+      DocumentSnapshot<Map<String, dynamic>> tagDocument =
+          await users.doc(userid).collection('tags').doc(tagID).get();
+      if (tagDocument.exists) {
+        var tagMap = tagDocument.data() ?? {"getTag Error": 1};
+        return Tag.fromMap(tagMap);
+      }
+    } catch (e) {
+      rethrow;
+    }
+    throw Exception("Tag not found");
+  }
+
+  /// Add a Tag object to the database
+  /// Returns the tag ID
+  /// Updates tag if tag already exists
+  Future<String> addTagToRemote(Tag tag) async {
+    // check if tag already exists
+    final tagDocs = await users
+        .doc(userid)
+        .collection("tags")
+        .where("name", isEqualTo: tag.name)
+        .get();
+
+    if (tagDocs.docs.isNotEmpty) {
+      // update tag
+      await updateTag(tag);
+      return tagDocs.docs[0].id;
+    }
+
+    // add tag to database since it doesn't exist and return its ID.
+    return await users
+        .doc(userid)
+        .collection("tags")
+        .add(tag.toMap())
+        .then((value) => value.id);
+  }
+
+  /// Add a tag to the database
+  /// same as above but takes in a map instead of a Tag object
+  Future<String> addTagToRemoteFromMap(Map<String, dynamic> tagMap) async {
+    // check if tagMap is a valid Tag
+    Tag.fromMap(tagMap);
+
+    // check if tag already exists
+    final tagDocs = await users
+        .doc(userid)
+        .collection("tags")
+        .where("name", isEqualTo: tagMap["name"])
+        .get();
+    if (tagDocs.docs.length > 0) {
+      throw Exception("Tag already exists!");
+    }
+
+    // add tag to database
+    return await users
+        .doc(userid)
+        .collection("tags")
+        .add(tagMap)
+        .then((value) => value.id);
+  }
+
+  /// Get ID of all Tasks with the given tag
+  /// Returns a list of IDs
+  /// Returns empty list if tag doesn't exist
+  Future<List<String>> getUndertakingsWithTag(String tagName) async {
+    List<String> taskIDs = [];
+    List<String> eventIDs = [];
+
+    // get all tasks with the tag
+    QuerySnapshot<Map<String, dynamic>> tasksWithTag = await users
+        .doc(userid)
+        .collection("tasks")
+        .where("tags", arrayContains: tagName)
+        .get();
+
+    // get all events with the tag
+    QuerySnapshot<Map<String, dynamic>> eventsWithTag = await users
+        .doc(userid)
+        .collection("events")
+        .where("tags", arrayContains: tagName)
+        .get();
+
+    for (var doc in tasksWithTag.docs) {
+      taskIDs.add(doc.id);
+    }
+
+    for (var doc in eventsWithTag.docs) {
+      eventIDs.add(doc.id);
+    }
+
+    return taskIDs + eventIDs;
+  }
+
+  /// Get all tags in the database
+  /// Returns a list of maps, where each map is a tag and its data:
+  /// {"name": "tagName", "id": "tagID", "color": "tagColor", "includedIDs": ["taskID1", "taskID2", ...]}
+  /// (includedIDs is a list of task IDs)
+  Future<List<Tag>> getAllTags() async {
+    List<Tag> allTags = [];
+    final tagDocs = await users.doc(userid).collection("tags").get();
+
+    for (var doc in tagDocs.docs) {
+      allTags.add(Tag.fromMap(doc.data()));
+    }
+
+    return allTags;
+  }
+
+  /// Add an existing tag to an undertaking
+  /// Adds the task ID to the tag, and adds the tag ID to the task
+  Future<void> addTagToUndertaking(Undertaking utaken, Tag tag) async {
+    // add undertaking ID to task
+    utaken.tags.add(tag.id);
+    // add undertaking ID to tag
+    tag.includedIDs.add(utaken.id);
+
+    // update task
+    if (utaken is Task) {
+      await setTask(utaken);
+    } else if (utaken is Event) {
+      await setEvent(utaken);
+    } else {
+      throw Exception("Undertaking is neither a task nor an event! (somehow)");
+    }
+
+    // update tag
+    await updateTag(tag);
   }
 }
