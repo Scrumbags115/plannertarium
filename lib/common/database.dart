@@ -12,6 +12,7 @@ import 'package:planner/models/undertaking.dart';
 class DatabaseService {
   static final DatabaseService _singleton = DatabaseService._internal();
   late String userid;
+  late FirebaseFirestore fs;
 
   // TODO: Add caching layer here if time permits
 
@@ -29,7 +30,10 @@ class DatabaseService {
   DatabaseService.createTest({required String uid, required firestoreObject}) {
     userid = uid;
     users = firestoreObject.collection('users');
+    fs = firestoreObject;
   }
+
+  get firestoreObject => fs;
 
   /// Assign UID. This must be ran before any other database function is called else it will crash
   /// takes the string ID
@@ -497,75 +501,69 @@ class DatabaseService {
 
   // TODO: Maybe create an getUndertakingsWithTags()
 
-  Future<void> updateTag(Tag tag) async {
+  // Updates an existing tag, or creates a new tag if it doesn't exist
+  // Takes in a Tag object
+  Future<void> setTag(Tag tag) async {
     return await users
         .doc(userid)
         .collection("tags")
         .doc(tag.id)
-        .update(tag.toMap());
+        .set(tag.toMap());
+
+    // check if tag exists
+    // if (await doesTagExist(tag.name)) {
+    //   return await users
+    //       .doc(userid)
+    //       .collection("tags")
+    //       .doc(tag.id)
+    //       .update(tag.toMap());
+    // }
+
+    // // if tag doesn't exist, create it instead
+    // return await users
+    //     .doc(userid)
+    //     .collection("tags")
+    //     .doc(tag.id)
+    //     .set(tag.toMap());
   }
 
+  // Get a tag from the database by ID
   Future<Tag> getTag(String tagID) async {
+    DocumentSnapshot<Map<String, dynamic>> tagDocument =
+        await users.doc(userid).collection('tags').doc(tagID).get();
+    final test = await users.doc(userid).collection('tags').get();
+    // final test2 = test.data();
+    if (tagDocument.exists) {
+      var tagMap = tagDocument.data() ?? {"getTag Error": 1};
+      return Tag.fromMap(tagMap);
+    } else {
+      throw Exception("Tag not found");
+    }
+
+    // try {
+    //   DocumentSnapshot<Map<String, dynamic>> tagDocument =
+    //       await users.doc(userid).collection('tags').doc(tagID).get();
+    //   if (tagDocument.exists) {
+    //     var tagMap = tagDocument.data() ?? {"getTag Error": 1};
+    //     return Tag.fromMap(tagMap);
+    //   }
+    // } catch (e) {
+    //   rethrow;
+    // }
+    // throw Exception("Tag not found");
+  }
+
+  Future<bool> doesTagExist(String tagName) async {
     try {
       DocumentSnapshot<Map<String, dynamic>> tagDocument =
-          await users.doc(userid).collection('tags').doc(tagID).get();
+          await users.doc(userid).collection('tags').doc(tagName).get();
       if (tagDocument.exists) {
-        var tagMap = tagDocument.data() ?? {"getTag Error": 1};
-        return Tag.fromMap(tagMap);
+        return true;
       }
     } catch (e) {
       rethrow;
     }
-    throw Exception("Tag not found");
-  }
-
-  /// Add a Tag object to the database
-  /// Returns the tag ID
-  /// Updates tag if tag already exists
-  Future<String> addTagToRemote(Tag tag) async {
-    // check if tag already exists
-    final tagDocs = await users
-        .doc(userid)
-        .collection("tags")
-        .where("name", isEqualTo: tag.name)
-        .get();
-
-    if (tagDocs.docs.isNotEmpty) {
-      // update tag
-      await updateTag(tag);
-      return tagDocs.docs[0].id;
-    }
-
-    // add tag to database since it doesn't exist and return its ID.
-    return await users
-        .doc(userid)
-        .collection("tags")
-        .add(tag.toMap())
-        .then((value) => value.id);
-  }
-
-  /// Add a tag to the database
-  /// same as above but takes in a map instead of a Tag object
-  Future<String> addTagToRemoteFromMap(Map<String, dynamic> tagMap) async {
-    // check if tagMap is a valid Tag
-    Tag.fromMap(tagMap);
-
-    // check if tag already exists
-    final tagDocs = await users
-        .doc(userid)
-        .collection("tags")
-        .where("name", isEqualTo: tagMap["name"])
-        .get();
-    if (tagDocs.docs.length > 0) {
-      throw Exception("Tag already exists!");
-    }
-
-    // add tag to database
-    return await users
-        .doc(userid)
-        .collection("tags")
-        .add(tagMap)
-        .then((value) => value.id);
+    return false;
   }
 
   /// Get ID of all Tasks with the given tag
@@ -617,11 +615,44 @@ class DatabaseService {
 
   /// Add an existing tag to an undertaking
   /// Adds the task ID to the tag, and adds the tag ID to the task
-  Future<void> addTagToUndertaking(Undertaking utaken, Tag tag) async {
+  Future<void> addTagToUndertaking(Undertaking ut, Tag tag) async {
     // add undertaking ID to task
-    utaken.tags.add(tag.id);
+    ut.tags.add(tag.id);
     // add undertaking ID to tag
-    tag.includedIDs.add(utaken.id);
+    tag.includedIDs.add(ut.id);
+
+    // update undertaking
+    if (ut is Task) {
+      await setTask(ut);
+    } else if (ut is Event) {
+      await setEvent(ut);
+    } else {
+      throw Exception("Undertaking is neither a task nor an event! (somehow)");
+    }
+
+    // update tag
+    await setTag(tag);
+  }
+
+  /// Just a wrapper for addTagToUndertaking()
+  Future<void> addTagToTask(Task task, Tag tag) async {
+    addTagToUndertaking(task, tag);
+  }
+
+  /// Just a wrapper for addTagToUndertaking()
+  /// TODO: Add a check to make sure that the event is not recurring
+  Future<void> addTagToEvent(Event event, Tag tag) async {
+    addTagToUndertaking(event, tag);
+  }
+
+  /// Remove a tag from an undertaking
+  /// Removes the task ID from the tag, and removes the tag ID from the task
+  /// If the tag has no more tasks, delete the tag
+  Future<void> removeTagFromUndertaking(Undertaking utaken, Tag tag) async {
+    // remove undertaking ID from task
+    utaken.tags.remove(tag.id);
+    // remove undertaking ID from tag
+    tag.includedIDs.remove(utaken.id);
 
     // update task
     if (utaken is Task) {
@@ -633,6 +664,44 @@ class DatabaseService {
     }
 
     // update tag
-    await updateTag(tag);
+    await setTag(tag);
+
+    // delete tag if it has no more tasks
+    if (tag.includedIDs.isEmpty) {
+      await deleteTag(tag);
+    }
+  }
+
+  /// Just a wrapper for removeTagFromUndertaking()
+  /// TODO: Add a check to make sure that the event is not recurring
+  Future<void> removeTagFromEvent(Event event, Tag tag) async {
+    removeTagFromUndertaking(event, tag);
+  }
+
+  /// Just a wrapper for removeTagFromUndertaking()
+  Future<void> removeTagFromTask(Task task, Tag tag) async {
+    removeTagFromUndertaking(task, tag);
+  }
+
+  /// Delete a tag from the database
+  /// DOES NOT ALTER EXISTING TASKS, E.G.
+  /// IF A TASK HAS A TAG THAT IS DELETED, THE TASK WILL STILL HAVE THE TAG
+  /// USE removeTagFromUndertaking() TO REMOVE A TAG FROM A TASK
+  /// Returns true if tag was deleted, false if tag doesn't exist
+  Future<bool> deleteTag(Tag tag) async {
+    // check if tag exists
+    final tagDocs = await users
+        .doc(userid)
+        .collection("tags")
+        .where("name", isEqualTo: tag.name)
+        .get();
+
+    if (tagDocs.docs.isEmpty) {
+      return false;
+    }
+
+    // delete tag
+    await users.doc(userid).collection("tags").doc(tagDocs.docs[0].id).delete();
+    return true;
   }
 }

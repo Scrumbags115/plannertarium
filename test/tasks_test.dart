@@ -505,8 +505,6 @@ main() async {
   await task_delete();
 
   await task_move();
-
-  await task_add_tag();
 }
 
 task_getSet_new_user() async {
@@ -805,47 +803,5 @@ task_move() async {
       expect(mapEquals(weeklyCompleted, weeklyCompExp), true);
       expect(mapEquals(weeklyDelayed, weeklyDelayExp), true);
     });
-  });
-}
-
-// test adding a tag to a task
-task_tag_tests() async {
-  late DatabaseService db;
-  late DateTime today;
-
-  setUp(() async {
-    today = DateTime.now();
-    db = DatabaseService.createTest(
-        uid: "taskUser${DateTime.now().millisecondsSinceEpoch}",
-        firestoreObject: FakeFirebaseFirestore());
-
-    // add a simple task to the database with 2 tags
-    Task t1 = Task(
-      name: "Task 1",
-      id: "ID-1",
-      description: "Description for Task 1",
-      completed: false,
-      location: "Location 1",
-      color: "#FF5733",
-      tags: [],
-      recurrenceRules: null,
-      timeStart: DateTime(2023, 10, 10),
-      timeDue: DateTime(2023, 10, 15),
-      timeCurrent: DateTime(2023, 10, 12),
-      timeCreated: DateTime(2023, 10, 8),
-      timeModified: DateTime(2023, 10, 12),
-    );
-  });
-
-  // test that adding a tag to a task works
-  test("Test that adding a tag to a task works", () async {
-    // // add a tag to the task
-    // await db.addTagToTask("ID-1", "Tag1");
-
-    // // get the task from the database
-    // Task t1 = await db.getTask("ID-1");
-
-    // // check that the tag was added
-    // expect(t1.tags.contains("Tag1"), true);
   });
 }
