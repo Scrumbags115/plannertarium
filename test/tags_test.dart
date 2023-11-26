@@ -14,7 +14,7 @@ List<Task> tasks = [
     completed: false,
     location: "Location 1",
     color: "#FF5733",
-    tags: ["Tag1", "Tag2"],
+    tags: ["tag-1", "tag-2"],
     recurrenceRules: null,
     timeStart: DateTime(2023, 10, 10),
     timeDue: DateTime(2023, 10, 15),
@@ -61,7 +61,7 @@ List<Event> events = [
     description: "Description for Event 1",
     location: "Location 1",
     color: "#FF5733",
-    tags: ["Tag1", "Tag2"],
+    tags: ["tag-1", "tag-2"],
     recurrenceRules: null,
     timeStart: DateTime(2023, 10, 10),
     timeEnd: DateTime(2023, 10, 15),
@@ -74,7 +74,7 @@ List<Event> events = [
     description: "Description for Event 2",
     location: "Location 2",
     color: "#3366FF",
-    tags: ["Tag3"],
+    tags: ["tag-3"],
     recurrenceRules: null,
     timeStart: DateTime(2023, 11, 5),
     timeEnd: DateTime(2023, 11, 10),
@@ -87,7 +87,7 @@ List<Event> events = [
     description: "Description for Event 3",
     location: "Location 3",
     color: "#009966",
-    tags: ["Tag4"],
+    tags: [],
     recurrenceRules: null,
     timeStart: DateTime(2023, 12, 15),
     timeEnd: DateTime(2023, 12, 20),
@@ -119,17 +119,16 @@ List<Tag> tags = [
 
 main() async {
   await addRemoveTags();
+  await auxilliaryFunctions();
 }
 
 // test adding a tag to a task
 addRemoveTags() async {
   late DatabaseService db;
-  late DateTime today;
   late Tag testTag;
   String newUser = "taskUser${DateTime.now().millisecondsSinceEpoch}";
 
   setUp(() async {
-    today = DateTime.now();
     db = DatabaseService.createTest(
         uid: newUser, firestoreObject: FakeFirebaseFirestore());
 
@@ -137,6 +136,9 @@ addRemoveTags() async {
     // add tasks to the database
     for (var task in tasks) {
       await db.setTask(task);
+    }
+    for (var event in events) {
+      await db.setEvent(event);
     }
 
     testTag = Tag(
@@ -166,7 +168,7 @@ addRemoveTags() async {
         completed: false,
         location: "Location 1",
         color: "#FF5733",
-        tags: ["Tag1", "Tag2"],
+        tags: ["tag-1", "tag-2"],
         recurrenceRules: null,
         timeStart: DateTime(2023, 10, 10),
         timeDue: DateTime(2023, 10, 15),
@@ -203,7 +205,7 @@ addRemoveTags() async {
         description: "Description for Event 1",
         location: "Location 1",
         color: "#FF5733",
-        tags: ["Tag1", "Tag2"],
+        tags: ["tag-1", "tag-2"],
         recurrenceRules: null,
         timeStart: DateTime(2023, 10, 10),
         timeEnd: DateTime(2023, 10, 15),
@@ -214,5 +216,59 @@ addRemoveTags() async {
       expect(events[0], originalEvent0,
           reason: "Tag should be removed from event");
     });
+  });
+}
+
+auxilliaryFunctions() {
+  late DatabaseService db;
+  late Tag testTag;
+  String newUser = "taskUser${DateTime.now().millisecondsSinceEpoch}";
+
+  setUp(() async {
+    db = DatabaseService.createTest(
+        uid: newUser, firestoreObject: FakeFirebaseFirestore());
+
+    // add tasks to the database
+    for (var task in tasks) {
+      await db.setTask(task);
+    }
+    for (var tag in tags) {
+      await db.setTag(tag);
+    }
+
+    testTag = Tag(
+        name: "test tag", id: "tag-test", color: "#FFFFFF", includedIDs: []);
+  });
+
+  test("Test getAllTags", () async {
+    var allTags = await db.getAllTags();
+
+    expect(allTags, tags, reason: "getAllTags should return all tags");
+  });
+
+  test("Test doesTagExist", () async {
+    // check for existing tags
+    for (var tag in tags) {
+      var res = await db.doesTagExist(tag.name);
+      expect(res, true, reason: "Tag should exist");
+    }
+
+    // check a random fake tag
+    var res = await db.doesTagExist("fake tag");
+    expect(res, false, reason: "Tag should not exist");
+  });
+
+  test("Test getUndertakingsWithTag", () async {
+    // check for existing tags
+    var res = await db.getUndertakingsWithTag(tags[0].name);
+    print("");
+    print("");
+    print("");
+    print("");
+    expect(res, [tasks[0].id], reason: "Tag should exist");
+
+    // check a random fake tag
+    res = await db.getUndertakingsWithTag("fake tag name");
+    expect(res, [], reason: "Tag should not exist");
   });
 }

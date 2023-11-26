@@ -497,8 +497,6 @@ class DatabaseService {
 
 ////////////////////////////////////////////////////
 
-  // TODO: Maybe create an getUndertakingsWithTags()
-
   // Updates an existing tag, or creates a new tag if it doesn't exist
   // Takes in a Tag object
   Future<void> setTag(Tag tag) async {
@@ -507,22 +505,6 @@ class DatabaseService {
         .collection("tags")
         .doc(tag.id)
         .set(tag.toMap());
-
-    // check if tag exists
-    // if (await doesTagExist(tag.name)) {
-    //   return await users
-    //       .doc(userid)
-    //       .collection("tags")
-    //       .doc(tag.id)
-    //       .update(tag.toMap());
-    // }
-
-    // // if tag doesn't exist, create it instead
-    // return await users
-    //     .doc(userid)
-    //     .collection("tags")
-    //     .doc(tag.id)
-    //     .set(tag.toMap());
   }
 
   // Get a tag from the database by ID
@@ -535,63 +517,77 @@ class DatabaseService {
     } else {
       throw Exception("Tag not found");
     }
-
-    // try {
-    //   DocumentSnapshot<Map<String, dynamic>> tagDocument =
-    //       await users.doc(userid).collection('tags').doc(tagID).get();
-    //   if (tagDocument.exists) {
-    //     var tagMap = tagDocument.data() ?? {"getTag Error": 1};
-    //     return Tag.fromMap(tagMap);
-    //   }
-    // } catch (e) {
-    //   rethrow;
-    // }
-    // throw Exception("Tag not found");
   }
 
-  Future<bool> doesTagExist(String tagName) async {
+  // Get a tag from the database by name
+  Future<Tag> getTagByName(String tagName) async {
     try {
-      DocumentSnapshot<Map<String, dynamic>> tagDocument =
-          await users.doc(userid).collection('tags').doc(tagName).get();
-      if (tagDocument.exists) {
-        return true;
+      // get all tags with the name tagName
+      var query = await users
+          .doc(userid)
+          .collection('tags')
+          .where("name", isEqualTo: tagName)
+          .get();
+
+      // if there are any tags with the name tagName, return true
+      if (query.docs.isNotEmpty) {
+        List<String> pleaseWorkIDs = [];
+        for (var id in query.docs[0].data()["includedIDs"]) {
+          pleaseWorkIDs.add(id.toString());
+        }
+
+        Tag out = Tag(
+          name: query.docs[0].data()["name"],
+          id: query.docs[0].data()["id"],
+          color: query.docs[0].data()["color"],
+          includedIDs: pleaseWorkIDs,
+        );
+        return out;
+      } else {
+        // otherwise, return false
+        throw Exception("Tag not found");
       }
     } catch (e) {
       rethrow;
     }
-    return false;
   }
 
-  /// Get ID of all Tasks with the given tag
+  // Returns whether or not a tag with name tagName exists
+  Future<bool> doesTagExist(String tagName) async {
+    try {
+      // get all tags with the name tagName
+      var query = await users
+          .doc(userid)
+          .collection('tags')
+          .where("name", isEqualTo: tagName)
+          .get();
+
+      // if there are any tags with the name tagName, return true
+      if (query.docs.isNotEmpty) {
+        return true;
+      } else {
+        // otherwise, return false
+        return false;
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get ID of all Undertakings with the given tag
   /// Returns a list of IDs
   /// Returns empty list if tag doesn't exist
   Future<List<String>> getUndertakingsWithTag(String tagName) async {
-    List<String> taskIDs = [];
-    List<String> eventIDs = [];
+    List<String> out = [];
+    Tag tag;
 
-    // get all tasks with the tag
-    QuerySnapshot<Map<String, dynamic>> tasksWithTag = await users
-        .doc(userid)
-        .collection("tasks")
-        .where("tags", arrayContains: tagName)
-        .get();
-
-    // get all events with the tag
-    QuerySnapshot<Map<String, dynamic>> eventsWithTag = await users
-        .doc(userid)
-        .collection("events")
-        .where("tags", arrayContains: tagName)
-        .get();
-
-    for (var doc in tasksWithTag.docs) {
-      taskIDs.add(doc.id);
+    try {
+      tag = await getTagByName(tagName);
+    } catch (e) {
+      return out;
     }
 
-    for (var doc in eventsWithTag.docs) {
-      eventIDs.add(doc.id);
-    }
-
-    return taskIDs + eventIDs;
+    return tag.includedIDs;
   }
 
   /// Get all tags in the database
