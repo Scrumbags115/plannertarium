@@ -54,6 +54,48 @@ List<Task> tasks = [
   ),
 ];
 
+List<Event> events = [
+  Event(
+    name: "Event 1",
+    id: "ID-1",
+    description: "Description for Event 1",
+    location: "Location 1",
+    color: "#FF5733",
+    tags: ["Tag1", "Tag2"],
+    recurrenceRules: null,
+    timeStart: DateTime(2023, 10, 10),
+    timeEnd: DateTime(2023, 10, 15),
+    timeCreated: DateTime(2023, 10, 8),
+    timeModified: DateTime(2023, 10, 12),
+  ),
+  Event(
+    name: "Event 2",
+    id: "ID-2",
+    description: "Description for Event 2",
+    location: "Location 2",
+    color: "#3366FF",
+    tags: ["Tag3"],
+    recurrenceRules: null,
+    timeStart: DateTime(2023, 11, 5),
+    timeEnd: DateTime(2023, 11, 10),
+    timeCreated: DateTime(2023, 11, 4),
+    timeModified: DateTime(2023, 11, 7),
+  ),
+  Event(
+    name: "Event 3",
+    id: "ID-3",
+    description: "Description for Event 3",
+    location: "Location 3",
+    color: "#009966",
+    tags: ["Tag4"],
+    recurrenceRules: null,
+    timeStart: DateTime(2023, 12, 15),
+    timeEnd: DateTime(2023, 12, 20),
+    timeCreated: DateTime(2023, 12, 12),
+    timeModified: DateTime(2023, 12, 18),
+  )
+];
+
 List<Tag> tags = [
   Tag(
     name: "Tag 1",
@@ -76,11 +118,11 @@ List<Tag> tags = [
 ];
 
 main() async {
-  await task_add_tags();
+  await addRemoveTags();
 }
 
 // test adding a tag to a task
-task_add_tags() async {
+addRemoveTags() async {
   late DatabaseService db;
   late DateTime today;
   late Tag testTag;
@@ -101,70 +143,76 @@ task_add_tags() async {
         name: "test tag", id: "tag-test", color: "#FFFFFF", includedIDs: []);
   });
 
-  // TODO: actually read thru these and make sure they make sense
-  // also, add expect()s so they actually test something lol
-  group("Tests base functionality first; all methods should work.", () {
+  group("Tests base task functionality first; set and get methods should work.",
+      () {
     // test that adding a tag to a task works
     test("Test that adding and reading a tag to a task works", () async {
       // add a tag to the task
       await db.addTagToTask(tasks[0], testTag);
       var gettingTestTag = await db.getTag(testTag.id);
-      printOnFailure("gettingTestTag: $gettingTestTag \n\ntestTag: $testTag");
       expect(gettingTestTag, testTag, reason: "Tag should be added to task");
     });
 
     // test that removing a tag from a task works
     test("Test that removing a tag from a task works", () async {
-      // // remove a tag from the task
+      // remove a tag from the task
       await db.removeTagFromTask(tasks[0], testTag);
-    });
 
-    // test that adding a tag to a task works
-    test("Test that adding a tag to a task works", () async {
-      // // add a tag to the task
-      await db.addTagToTask(tasks[0], testTag);
-    });
+      // create a dummy task without the test tag
+      Task originalTask0 = Task(
+        name: "Task 1",
+        id: "task-1",
+        description: "Description for Task 1",
+        completed: false,
+        location: "Location 1",
+        color: "#FF5733",
+        tags: ["Tag1", "Tag2"],
+        recurrenceRules: null,
+        timeStart: DateTime(2023, 10, 10),
+        timeDue: DateTime(2023, 10, 15),
+        timeCurrent: DateTime(2023, 10, 12),
+        timeCreated: DateTime(2023, 10, 8),
+        timeModified: DateTime(2023, 10, 12),
+      );
 
-    // test that removing a tag from a task works
-    test("Test that removing a tag from a task works", () async {
-      // // remove a tag from the task
-      await db.removeTagFromTask(tasks[0], testTag);
-    });
-
-    // test that adding a tag to a task works
-    test("Test that adding a tag to a task works", () async {
-      // // add a tag to the task
-      await db.addTagToTask(tasks[0], testTag);
-    });
-
-    // test that removing a tag from a task works
-    test("Test that removing a tag from a task works", () async {
-      // // remove a tag from the task
-      await db.removeTagFromTask(tasks[0], testTag);
-    });
-
-    // test that adding a tag to a task works
-    test("Test that adding a tag to a task works", () async {
-      // // add a tag to the task
-      await db.addTagToTask(tasks[0], testTag);
-    });
-
-    // test that removing a tag from a task works
-    test("Test that removing a tag from a task works", () async {
-      // // remove a tag from the task
-      await db.removeTagFromTask(tasks[0], testTag);
-    });
-
-    // test that adding a tag to a task works
-    test("Test that adding a tag to a task works", () async {
-      // // add a tag to the task
-      await db.addTagToTask(tasks[0], testTag);
+      expect(tasks[0], originalTask0,
+          reason: "Tag should be removed from task");
     });
   });
 
-  // test that adding a tag to a task works
-  test("Test that adding a tag to a task works", () async {
-    // // add a tag to the task
-    await db.addTagToTask(tasks[2], testTag);
+  group(
+      "Tests base event functionality first; set and get methods should work.",
+      () {
+    // test that adding a tag to an event works
+    test("Test that adding and reading a tag to a task works", () async {
+      // add a tag to the task
+      await db.addTagToEvent(events[0], testTag);
+      var gettingTestTag = await db.getTag(testTag.id);
+      expect(gettingTestTag, testTag, reason: "Tag should be added to event");
+    });
+
+    // test that removing a tag from a task works
+    test("Test that removing a tag from a event works", () async {
+      // remove a tag from the event
+      await db.removeTagFromEvent(events[0], testTag);
+
+      // create a dummy task without the test tag
+      Event originalEvent0 = Event(
+        name: "Event 1",
+        id: "ID-1",
+        description: "Description for Event 1",
+        location: "Location 1",
+        color: "#FF5733",
+        tags: ["Tag1", "Tag2"],
+        recurrenceRules: null,
+        timeStart: DateTime(2023, 10, 10),
+        timeEnd: DateTime(2023, 10, 15),
+        timeCreated: DateTime(2023, 10, 8),
+        timeModified: DateTime(2023, 10, 12),
+      );
+
+      expect(events[0], originalEvent0,
+          reason: "Tag should be removed from event");
+    });
   });
 }
