@@ -1,11 +1,9 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/models/task.dart';
-import 'package:planner/models/event.dart';
 import 'package:planner/models/tag.dart';
 import 'package:planner/models/undertaking.dart';
 
@@ -531,8 +529,6 @@ class DatabaseService {
   Future<Tag> getTag(String tagID) async {
     DocumentSnapshot<Map<String, dynamic>> tagDocument =
         await users.doc(userid).collection('tags').doc(tagID).get();
-    final test = await users.doc(userid).collection('tags').get();
-    // final test2 = test.data();
     if (tagDocument.exists) {
       var tagMap = tagDocument.data() ?? {"getTag Error": 1};
       return Tag.fromMap(tagMap);
