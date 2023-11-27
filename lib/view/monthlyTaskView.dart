@@ -55,13 +55,13 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
             selectedDayPredicate: (day) {
               return isSameDay(_selectedDay, day);
             },
-            onDaySelected: (selectedDay, focusedDay) {
+            onDaySelected: (selectedDay, focusedDay) async {
               if (!isSameDay(_selectedDay, selectedDay)) {
-                setState(() async {
+                final _newTodayTasks = await db.fetchTodayTasks(selectedDay);
+                setState(() {
                   _selectedDay = selectedDay;
                   _focusedDay = focusedDay;
-                  todayTasks = await db.fetchTodayTasks(selectedDay);
-                  setState(() {});  // this is duplicative?
+                  todayTasks = _newTodayTasks;
                 });
               }
             },
