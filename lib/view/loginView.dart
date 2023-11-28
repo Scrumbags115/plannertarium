@@ -22,6 +22,15 @@ class _loginViewState extends State<loginView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            const Text(
+              'Plannertarium',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+              )
+            ),
+            const SizedBox(height: 50),
             Image.asset(
               'assets/logo.png', 
               width:300,
@@ -47,7 +56,7 @@ class _loginViewState extends State<loginView> {
                   ),
                 );
                 },
-                label: Text(
+                label: const Text(
                   "Slide to login!",
                   style: TextStyle(
                     color: Color(0xff4a4a4a),
