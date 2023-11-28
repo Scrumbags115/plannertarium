@@ -57,7 +57,8 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
     if (task.timeDue == null) {
       return false;
     }
-    return getDateOnly(task.timeDue ?? currentDate).isAtSameMomentAs(currentDate);
+    return getDateOnly(task.timeDue ?? currentDate)
+        .isAtSameMomentAs(currentDate);
   }
 
   void loadPreviousWeek() async {
@@ -76,13 +77,30 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
     generateScreen(today);
   }
 
+  Future<void> datePicker() async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: today,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+
+    if (picked != null) {
+      setState(() {
+        today = picked;
+      });
+      await fetchData();
+      generateScreen(today);
+    }
+  }
+
   List<Widget> generateScreen(DateTime dateStart) {
     DateTime current = dateStart;
     List<Widget> dayWidgets = [];
 
     for (int i = 0; i < 7; i++) {
-      DateTime _mostRecentMonday = mostRecentMonday(today);
-      DateTime currentDate = getDateOnly(_mostRecentMonday, offsetDays: i);
+      DateTime thisMostRecentMonday = mostRecentMonday(today);
+      DateTime currentDate = getDateOnly(thisMostRecentMonday, offsetDays: i);
 
       // Use a Set to store unique tasks for each day
       Set<Task> uniqueTasksForDay = <Task>{};
@@ -144,8 +162,13 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
     DateTime today = DateTime.now();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Your Weekly Tasks'),
+        title: const Text('Tasks'),
         actions: [
+          IconButton(
+              icon: const Icon(Icons.calendar_month_rounded),
+              onPressed: () {
+                datePicker();
+              }),
           IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
