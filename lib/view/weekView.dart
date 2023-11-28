@@ -7,11 +7,22 @@ import 'package:planner/common/time_management.dart';
 import 'package:planner/view/taskDialogs.dart';
 import 'package:planner/view/eventDialogs.dart';
 import 'package:planner/view/monthView.dart';
+import 'package:planner/view/taskView.dart';
 
 DatabaseService db = DatabaseService();
 
-class WeekView extends StatelessWidget {
+class WeekView extends StatefulWidget {
   const WeekView({super.key});
+
+  @override
+  State<WeekView> createState() => _WeekViewState();
+}
+
+class _WeekViewState extends State<WeekView> {
+  bool forEvents = true;
+  var scaffoldKey = GlobalKey<ScaffoldState>();
+  DateTime start = mostRecentMonday(
+      DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day));
 
   @override
   Widget build(BuildContext context) {
@@ -19,17 +30,87 @@ class WeekView extends StatelessWidget {
       child: GestureDetector(
         onHorizontalDragEnd: (details) {
           if (details.primaryVelocity! > 0) {
-            //Navigator.of(context).pop();
-            Navigator.of(context)
-                .push(MaterialPageRoute(builder: (context) => const MonthView()));
+            Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const MonthView()));
           }
         },
         child: Scaffold(
-          appBar: AppBar(title: const Text("Week")),
+          appBar: AppBar(
+            elevation: 0,
+            backgroundColor: Colors.white,
+            leading: IconButton(
+              icon: const Icon(Icons.menu, color: Colors.black),
+              onPressed: () {
+                scaffoldKey.currentState?.openDrawer();
+              },
+            ),
+            title: Row(
+              children: <Widget>[
+                Expanded(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      const Text(
+                        'Tasks ',
+                        style: TextStyle(
+                          color: Colors.black,
+                        ),
+                      ),
+                      Switch(
+                        // thumb color (round icon)
+                        activeColor: Colors.white,
+                        activeTrackColor: Colors.cyan,
+                        inactiveThumbColor: Colors.blueGrey.shade600,
+                        inactiveTrackColor: Colors.grey.shade400,
+                        splashRadius: 50.0,
+                        value: forEvents,
+                        onChanged: (value) {
+                          setState(() {
+                            forEvents = value;
+                          });
+                          if (!forEvents) {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => taskView(),
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                      const Text(
+                        ' Events',
+                        style: TextStyle(
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              IconButton(
+                  icon: const Icon(
+                      color: Colors.black, Icons.calendar_month_rounded),
+                  onPressed: () async {
+                    DateTime? picked = await showDatePicker(
+                      context: context,
+                      initialDate: start,
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2101),
+                    );
+                    if (picked != null) {
+                      setState(() {
+                        start = picked;
+                      });
+                    }
+                  }),
+            ],
+          ),
           body: ListView(
             children: List.generate(7, (index) {
               //This generates 7 MultiDayCard in a vertical list
-              return MultiDayCard(index);
+              return MultiDayCard(index, start);
             }),
           ),
         ),
@@ -40,11 +121,12 @@ class WeekView extends StatelessWidget {
 
 //Each of these navigates to dayView when tapped
 class MultiDayCard extends StatefulWidget {
-  const MultiDayCard(this.index, {super.key});
+  const MultiDayCard(this.index, this.start, {super.key});
   final int index;
+  final DateTime start;
 
   @override
-  State<StatefulWidget> createState() => _MultiDayCardState(index);
+  State<StatefulWidget> createState() => _MultiDayCardState(index, start);
 }
 
 class _MultiDayCardState extends State<MultiDayCard> {
@@ -52,19 +134,22 @@ class _MultiDayCardState extends State<MultiDayCard> {
   int taskCount = 0;
   List<Event> eventsToday = [];
   List<Task> tasksDueToday = [];
-  DateTime start = mostRecentMonday(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day));
-  _MultiDayCardState(this.index) {
-
-    db.getListOfEventsInDay(date: getDateOnly(start, offsetDays:index)).then((value) => setState(() {
-          eventCount = value.length;
-          eventsToday = value;
-        }));
-    db.getTasksDueDay(getDateOnly(start, offsetDays:index)).then((value) => setState(() {
-          taskCount = value.length;
-          tasksDueToday = value;
-        }));
+  _MultiDayCardState(this.index, this.start) {
+    db
+        .getListOfEventsInDay(date: getDateOnly(start, offsetDays: index))
+        .then((value) => setState(() {
+              eventCount = value.length;
+              eventsToday = value;
+            }));
+    db
+        .getTasksDueDay(getDateOnly(start, offsetDays: index))
+        .then((value) => setState(() {
+              taskCount = value.length;
+              tasksDueToday = value;
+            }));
   }
   int index;
+  DateTime start;
 
   @override
   Widget build(BuildContext context) {
@@ -119,10 +204,10 @@ class _MultiDayCardState extends State<MultiDayCard> {
                                 children: List.generate(taskCount, (index) {
                                   return Row(
                                     children: [
-                                      TaskCard(
+                                      /*TaskCard(
                                         tasksDueToday: tasksDueToday,
                                         index: index,
-                                      )
+                                      )*/
                                     ],
                                   );
                                 }),
