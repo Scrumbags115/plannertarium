@@ -4,6 +4,7 @@ import 'package:planner/common/database.dart';
 import 'package:planner/models/task.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:planner/view/taskView.dart';
+import 'package:planner/common/time_management.dart';
 
 class MonthlyTaskView extends StatefulWidget {
   @override
@@ -22,75 +23,20 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
   @override
   void initState() {
     super.initState();
-    fetchMonthlyTasks(DateTime.now());
+    asyncInitState();
   }
-
+  void asyncInitState() async {
+    final List<Task> newTodayTasks;
+    final Map<DateTime, List<Task>> newMonthlyTasks;
+    (newTodayTasks, newMonthlyTasks) = await db.fetchMonthlyTasks(DateTime.now());
+    todayTasks = newTodayTasks;
+    active = newMonthlyTasks;
+    setState(() {});
+  }
   @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
-  }
-
-  bool hasTasks(
-      DateTime date,
-      Map<DateTime, List<Task>> activeMap,
-      Map<DateTime, List<Task>> delayedMap,
-      Map<DateTime, List<Task>> completedMap) {
-    List<Task> tasks = [
-      ...?activeMap[date],
-      ...?delayedMap[date],
-      ...?completedMap[date]
-    ];
-    return tasks.isNotEmpty;
-  }
-
-  // This function returns a new DateTime object with only year, month, and day
-  DateTime _toDay(DateTime dateTime) {
-    return DateTime(dateTime.year, dateTime.month, dateTime.day);
-  }
-
-// Use this function when you're setting and getting tasks from the active map
-  void fetchMonthlyTasks(DateTime selectedDate) async {
-    DateTime dateStart = _toDay(selectedDate);
-    Map<DateTime, List<Task>> activeMap, delayedMap, completedMap;
-    (activeMap, delayedMap, completedMap) =
-        await db.getTaskMapsMonth(dateStart);
-
-    active = activeMap.map((key, value) => MapEntry(
-        _toDay(key), value)); // Use _toDay when setting tasks in the active map
-    todayTasks = active[_toDay(selectedDate)] ??
-        []; // Use _toDay when getting tasks from the active map
-
-    setState(() {});
-    print(todayTasks);
-  }
-
-  void fetchTodayTasks(DateTime selectedDate) async {
-    DateTime dateStart =
-        DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
-    DateTime dateEnd = dateStart.add(const Duration(days: 1));
-    Map<DateTime, List<Task>> activeMap, delayedMap, completedMap;
-    (activeMap, delayedMap, completedMap) =
-        await db.getTaskMaps(dateStart, dateEnd);
-
-    // print(
-    //     'Active tasks from DB: $activeMap'); // Print the tasks fetched from the database
-
-    // print('delayed task from DB: $delayedMap');
-    // print('completed task from DB: $completedMap');
-
-    //active = activeMap;
-    todayTasks = [
-      ...?activeMap[dateStart],
-      ...?delayedMap[dateStart],
-      ...?completedMap[dateStart]
-    ];
-
-    // print(
-    //     'Active tasks after insertion: $active'); // Print the active map after inserting the tasks
-
-    setState(() {});
-    print('todayTasks: $todayTasks');
   }
 
   @override
@@ -109,12 +55,13 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
             selectedDayPredicate: (day) {
               return isSameDay(_selectedDay, day);
             },
-            onDaySelected: (selectedDay, focusedDay) {
+            onDaySelected: (selectedDay, focusedDay) async {
               if (!isSameDay(_selectedDay, selectedDay)) {
+                final _newTodayTasks = await db.fetchTodayTasks(selectedDay);
                 setState(() {
                   _selectedDay = selectedDay;
                   _focusedDay = focusedDay;
-                  fetchTodayTasks(selectedDay);
+                  todayTasks = _newTodayTasks;
                 });
               }
             },
@@ -122,7 +69,7 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
               _focusedDay = focusedDay;
             },
             eventLoader: (day) {
-              var taskForDay = active[_toDay(day)] ?? [];
+              var taskForDay = active[getDateOnly(day)] ?? [];
               print('TDate:$day, Task:$taskForDay');
               return taskForDay;
             },

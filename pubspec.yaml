@@ -42,9 +42,6 @@ dependencies:
   google_sign_in: ^6.1.5
   swipeable_page_route: ^0.4.0
   fake_cloud_firestore: ^2.4.3
-  slider_button: ^2.0.0
-  table_calendar: ^3.0.9
-  calendar_date_picker2: ^0.5.3
 
 dev_dependencies:
   flutter_test:

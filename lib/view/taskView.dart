@@ -27,18 +27,12 @@ class _taskViewState extends State<taskView> {
   @override
   void initState() {
     super.initState();
-    fetchTodayTasks();
+    asyncInitState();
   }
 
-  void fetchTodayTasks() async {
-    List<Task> activeList, delayedList, completedList;
-    (activeList, delayedList, completedList) =
-        await db.getTaskMapsDay(DateTime.now());
-
-    todayTasks = [...activeList, ...delayedList, ...completedList];
-
+  void asyncInitState() async {
+    todayTasks = await db.fetchTodayTasks(DateTime.now());
     setState(() {});
-    print(todayTasks);
   }
 
   Future<Task?> addButtonForm(BuildContext context) async {

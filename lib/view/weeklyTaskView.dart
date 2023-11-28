@@ -28,13 +28,14 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
   }
 
   Future<void> fetchData() async {
-    List<Task> tasks = await fetchWeeklyTask();
+    List<Task> tasks = await _db.fetchWeeklyTask();
     setState(() {
       _allTasks = tasks;
     });
   }
 
   Future<List<Task>> fetchWeeklyTask() async {
+    DateTime today = getDateOnly(DateTime.now());
     Map<DateTime, List<Task>> activeMap, delayedMap, completedMap;
 
     // Fetch task maps for the specified week
@@ -53,9 +54,10 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
   }
 
   bool isTaskDueOnCurrentDay(Task task, DateTime currentDate) {
-    DateTime taskDay = DateTime(
-        task.timeCurrent.year, task.timeCurrent.month, task.timeCurrent.day);
-    return taskDay.isAtSameMomentAs(currentDate);
+    if (task.timeDue == null) {
+      return false;
+    }
+    return getDateOnly(task.timeDue ?? currentDate).isAtSameMomentAs(currentDate);
   }
 
   void loadPreviousWeek() async {
