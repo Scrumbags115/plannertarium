@@ -377,7 +377,6 @@ class _taskViewState extends State<taskView> {
                 child: ElevatedButton(
                   onPressed: () async {
                     Task? newTask = await addButtonForm(context);
-
                     if (newTask != null) {
                       setState(() {
                         todayTasks.add(newTask);
@@ -387,7 +386,8 @@ class _taskViewState extends State<taskView> {
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size(75, 75),
                   ),
-                  child: const Icon(Icons.add_outlined),
+                  child: const Icon(Icons.add_outlined,
+                  color: Colors.black,),
                 ),
               ),
             ),
@@ -450,10 +450,10 @@ class _TaskCardState extends State<TaskCard> {
         }
       },
       background: Container(
-        color: Colors.green, // Swipe right background color
+        color: Color.fromARGB(255, 255, 153, 0), // Swipe right background color
         alignment: Alignment.centerLeft,
         child: const Icon(
-          Icons.check,
+          Icons.access_time,
           color: Colors.white,
         ),
       ),

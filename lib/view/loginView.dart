@@ -22,14 +22,12 @@ class _loginViewState extends State<loginView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              'Plannertarium',
-              style: TextStyle(
-                fontSize: 24.0,
-                fontWeight: FontWeight.bold,
-              ),
+            Image.asset(
+              'assets/logo.png', 
+              width:300,
+              height: 300,
             ),
-            const SizedBox(height: 500),
+            const SizedBox(height: 300),
             // Replace ElevatedButton with SliderButton
             Center(
               child: SliderButton(
