@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:planner/models/task.dart';
+import 'package:planner/view/eventView.dart';
 import 'dart:async';
 import 'package:planner/view/weekView.dart';
+import 'package:planner/view/weeklyTaskView.dart';
 import 'package:planner/view/monthlyTaskView.dart';
+import 'package:planner/view/dayView.dart';
 
 class taskView extends StatefulWidget {
   const taskView({super.key});
@@ -20,26 +23,16 @@ class _taskViewState extends State<taskView> {
   final User? user = FirebaseAuth.instance.currentUser;
   DatabaseService db = DatabaseService();
   List<Task> todayTasks = [];
-
+  bool forEvents = false;
   @override
   void initState() {
     super.initState();
-    fetchTodayTasks();
+    asyncInitState();
   }
 
-  void fetchTodayTasks() async {
-    List<Task> activeList, delayedList, completedList;
-    (activeList, delayedList, completedList) =
-        await db.getTaskMapsDay(DateTime.now());
-
-    todayTasks = [
-      ...activeList,
-      ...delayedList,
-      ...completedList
-    ];
-
+  void asyncInitState() async {
+    todayTasks = await db.fetchTodayTasks(DateTime.now());
     setState(() {});
-    print(todayTasks);
   }
 
   Future<Task?> addButtonForm(BuildContext context) async {
@@ -106,9 +99,9 @@ class _taskViewState extends State<taskView> {
                 String description = descriptionController.text;
 
                 Task newTask = Task(
-                    name: name,
-                    description: description,
-                    );
+                  name: name,
+                  description: description,
+                );
 
                 db.setTask(newTask);
 
@@ -227,16 +220,64 @@ class _taskViewState extends State<taskView> {
     return Scaffold(
       key: scaffoldKey,
       appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
         leading: IconButton(
-          icon: const Icon(Icons.menu),
+          icon: const Icon(Icons.menu, color: Colors.black),
           onPressed: () {
             scaffoldKey.currentState?.openDrawer();
           },
         ),
-        title: const Text('Task'),
+        title: Row(
+          children: <Widget>[
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  const Text(
+                    'Tasks ',
+                    style: TextStyle(
+                      color: Colors.black,
+                    ),
+                  ),
+                  Switch(
+                    // thumb color (round icon)
+                    activeColor: Colors.white,
+                    activeTrackColor: Colors.cyan,
+                    inactiveThumbColor: Colors.blueGrey.shade600,
+                    inactiveTrackColor: Colors.grey.shade400,
+                    splashRadius: 50.0,
+                    value: forEvents,
+                    onChanged: (value) {
+                      setState(() {
+                        forEvents = value;
+                      });
+                      if (forEvents) {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => WeekView(),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                  const Text(
+                    ' Events',
+                    style: TextStyle(
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
         actions: <Widget>[
           IconButton(
-            icon: const Icon(Icons.search),
+            icon: const Icon(
+              Icons.search,
+              color: Colors.black,
+            ),
             onPressed: () {
               showSearchBar(context);
             },
@@ -305,12 +346,12 @@ class _taskViewState extends State<taskView> {
           print('swipe detected');
           if (details.primaryVelocity! < 0) {
             Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) =>  const MonthlyTaskView(),
+              builder: (context) => WeeklyTaskView(),
             ));
           }
           if (details.primaryVelocity! > 0) {
-            Navigator.of(context)
-                .push(MaterialPageRoute(builder: (context) => const WeekView()));
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => const WeeklyTaskView()));
           }
         },
         child: Column(
@@ -330,7 +371,6 @@ class _taskViewState extends State<taskView> {
                 child: ElevatedButton(
                   onPressed: () async {
                     Task? newTask = await addButtonForm(context);
-
                     if (newTask != null) {
                       setState(() {
                         todayTasks.add(newTask);
@@ -340,7 +380,8 @@ class _taskViewState extends State<taskView> {
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size(75, 75),
                   ),
-                  child: const Icon(Icons.add_outlined),
+                  child: const Icon(Icons.add_outlined,
+                  color: Colors.black,),
                 ),
               ),
             ),
@@ -353,7 +394,6 @@ class _taskViewState extends State<taskView> {
 
 class TaskCard extends StatefulWidget {
   final Task task;
-
   const TaskCard({super.key, required this.task});
 
   @override
@@ -404,10 +444,10 @@ class _TaskCardState extends State<TaskCard> {
         }
       },
       background: Container(
-        color: Colors.green, // Swipe right background color
+        color: Color.fromARGB(255, 255, 153, 0), // Swipe right background color
         alignment: Alignment.centerLeft,
         child: const Icon(
-          Icons.check,
+          Icons.access_time,
           color: Colors.white,
         ),
       ),

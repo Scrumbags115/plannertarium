@@ -1,60 +1,42 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:planner/common/database.dart';
-import 'package:planner/common/time_management.dart';
 import 'package:planner/models/task.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:planner/view/taskView.dart';
+import 'package:planner/common/time_management.dart';
 
 class MonthlyTaskView extends StatefulWidget {
-  const MonthlyTaskView({super.key});
-
   @override
   _MonthlyTaskViewState createState() => _MonthlyTaskViewState();
 }
 
 class _MonthlyTaskViewState extends State<MonthlyTaskView> {
-  CalendarFormat _calendarFormat = CalendarFormat.month;
+  final CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   DatabaseService db = DatabaseService();
   List<Task> todayTasks = [];
-
-  // Add a PageController for handling page navigation
-   final PageController _pageController = PageController();
+  final PageController _pageController = PageController();
+  Map<DateTime, List<Task>> active = {};
 
   @override
   void initState() {
     super.initState();
-    // Add a listener to the PageController to update the focusedDay
-    _pageController.addListener(() {
-      setState(() {
-        _focusedDay = _pageController.page == 0
-            ? _focusedDay = getDateOnly(_focusedDay, offsetMonths: -1)
-            : _focusedDay = getDateOnly(_focusedDay, offsetMonths: 1);
-      });
-    });
+    asyncInitState();
   }
-
+  void asyncInitState() async {
+    final List<Task> newTodayTasks;
+    final Map<DateTime, List<Task>> newMonthlyTasks;
+    (newTodayTasks, newMonthlyTasks) = await db.fetchMonthlyTasks(DateTime.now());
+    todayTasks = newTodayTasks;
+    active = newMonthlyTasks;
+    setState(() {});
+  }
   @override
   void dispose() {
-    // Dispose of the PageController to prevent memory leaks
     _pageController.dispose();
     super.dispose();
-  }
-
-  void fetchTodayTasks(DateTime selectedDate) async {
-    List<Task> activeList, delayedList, completedList;
-    (activeList, delayedList, completedList) =
-        await db.getTaskMapsDay(selectedDate);
-
-    todayTasks = [
-      ...activeList,
-      ...delayedList,
-      ...completedList
-    ];
-
-    setState(() {});
-    print(todayTasks);
   }
 
   @override
@@ -66,78 +48,55 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
       body: Column(
         children: [
           TableCalendar(
-            firstDay: getMonthAsDateTime(DateTime.now()),
-            lastDay: getNextMonthAsDateTime(DateTime.now()),
+            firstDay: DateTime.utc(2020, 10, 16),
+            lastDay: DateTime.utc(2130, 3, 14),
             focusedDay: _focusedDay,
             calendarFormat: _calendarFormat,
             selectedDayPredicate: (day) {
               return isSameDay(_selectedDay, day);
             },
-            onDaySelected: (selectedDay, focusedDay) {
+            onDaySelected: (selectedDay, focusedDay) async {
               if (!isSameDay(_selectedDay, selectedDay)) {
+                final _newTodayTasks = await db.fetchTodayTasks(selectedDay);
                 setState(() {
                   _selectedDay = selectedDay;
                   _focusedDay = focusedDay;
-                });
-
-                // Call the fetchTodayTasks function without await
-                fetchTodayTasks(selectedDay);
-              }
-            },
-            onFormatChanged: (format) {
-              if (_calendarFormat != format) {
-                setState(() {
-                  _calendarFormat = format;
+                  todayTasks = _newTodayTasks;
                 });
               }
             },
             onPageChanged: (focusedDay) {
-              // Update the focusedDay when navigating to previous/next months
-              setState(() {
-                _focusedDay = focusedDay;
-              });
+              _focusedDay = focusedDay;
+            },
+            eventLoader: (day) {
+              var taskForDay = active[getDateOnly(day)] ?? [];
+              print('TDate:$day, Task:$taskForDay');
+              return taskForDay;
             },
             calendarBuilders: CalendarBuilders(
-              todayBuilder: (context, date, events) {
-                return Container(
-                  margin: const EdgeInsets.all(4.0),
-                  alignment: Alignment.center,
-                  decoration: const BoxDecoration(
-                    color: Colors.transparent, // No color for today
-                    shape: BoxShape.circle,
-                  ),
-                  child: Text(
-                    '${date.day}',
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                );
+              markerBuilder: (context, date, tasks) {
+                //print("Date: $date, Tasks: $tasks");
+                if (tasks.isNotEmpty) {
+                  return Positioned(
+                    right: 1,
+                    bottom: 1,
+                    child: Container(
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.red,
+                      ),
+                    ),
+                  );
+                }
+                return Container();
               },
             ),
-            headerStyle: HeaderStyle(
-              titleCentered: true, // Center the title
-              formatButtonVisible: false, // Hide the format button
-              leftChevronIcon: GestureDetector(
-                onTap: () {
-                  _pageController.previousPage(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOut,
-                  );
-                },
-                child: const Icon(Icons.arrow_back),
-              ), // Set custom left chevron icon
-              rightChevronIcon: GestureDetector(
-                onTap: () {
-                  _pageController.nextPage(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOut,
-                  );
-                },
-                child: const Icon(Icons.arrow_forward),
-              ), // Set custom right chevron icon
+            headerStyle: const HeaderStyle(
+              titleCentered: true,
+              formatButtonVisible: false,
             ),
-          ),
-          const SizedBox(
-            height: 16,
           ),
           Expanded(
             child: ListView.builder(
