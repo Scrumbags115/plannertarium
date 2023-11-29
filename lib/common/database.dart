@@ -603,7 +603,7 @@ class DatabaseService {
   /// Search function to query a task name
   /// Takes a query string and value to limit number of outputs
   /// Returns list of tasks that the query is a substring in, with amount specified by limit
-  Future<List<Task>> searchTaskNames(String query, int limit) async {
+  Future<List<Task>> searchTaskName(String query, int limit) async {
     final QuerySnapshot<Map<String, dynamic>> queriedTaskResults =
         await _substringQuery(query, limit, "tasks", "name");
     return _snapshotToTasks(queriedTaskResults);
@@ -612,7 +612,7 @@ class DatabaseService {
   /// Search function to query a event name
   /// Takes a query string and value to limit number of outputs
   /// Returns list of events that the query is a substring in, with amount specified by limit
-  Future<List<Event>> searchEventNames(String query, int limit) async {
+  Future<List<Event>> searchEventName(String query, int limit) async {
     final QuerySnapshot<Map<String, dynamic>> queriedEventResults =
         await _substringQuery(query, limit, "events", "name");
     // collect outputs
@@ -685,5 +685,22 @@ class DatabaseService {
     final QuerySnapshot<Map<String, dynamic>> queriedEventResults =
         await _tagQuery(query, limit, "events");
     return _snapshotToEvents(queriedEventResults);
+  }
+
+  Future<List<Task>> searchAllTask(String query, {int limit = 100}) async {
+    Set<Task> allTasks = Set();
+    var functionList = [
+      searchTaskName,
+      searchTaskDescription,
+      searchTaskLocation,
+      searchTaskTags
+    ];
+
+    for (var function in functionList) {
+      allTasks = allTasks.union((await function(query, limit)).toSet());
+    }
+    print(allTasks);
+
+    return allTasks.toList();
   }
 }

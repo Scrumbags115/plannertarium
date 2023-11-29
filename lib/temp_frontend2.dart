@@ -81,7 +81,7 @@ class MyAppState extends State<MyApp> {
     db.initUID(u!.uid);
     if (event == "search") {
       print(db.userid);
-      final mapEvents = await db.searchTaskNames("Task", 5);
+      final mapEvents = await db.searchTaskName("Task", 5);
       print(mapEvents);
     } else if (event == "login") {
       await runAuthFlow();
