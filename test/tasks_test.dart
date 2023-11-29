@@ -484,24 +484,10 @@ List<Task> tasksDue = [
 
 bool mapEquals(Map<DateTime, List<Task>> m1, Map<DateTime, List<Task>> m2) {
   if (m1.keys.length != m2.keys.length) {
-    // print('unequal keys');
     return false;
   }
   for (DateTime key in m1.keys) {
     if (!setEquals(m1[key]!.toSet(), m2[key]!.toSet())) {
-      // print('differing values');
-      // print("     $key");
-      // print("     ${m1.keys}");
-      // print("     ${m2.keys}");
-      // print("     ${m1[key]}");
-      // print("     ${m2[key]}");
-      // print(m1[key]![0].toDetailedString());
-      // print(m2[key]![0].toDetailedString());
-      // print(m1[key]!.toSet());
-      // print("hashcode1 ${m1[key]![0].hashCode}");
-      // print(m2[key]!.toSet());
-      // print("hashcode2 ${m2[key]![0].hashCode}");
-      // print(setEquals(m1[key]!.toSet(), m2[key]!.toSet()));
       return false;
     }
   }

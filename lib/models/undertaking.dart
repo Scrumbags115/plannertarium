@@ -88,6 +88,9 @@ class Undertaking {
 
   /// returns a mapping with kv pairs corresponding to Firebase's
   /// possibly a better getter
+  ///
+  /// keepClasses default is false, set to true to carry through recurrence objects as an object instead of a map
+  /// includeID default is false, set to true to carry through ID of the object
   Map<String, dynamic> toMap({keepClasses = false, includeID = false}) {
     Map<String, dynamic> map = {
       'name': _name,
@@ -165,40 +168,6 @@ class Undertaking {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-
-    // if (other is Task &&
-    //     _name == other._name &&
-    //     _id == other._id &&
-    //     _description == other._description &&
-    //     _location == other._location &&
-    //     _color == other._color) {
-    //       // print("Strings are all equal");
-    //     } else {
-    //       print("Strings are not equal");
-    //     }
-
-    // if (other is Task &&
-    //     _timeStart == other._timeStart &&
-    //     _timeCreated == other._timeCreated &&
-    //     _timeModified == other._timeModified) {
-    //       // print("Times are all equal");
-    //     } else {
-    //       print("Times are not equal");
-    //     }
-
-    // if (other is Task &&
-    //     listEquals(_tags, other._tags)) {
-    //       // print("Tags are equal");
-    //     } else{
-    //       print("Tags are not equal");
-    //     }
-
-    // if (other is Task &&
-    //     _recurrenceRules == other._recurrenceRules) {
-    //       // print("Recurrence rules are equal");
-    //     } else {
-    //       print("Recurrence rules are not equal");
-    //     }
 
     return other is Undertaking &&
         _name == other._name &&

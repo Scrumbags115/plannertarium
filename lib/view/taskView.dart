@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:planner/models/task.dart';
-import 'package:planner/view/eventView.dart';
 import 'dart:async';
 import 'package:planner/view/weekView.dart';
 import 'package:planner/view/weeklyTaskView.dart';
@@ -25,7 +24,7 @@ class _taskViewState extends State<taskView> {
   DatabaseService db = DatabaseService();
   List<Task> todayTasks = [];
   List<Task> selectedDateTasks = [];
-
+  DateTime today = DateTime.now();
   bool forEvents = false;
   @override
   void initState() {
@@ -39,7 +38,6 @@ class _taskViewState extends State<taskView> {
   }
 
   Future<DateTime?> datePicker() async {
-    DateTime today = DateTime.now();
     DateTime? picked = await showDatePicker(
       context: context,
       initialDate: today,
@@ -54,10 +52,11 @@ class _taskViewState extends State<taskView> {
   }
 
   Future<void> selectDate() async {
-    DateTime selectedDate = await datePicker() ?? DateTime.now();
+    DateTime selectedDate = await datePicker() ?? today;
     List<Task> newTasks = await db.fetchTodayTasks(selectedDate);
 
     setState(() {
+      today = selectedDate;
       todayTasks = newTasks;
     });
   }
@@ -314,7 +313,7 @@ class _taskViewState extends State<taskView> {
                       if (forEvents) {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (context) => WeekView(),
+                            builder: (context) => const WeekView(),
                           ),
                         );
                       }
@@ -520,7 +519,8 @@ class _TaskCardState extends State<TaskCard> {
         }
       },
       background: Container(
-        color: Color.fromARGB(255, 255, 153, 0), // Swipe right background color
+        color: const Color.fromARGB(
+            255, 255, 153, 0), // Swipe right background color
         alignment: Alignment.centerLeft,
         child: const Icon(
           Icons.access_time,

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/models/task.dart';
@@ -65,14 +63,14 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
   void loadPreviousWeek() async {
     await fetchData();
     setState(() {
-      today = today.subtract(Duration(days: 7));
+      today = today.subtract(const Duration(days: 7));
       generateScreen(today);
     });
   }
 
   void loadNextWeek() async {
     setState(() {
-      today = today.add(Duration(days: 7));
+      today = today.add(const Duration(days: 7));
     });
     await fetchData();
     generateScreen(today);
@@ -177,7 +175,7 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
                 },
               ),
             ),
-            SizedBox(width: 30),
+            const SizedBox(width: 5),
             Expanded(
               child: IconButton(
                 icon: const Icon(Icons.calendar_month_rounded,
@@ -196,7 +194,7 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    SizedBox(width: 30),
+                    const SizedBox(width: 20),
                     const Text(
                       'Tasks ',
                       style: TextStyle(

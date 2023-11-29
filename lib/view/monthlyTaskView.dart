@@ -86,7 +86,7 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
                           if (forEvents) {
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (context) => MonthView(),
+                                builder: (context) => const MonthView(),
                               ),
                             );
                           }
