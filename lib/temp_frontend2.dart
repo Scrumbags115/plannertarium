@@ -117,9 +117,25 @@ class MyAppState extends State<MyApp> {
       });
       return;
     } else if (event =="recur") {
-      Recurrence recurrenceRules = Recurrence(enabled: true, timeStart: DateTime.parse("2023-11-10"), timeEnd: DateTime.parse("2023-11-30"), dates: [true, false, false, false, false, false, false]);
-      Event e = Event(name: "test_recurrence_event_1", description: "recurrence test", tags: [], timeStart: DateTime.parse("2023-11-11"), timeEnd: DateTime.parse("2023-11-12"), recurrenceRules: recurrenceRules);
-      await db.setRecurringEvents(e);
+      const List<bool> recurrenceDatesMondayWednesdayFriday = [true, false, true, false, true, false, false];
+
+      Event recurringEvent =
+      Event(
+        name: "Recurring Event 1",
+        id: "RID-1",
+        description: "Description for Recurring Event 21",
+        location: "Location R1",
+        color: "#3366FF",
+        tags: ["Tag3"],
+        recurrenceRules: Recurrence.requireFields(enabled: true, timeStart: DateTime(2023, 11, 20), timeEnd: DateTime(2023, 12, 20), dates: recurrenceDatesMondayWednesdayFriday, nullOrId: "example recurrence id"),
+        timeStart: DateTime(2023, 11, 20),
+        timeEnd: DateTime(2023, 11, 21),
+        timeCreated: DateTime(2023, 11, 14),
+        timeModified: DateTime(2023, 11, 18),
+      );
+      await db.setRecurringEvents(recurringEvent);
+      final Map<String, Event> retrievedEvents = await db.getEventsInDateRange(dateStart: DateTime(2023, 11, 26), dateEnd: DateTime(2023, 12, 2));
+      print(retrievedEvents);
     } else if (event == "delete") {
       final List<Event> eventList = await db.getListOfEventsInDay(date: DateTime.parse("2023-11-20"));
       if (eventList.isEmpty) {

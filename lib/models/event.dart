@@ -62,6 +62,21 @@ class Event extends Undertaking {
             timeCreated: e.timeCreated,
             timeModified: e.timeModified);
 
+  /// same thing as clone, except generate a new ID
+  Event.copy(Event e)
+      : this(
+            name: e.name,
+            id: "${e.id}-copy-${DateTime.now().microsecondsSinceEpoch}",
+            description: e.description,
+            color: e.color,
+            location: e.location,
+            tags: e.tags,
+            recurrenceRules: e.recurrenceRules,
+            timeStart: e.timeStart,
+            timeEnd: e.timeEnd,
+            timeCreated: e.timeCreated,
+            timeModified: e.timeModified);
+
   /// returns a mapping with kv pairs corresponding to Firebase's
   /// possibly a better getter
   @override
@@ -117,7 +132,7 @@ class Event extends Undertaking {
       // now check if the weekday recurrence is right
       if (recurrence.dates[newEventTimeStartI.weekday - 1]) {
         // if yes, create the event
-        Event e = Event.clone(this);
+        Event e = Event.copy(this);
         e.timeStart = newEventTimeStartI;
         e.timeEnd = newEventTimeEndI;
         eventList.add(e);
@@ -139,7 +154,7 @@ class Event extends Undertaking {
       // now check if the weekday recurrence is right
       if (recurrence.dates[newEventTimeStartD.weekday - 1]) {
         // if yes, create the event
-        Event e = Event.clone(this);
+        Event e = Event.copy(this);
         e.timeStart = newEventTimeStartD;
         e.timeEnd = newEventTimeEndD;
         eventList.add(e);

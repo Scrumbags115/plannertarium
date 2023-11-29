@@ -93,15 +93,17 @@ class DatabaseService {
         .doc(userid)
         .collection("events")
         .where("time start",
-            isGreaterThanOrEqualTo: timestampStart,
+            isGreaterThanOrEqualTo: timestampStart)
+        .where("time start",
             isLessThanOrEqualTo: timestampEnd)
         .get();
 
     final QuerySnapshot<Map<String, dynamic>> eventsTimeEndInRange = await users
         .doc(userid)
         .collection("events")
-        .where("event time end",
-            isGreaterThanOrEqualTo: timestampStart,
+        .where("time end",
+            isGreaterThanOrEqualTo: timestampStart)
+        .where("time end",
             isLessThanOrEqualTo: timestampEnd)
         .get();
 
@@ -218,6 +220,8 @@ class DatabaseService {
   }
 
   /// add all recurring events in the database
+  ///
+  /// given an event with recurrence enabled, create/set all recurring events in the DB
   Future<void> setRecurringEvents(Event e) async {
     List<Event> recurringEvents = e.generateRecurringEvents();
     for (final e in recurringEvents) {
