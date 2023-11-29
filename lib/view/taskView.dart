@@ -2,6 +2,7 @@ import 'package:planner/common/database.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:planner/common/time_management.dart';
 import 'package:planner/models/task.dart';
 import 'dart:async';
 import 'package:planner/view/weekView.dart';
@@ -140,15 +141,8 @@ class _taskViewState extends State<taskView> {
               child: const Text('Search'),
               onPressed: () async {
                 String searchQuery = searchController.text;
-                List<Task> searchTask = await db.getTasksOfName(searchQuery);
-
-                if (searchTask != null) {
-                  print('i am here');
-                  _showTaskDetailsDialog(searchTask);
-                } else {
-                  print('maybe');
-                  _showTaskNotFoundDialog();
-                }
+                List<Task> searchTask = await db.searchAllTask(searchQuery);
+                _showTaskDetailsDialog(searchQuery, searchTask);
               },
             ),
           ],
@@ -157,21 +151,25 @@ class _taskViewState extends State<taskView> {
     );
   }
 
-  void _showTaskDetailsDialog(List<Task> tasks) {
+  void _showTaskDetailsDialog(String searchQuery, List<Task> tasks) {
     showDialog(
       context: scaffoldKey.currentState!.context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Task Details'),
+          title: Text('Results for "$searchQuery"'),
           content: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: tasks.map((task) {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Task ID: ${task.id}'),
-                  Text('Name: ${task.name}'),
-                  Text('Description: ${task.description}'),
+                  Text(
+                    '${task.completed ? "✅" : "❌"} ${task.name}',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text('  ${task.description}'),
+                  Text('  Currently on: ${getDateAsString(task.timeCurrent)}'),
+                  Text('  Date created: ${getDateAsString(task.timeCreated)}'),
                   const Divider(),
                 ],
               );
@@ -377,8 +375,10 @@ class _taskViewState extends State<taskView> {
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size(75, 75),
                   ),
-                  child: const Icon(Icons.add_outlined,
-                  color: Colors.black,),
+                  child: const Icon(
+                    Icons.add_outlined,
+                    color: Colors.black,
+                  ),
                 ),
               ),
             ),
