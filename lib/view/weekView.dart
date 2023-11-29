@@ -25,127 +25,125 @@ class _WeekViewState extends State<WeekView> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: GestureDetector(
-        onHorizontalDragEnd: (details) {
-          if (details.primaryVelocity! > 0) {
-            Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const MonthView()));
-          }
-        },
-        child: Scaffold(
-          appBar: AppBar(
-            elevation: 0,
-            backgroundColor: Colors.white,
-            leading: IconButton(
-              icon: const Icon(Icons.menu, color: Colors.black),
-              onPressed: () {
-                scaffoldKey.currentState?.openDrawer();
-              },
-            ),
-            title: Row(
-              children: <Widget>[
-                Expanded(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      const Text(
-                        'Tasks ',
-                        style: TextStyle(
-                          color: Colors.black,
-                        ),
+    return GestureDetector(
+      onHorizontalDragEnd: (details) {
+        if (details.primaryVelocity! > 0) {
+          Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const MonthView()));
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          elevation: 0,
+          backgroundColor: Colors.white,
+          leading: IconButton(
+            icon: const Icon(Icons.menu, color: Colors.black),
+            onPressed: () {
+              scaffoldKey.currentState?.openDrawer();
+            },
+          ),
+          title: Row(
+            children: <Widget>[
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    const Text(
+                      'Tasks ',
+                      style: TextStyle(
+                        color: Colors.black,
                       ),
-                      Switch(
-                        // thumb color (round icon)
-                        activeColor: Colors.white,
-                        activeTrackColor: Colors.cyan,
-                        inactiveThumbColor: Colors.blueGrey.shade600,
-                        inactiveTrackColor: Colors.grey.shade400,
-                        splashRadius: 50.0,
-                        value: forEvents,
-                        onChanged: (value) {
-                          setState(() {
-                            forEvents = value;
-                          });
-                          if (!forEvents) {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => taskView(),
-                              ),
-                            );
-                          }
-                        },
-                      ),
-                      const Text(
-                        ' Events',
-                        style: TextStyle(
-                          color: Colors.black,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            actions: [
-              MenuAnchor(
-                builder: (BuildContext context, MenuController controller,
-                    Widget? child) {
-                  return IconButton(
-                    color: Colors.black,
-                    onPressed: () {
-                      if (controller.isOpen) {
-                        controller.close();
-                      } else {
-                        controller.open();
-                      }
-                    },
-                    icon: const Icon(Icons.more_vert),
-                    tooltip: 'Show menu',
-                  );
-                },
-                menuChildren: [
-                  IconButton(
-                      icon: const Icon(
-                          color: Colors.black, Icons.calendar_month_rounded),
-                      onPressed: () async {
-                        DateTime? picked = await showDatePicker(
-                          context: context,
-                          initialDate: startDate,
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime(2101),
-                        );
-                        if (picked != null) {
-                          setState(() {
-                            startDate = mostRecentMonday(picked);
-                          });
+                    ),
+                    Switch(
+                      // thumb color (round icon)
+                      activeColor: Colors.white,
+                      activeTrackColor: Colors.cyan,
+                      inactiveThumbColor: Colors.blueGrey.shade600,
+                      inactiveTrackColor: Colors.grey.shade400,
+                      splashRadius: 50.0,
+                      value: forEvents,
+                      onChanged: (value) {
+                        setState(() {
+                          forEvents = value;
+                        });
+                        if (!forEvents) {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => taskView(),
+                            ),
+                          );
                         }
-                      }),
-                  IconButton(
-                      icon: const Icon(color: Colors.black, Icons.east),
-                      onPressed: () {
-                        setState(() {
-                          startDate = startDate.add(Duration(days: 7));
-                        });
-                      }),
-                  IconButton(
-                      icon: const Icon(color: Colors.black, Icons.west),
-                      onPressed: () {
-                        setState(() {
-                          startDate = startDate.subtract(Duration(days: 7));
-                        });
-                      })
-                ],
-              )
+                      },
+                    ),
+                    const Text(
+                      ' Events',
+                      style: TextStyle(
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
-          drawer: Drawer(),
-          body: ListView(
-            children: List.generate(DateTime.daysPerWeek, (index) {
-              //This generates 7 MultiDayCard in a vertical list
-              return MultiDayCard(index, startDate);
-            }),
-          ),
+          actions: [
+            MenuAnchor(
+              builder: (BuildContext context, MenuController controller,
+                  Widget? child) {
+                return IconButton(
+                  color: Colors.black,
+                  onPressed: () {
+                    if (controller.isOpen) {
+                      controller.close();
+                    } else {
+                      controller.open();
+                    }
+                  },
+                  icon: const Icon(Icons.more_vert),
+                  tooltip: 'Show menu',
+                );
+              },
+              menuChildren: [
+                IconButton(
+                    icon: const Icon(
+                        color: Colors.black, Icons.calendar_month_rounded),
+                    onPressed: () async {
+                      DateTime? picked = await showDatePicker(
+                        context: context,
+                        initialDate: startDate,
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime(2101),
+                      );
+                      if (picked != null) {
+                        setState(() {
+                          startDate = mostRecentMonday(picked);
+                        });
+                      }
+                    }),
+                IconButton(
+                    icon: const Icon(color: Colors.black, Icons.east),
+                    onPressed: () {
+                      setState(() {
+                        startDate = getDateOnly(startDate, offsetDays: 7);
+                      });
+                    }),
+                IconButton(
+                    icon: const Icon(color: Colors.black, Icons.west),
+                    onPressed: () {
+                      setState(() {
+                        startDate = getDateOnly(startDate, offsetDays: -7);
+                      });
+                    })
+              ],
+            )
+          ],
+        ),
+        drawer: Drawer(),
+        body: ListView(
+          children: List.generate(DateTime.daysPerWeek, (index) {
+            //This generates 7 MultiDayCard in a vertical list
+            return MultiDayCard(index, startDate);
+          }),
         ),
       ),
     );
@@ -174,27 +172,6 @@ class _MultiDayCardState extends State<MultiDayCard> {
               eventCount = value.length;
               eventsToday = value;
             }));
-  }
-
-  String weekdayToString(int weekday) {
-    switch (weekday) {
-      case 1:
-        return "Mon";
-      case 2:
-        return "Tue";
-      case 3:
-        return "Wed";
-      case 4:
-        return "Thu";
-      case 5:
-        return "Fri";
-      case 6:
-        return "Sat";
-      case 7:
-        return "Sun";
-      default:
-        return "";
-    }
   }
 
   @override
@@ -230,7 +207,7 @@ class _MultiDayCardState extends State<MultiDayCard> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(weekdayToString(dateToDisplay.weekday)),
+                    Text(DateFormat('EE').format(getDateOnly(startDate, offsetDays: index))),
                     Text(monthDayDisplayed),
                   ],
                 ),

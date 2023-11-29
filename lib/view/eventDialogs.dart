@@ -145,13 +145,17 @@ Future<Event?> _showEditPopup(
     BuildContext context, Event event, DateTime date) async {
   DatabaseService db = DatabaseService();
   TextEditingController nameController = TextEditingController();
+  nameController.text = event.name;
   TextEditingController descriptionController = TextEditingController();
+  descriptionController.text = event.description;
   TextEditingController locationController = TextEditingController();
+  locationController.text = event.location;
   TextEditingController colorController = TextEditingController();
+  colorController.text = event.color;
   TextEditingController tagController = TextEditingController();
   TextEditingController recRulesController = TextEditingController();
-  DateTime timeStart = DateTime.now();
-  DateTime timeEnd = DateTime.now();
+  DateTime timeStart = event.timeStart;
+  DateTime timeEnd = event.timeEnd;
 
   Completer<Event?> completer = Completer<Event?>();
 
@@ -195,7 +199,7 @@ Future<Event?> _showEditPopup(
                   timeStart = DateTime(date.year, date.month, date.day,
                       startTOD!.hour, startTOD.minute);
                 },
-                child: const Text("Choose start time"),
+                child: Text(DateFormat("h:mma").format(event.timeStart)),
               ),
               ElevatedButton(
                 onPressed: () async {
@@ -204,7 +208,7 @@ Future<Event?> _showEditPopup(
                   timeEnd = DateTime(date.year, date.month, date.day,
                       startTOD!.hour, startTOD.minute);
                 },
-                child: const Text("Choose end time"),
+                child: Text(DateFormat("h:mma").format(event.timeEnd)),
               ),
             ],
           ),
