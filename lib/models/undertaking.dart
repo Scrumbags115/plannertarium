@@ -75,7 +75,7 @@ class Undertaking {
       _color = map['hex color'];
       _tags = [];
       map['tags'].forEach((tag) {
-        _tags.add(tag.toString());
+        _tags.add(tag.toString()); // list of tag IDs
       });
       _recurrenceRules = Recurrence.fromMap(map['recurrence rules']);
       _timeStart = toDateIfTimestamp(map['time start']);
@@ -96,7 +96,7 @@ class Undertaking {
       'hex color': _color,
       'recurrence rules':
           keepClasses ? _recurrenceRules : _recurrenceRules.toMap(),
-      'tags': keepClasses ? _tags : _tags.toList(),
+      'tags': keepClasses ? _tags : _tags.toList(), // list of tag IDs
       'time start': _timeStart,
       'time created': _timeCreated,
       'time modified': timeModified
@@ -141,12 +141,12 @@ class Undertaking {
 
   set tags(List<String> newTags) {
     timeModified = DateTime.now();
-    _tags = newTags;
+    _tags = newTags; // list of tag IDs
   }
 
   void addTag(String newTag) {
     timeModified = DateTime.now();
-    _tags.add(newTag);
+    _tags.add(newTag); // list of tag IDs
   }
 
   List<String> get tags => _tags;
@@ -211,7 +211,7 @@ class Undertaking {
         _description == other._description &&
         _location == other._location &&
         _color == other._color &&
-        listEquals(_tags, other._tags) &&
+        listEquals(_tags, other._tags) && // list of tag IDs
         _recurrenceRules == other._recurrenceRules &&
         _timeStart == other._timeStart &&
         _timeCreated == other._timeCreated;
@@ -225,7 +225,7 @@ class Undertaking {
       _description,
       _location,
       _color,
-      _tags.toString(),
+      _tags.toString(), // list of tag IDs
       _recurrenceRules.toString(),
       _timeStart,
       _timeCreated,

@@ -1,4 +1,3 @@
-
 import 'package:planner/common/login.dart';
 import 'package:planner/common/recurrence.dart';
 import 'package:planner/models/event.dart';
@@ -7,7 +6,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/view/eventView.dart';
-import 'package:planner/common/canvas.dart';
 
 var auth = FirebaseAuth.instanceFor(
     app: Firebase.app(), persistence: Persistence.LOCAL);
@@ -36,12 +34,12 @@ class MyAppState extends State<MyApp> {
   final List<String> _toDoItems = [];
   final TextEditingController _controller = TextEditingController();
 
-  final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+  final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
+      GlobalKey<ScaffoldMessengerState>();
 
   @override
   void initState() {
     super.initState();
-
 
     // Start listening to changes.
     _controller.addListener(_printLatestValue);
@@ -109,27 +107,36 @@ class MyAppState extends State<MyApp> {
     } else if (event == "get range") {
       final dateStart = DateTime.parse("2023-11-20");
       final dateEnd = dateStart.add(const Duration(days: 8));
-      final userEventMap = await db.getEventsInDateRange(
-          dateStart: dateStart, dateEnd: dateEnd);
+      final userEventMap =
+          await db.getEventsInDateRange(dateStart: dateStart, dateEnd: dateEnd);
       print(userEventMap);
 
       userEventMap.forEach((key, value) {
         print(key + value.toString());
       });
       return;
-    } else if (event =="recur") {
-      Recurrence recurrenceRules = Recurrence(enabled: true, timeStart: DateTime.parse("2023-11-10"), timeEnd: DateTime.parse("2023-11-30"), dates: [true, false, false, false, false, false, false]);
-      Event e = Event(name: "test_recurrence_event_1", description: "recurrence test", tags: [], timeStart: DateTime.parse("2023-11-11"), timeEnd: DateTime.parse("2023-11-12"), recurrenceRules: recurrenceRules);
+    } else if (event == "recur") {
+      Recurrence recurrenceRules = Recurrence(
+          enabled: true,
+          timeStart: DateTime.parse("2023-11-10"),
+          timeEnd: DateTime.parse("2023-11-30"),
+          dates: [true, false, false, false, false, false, false]);
+      Event e = Event(
+          name: "test_recurrence_event_1",
+          description: "recurrence test",
+          tags: [],
+          timeStart: DateTime.parse("2023-11-11"),
+          timeEnd: DateTime.parse("2023-11-12"),
+          recurrenceRules: recurrenceRules);
       await db.setRecurringEvents(e);
     } else if (event == "delete") {
-      final List<Event> eventList = await db.getListOfEventsInDay(date: DateTime.parse("2023-11-20"));
+      final List<Event> eventList =
+          await db.getListOfEventsInDay(date: DateTime.parse("2023-11-20"));
       if (eventList.isEmpty) {
         return;
       }
       Event e = eventList.first;
       await db.deleteRecurringEvents(e);
-    } else if (event == "canvas") {
-      await getCanvasEvents();
     } else {
       // final current_user = auth.currentUser;
       // final current_uid = current_user!.uid;
@@ -137,8 +144,8 @@ class MyAppState extends State<MyApp> {
       final dateStart = DateTime.parse("2023-10-16");
       final dateEnd = dateStart.add(const Duration(days: 5));
       // final userEvent = await db.getUserEventsInDateRange(dateStart: dateStart, dateEnd: dateEnd);
-      final userEvent = await db.getEventsInDateRange(
-          dateStart: dateStart, dateEnd: dateEnd);
+      final userEvent =
+          await db.getEventsInDateRange(dateStart: dateStart, dateEnd: dateEnd);
       print(userEvent);
       // final e = userEvent.docs;
       return;
@@ -166,7 +173,6 @@ class MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-
     return MaterialApp(
       home: Scaffold(
         appBar: PreferredSize(
@@ -229,7 +235,9 @@ class MyAppState extends State<MyApp> {
       ),
     );
   }
+
   void showInSnackBar(String value) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("show in snack bar $value")));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text("show in snack bar $value")));
   }
 }
