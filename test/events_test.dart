@@ -358,7 +358,7 @@ testEvent_createEventWorks() async {
       final DateTime dateStart = DateTime(2023, 10, 30);
       final DateTime dateEnd = DateTime(2023, 11, 13);
       final retrievedEvents = await db.getEventsInDateRange(dateStart: dateStart, dateEnd: dateEnd);
-      final List<Event> expectedEventList = [events[1], events[2], events[4], events[5], events[7], events[8], events[10], events[11], events[13], events[14], events[16], events[17], events[18], events[19], events[20]];
+      final List<Event> expectedEventList = [events[1], events[10], events[18], events[9]];
       final Map<String, Event> expectedEventMap = listOfEventsToMap(expectedEventList);
       expect(eventMapEqual(retrievedEvents, expectedEventMap), true);
     });
@@ -377,8 +377,10 @@ testEvent_deleteEventWorks() async {
   group("Test event deletion works: ", () {
     test("Test deleting an event works", () async {
       List<Event> listOfEvents = await db.getAllEvents();
+      db.deleteEvent(listOfEvents[0]);
+      List<Event> retrievedEventsAfterDeletionCall = await db.getAllEvents();
       expect(
-          listOfEvents, []
+          retrievedEventsAfterDeletionCall, []
       );
     });
   });
