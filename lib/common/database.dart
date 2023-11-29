@@ -582,8 +582,10 @@ class DatabaseService {
     Tag tag;
 
     try {
+      // attempt to get tag
       tag = await getTagByName(tagName);
     } catch (e) {
+      // if tag doesn't exist, return empty list
       return out;
     }
 

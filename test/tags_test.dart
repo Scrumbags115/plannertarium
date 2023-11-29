@@ -272,6 +272,15 @@ tags_AuxilliaryFunctions() {
     res = await db.getUndertakingsWithTag("fake tag name");
     expect(res, [], reason: "Tag should not exist");
   });
+
+  test("Test getTagByName", () async {
+    var res = await db.getTagByName(tags[0].name);
+    expect(res, tags[0], reason: "Tag should exist");
+
+    // res = await db.getTagByName("fake tag name");
+    expect(() async => await db.getTagByName("fake tag name"), throwsException,
+        reason: "Tag should not exist");
+  });
 }
 
 tags_TagCSVToList() {
