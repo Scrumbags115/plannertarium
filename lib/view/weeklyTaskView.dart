@@ -4,6 +4,8 @@ import 'package:planner/common/time_management.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/view/taskView.dart';
 import 'package:planner/view/monthlyTaskView.dart';
+import 'package:planner/common/time_management.dart';
+import 'package:planner/view/weekView.dart';
 
 class WeeklyTaskView extends StatefulWidget {
   const WeeklyTaskView({super.key});
@@ -156,24 +158,91 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
 
   @override
   Widget build(BuildContext context) {
+    bool forEvents = false;
     DateTime today = DateTime.now();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tasks'),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        leading: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Expanded(
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () {
+                  loadPreviousWeek();
+                },
+              ),
+            ),
+            const SizedBox(width: 5),
+            Expanded(
+              child: IconButton(
+                icon: const Icon(Icons.calendar_month_rounded,
+                    color: Colors.black),
+                onPressed: () {
+                  datePicker();
+                },
+              ),
+            ),
+          ],
+        ),
+        title: Center(
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    const SizedBox(width: 20),
+                    const Text(
+                      'Tasks ',
+                      style: TextStyle(
+                        color: Colors.black,
+                      ),
+                    ),
+                    Switch(
+                      // thumb color (round icon)
+                      activeColor: Colors.white,
+                      activeTrackColor: Colors.cyan,
+                      inactiveThumbColor: Colors.blueGrey.shade600,
+                      inactiveTrackColor: Colors.grey.shade400,
+                      splashRadius: 50.0,
+                      value: forEvents,
+                      onChanged: (value) {
+                        setState(() {
+                          forEvents = value;
+                        });
+                        if (forEvents) {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => WeekView(),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                    const Text(
+                      ' Events',
+                      style: TextStyle(
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
         actions: [
           IconButton(
-              icon: const Icon(Icons.calendar_month_rounded),
-              onPressed: () {
-                datePicker();
-              }),
-          IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: const Icon(Icons.search, color: Colors.black),
             onPressed: () {
-              loadPreviousWeek();
+              //showSearchBar();
             },
           ),
           IconButton(
-            icon: const Icon(Icons.arrow_forward),
+            icon: const Icon(Icons.arrow_forward, color: Colors.black),
             onPressed: () {
               loadNextWeek();
             },
@@ -185,7 +254,12 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
           // print('swipe detected');
           if (details.primaryVelocity! < 0) {
             Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => const MonthlyTaskView(),
+              builder: (context) => MonthlyTaskView(),
+            ));
+          }
+          if (details.primaryVelocity! > 0) {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => const taskView(),
             ));
           }
         },
