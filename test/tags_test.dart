@@ -118,12 +118,13 @@ List<Tag> tags = [
 ];
 
 main() async {
-  await addRemoveTags();
-  await auxilliaryFunctions();
+  await tags_AddRemoveTags();
+  await tags_AuxilliaryFunctions();
+  tags_TagCSVToList();
 }
 
 // test adding a tag to a task
-addRemoveTags() async {
+tags_AddRemoveTags() async {
   late DatabaseService db;
   late Tag testTag;
   String newUser = "taskUser${DateTime.now().millisecondsSinceEpoch}";
@@ -219,7 +220,7 @@ addRemoveTags() async {
   });
 }
 
-auxilliaryFunctions() {
+tags_AuxilliaryFunctions() {
   late DatabaseService db;
   late Tag testTag;
   String newUser = "taskUser${DateTime.now().millisecondsSinceEpoch}";
@@ -270,5 +271,42 @@ auxilliaryFunctions() {
     // check a random fake tag
     res = await db.getUndertakingsWithTag("fake tag name");
     expect(res, [], reason: "Tag should not exist");
+  });
+}
+
+tags_TagCSVToList() {
+  String noCommas = "tag1";
+  String oneComma = "tag1,tag2";
+  String commaAndSpace = "tag1, tag2";
+  String commaAndMoreSpace = "  tag1  ,  tag2  ";
+  String justCommas = ",,,";
+  String justSpaces = "    ";
+  String justSpacesAndCommas = ", ,, , ,  ,, , ,";
+  List<String> noTags = [];
+  List<String> justTag1 = ["tag1"];
+  List<String> tag1AndTag2 = ["tag1", "tag2"];
+
+  group("Test parsing tag CSV into a list of strings", () {
+    test("No commas", () {
+      expect(tagCSVToList(noCommas), justTag1);
+    });
+    test("One comma between two tags", () {
+      expect(tagCSVToList(oneComma), tag1AndTag2);
+    });
+    test("One comma followed by space between two tags", () {
+      expect(tagCSVToList(commaAndSpace), tag1AndTag2);
+    });
+    test("One comma between two tags with extra spaces around each tag", () {
+      expect(tagCSVToList(commaAndMoreSpace), tag1AndTag2);
+    });
+    test("There are only commas entered", () {
+      expect(tagCSVToList(justCommas), noTags);
+    });
+    test("There are only spaces entered", () {
+      expect(tagCSVToList(justSpaces), noTags);
+    });
+    test("There are only spaces and commas entered", () {
+      expect(tagCSVToList(justSpacesAndCommas), noTags);
+    });
   });
 }

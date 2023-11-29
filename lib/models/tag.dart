@@ -84,3 +84,13 @@ class Tag {
   // TODO: implement hashCode
   int get hashCode => Object.hash(_name, _id, _color, _includedIDs);
 }
+
+/// Given some tags separated by commas, separates them into a list of strings without whitespace
+List<String> tagCSVToList(String csv) {
+  List<String> tagsWithWhitespace = csv.split(",");
+  for (int i = 0; i < tagsWithWhitespace.length; i++) {
+    tagsWithWhitespace[i] = tagsWithWhitespace[i].trim();
+  }
+  tagsWithWhitespace.removeWhere((tag) => tag == "");
+  return tagsWithWhitespace;
+}
