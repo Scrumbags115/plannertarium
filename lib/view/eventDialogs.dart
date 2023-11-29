@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import 'dart:async';
 import 'package:planner/common/database.dart';
 import 'package:planner/models/event.dart';
+import 'package:intl/intl.dart';
 
 Future<Event?> addEventFormForDay(BuildContext context, DateTime date) async {
   DatabaseService db = DatabaseService();
@@ -20,7 +21,7 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime date) async {
     builder: (context) {
       return SingleChildScrollView(
         child: AlertDialog(
-          title: const Text('Add Event'),
+          title: Text('Add Event on ${date.month}/${date.day}/${date.year}'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
@@ -115,8 +116,8 @@ void showEventDetailPopup(BuildContext context, Event event, DateTime date) {
             Text('Title: ${event.name}'),
             Text('Description: ${event.description}'),
             Text('Location: ${event.location}'),
-            Text('Starts at: ${event.timeStart.hour}:${event.timeStart.minute}'),
-            Text('Ends At: ${event.timeEnd.hour}:${event.timeEnd.minute}'),
+            Text('Starts at: ${DateFormat("h:mma").format(event.timeStart)}'),
+            Text('Ends At: ${DateFormat("h:mma").format(event.timeEnd)}'),
           ],
         ),
         actions: [
@@ -144,13 +145,17 @@ Future<Event?> _showEditPopup(
     BuildContext context, Event event, DateTime date) async {
   DatabaseService db = DatabaseService();
   TextEditingController nameController = TextEditingController();
+  nameController.text = event.name;
   TextEditingController descriptionController = TextEditingController();
+  descriptionController.text = event.description;
   TextEditingController locationController = TextEditingController();
+  locationController.text = event.location;
   TextEditingController colorController = TextEditingController();
+  colorController.text = event.color;
   TextEditingController tagController = TextEditingController();
   TextEditingController recRulesController = TextEditingController();
-  DateTime timeStart = DateTime.now();
-  DateTime timeEnd = DateTime.now();
+  DateTime timeStart = event.timeStart;
+  DateTime timeEnd = event.timeEnd;
 
   Completer<Event?> completer = Completer<Event?>();
 
@@ -194,7 +199,7 @@ Future<Event?> _showEditPopup(
                   timeStart = DateTime(date.year, date.month, date.day,
                       startTOD!.hour, startTOD.minute);
                 },
-                child: const Text("Choose start time"),
+                child: Text(DateFormat("h:mma").format(event.timeStart)),
               ),
               ElevatedButton(
                 onPressed: () async {
@@ -203,7 +208,7 @@ Future<Event?> _showEditPopup(
                   timeEnd = DateTime(date.year, date.month, date.day,
                       startTOD!.hour, startTOD.minute);
                 },
-                child: const Text("Choose end time"),
+                child: Text(DateFormat("h:mma").format(event.timeEnd)),
               ),
             ],
           ),
