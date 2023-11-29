@@ -16,8 +16,10 @@ DateTime toDateIfTimestamp(dynamic t) {
   throw Exception("Trying to get Date out of $t");
 }
 
-DateTime getDateOnly(DateTime dateTime, {int offsetDays = 0, int offsetMonths = 0}) {
-  return DateTime(dateTime.year, dateTime.month + offsetMonths, dateTime.day + offsetDays);
+DateTime getDateOnly(DateTime dateTime,
+    {int offsetDays = 0, int offsetMonths = 0}) {
+  return DateTime(
+      dateTime.year, dateTime.month + offsetMonths, dateTime.day + offsetDays);
 }
 
 void verifyDateStartEnd(DateTime start, DateTime end) {
@@ -27,7 +29,7 @@ void verifyDateStartEnd(DateTime start, DateTime end) {
 }
 
 DateTime mostRecentMonday(DateTime date) {
-  return getDateOnly(date, offsetDays: (1-date.weekday));
+  return getDateOnly(date, offsetDays: (1 - date.weekday));
 }
 
 DateTime getMonthAsDateTime(DateTime day) {
@@ -35,5 +37,9 @@ DateTime getMonthAsDateTime(DateTime day) {
 }
 
 DateTime getNextMonthAsDateTime(DateTime day) {
-  return DateTime(day.year, day.month+1, 1);
+  return DateTime(day.year, day.month + 1, 1);
+}
+
+String getDateAsString(DateTime day) {
+  return "${day.month}/${day.day}/${day.year}";
 }
