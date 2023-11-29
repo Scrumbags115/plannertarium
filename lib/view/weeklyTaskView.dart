@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/view/taskView.dart';
 import 'package:planner/view/monthlyTaskView.dart';
-import 'package:planner/common/time_management.dart';
 
 class WeeklyTaskView extends StatefulWidget {
   const WeeklyTaskView({super.key});
@@ -64,14 +61,14 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
   void loadPreviousWeek() async {
     await fetchData();
     setState(() {
-      today = today.subtract(Duration(days: 7));
+      today = today.subtract(const Duration(days: 7));
       generateScreen(today);
     });
   }
 
   void loadNextWeek() async {
     setState(() {
-      today = today.add(Duration(days: 7));
+      today = today.add(const Duration(days: 7));
     });
     await fetchData();
     generateScreen(today);
@@ -188,7 +185,7 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
           // print('swipe detected');
           if (details.primaryVelocity! < 0) {
             Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => MonthlyTaskView(),
+              builder: (context) => const MonthlyTaskView(),
             ));
           }
         },

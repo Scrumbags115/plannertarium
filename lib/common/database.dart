@@ -80,6 +80,11 @@ class DatabaseService {
         .set(event.toMap());
   }
 
+  /// delete an event from the database
+  Future<void> deleteEvent(Event event) async {
+    return await users.doc(userid).collection('events').doc(event.id).delete();
+  }
+
   /// Get all events within a date range as a Map
   /// Returns a map, with the eventID being the key and value being an Event class
   Future<Map<String, Event>> getEventsInDateRange(
@@ -93,15 +98,17 @@ class DatabaseService {
         .doc(userid)
         .collection("events")
         .where("time start",
-            isGreaterThanOrEqualTo: timestampStart,
+            isGreaterThanOrEqualTo: timestampStart)
+        .where("time start",
             isLessThanOrEqualTo: timestampEnd)
         .get();
 
     final QuerySnapshot<Map<String, dynamic>> eventsTimeEndInRange = await users
         .doc(userid)
         .collection("events")
-        .where("event time end",
-            isGreaterThanOrEqualTo: timestampStart,
+        .where("time end",
+            isGreaterThanOrEqualTo: timestampStart)
+        .where("time end",
             isLessThanOrEqualTo: timestampEnd)
         .get();
 
@@ -218,6 +225,8 @@ class DatabaseService {
   }
 
   /// add all recurring events in the database
+  ///
+  /// given an event with recurrence enabled, create/set all recurring events in the DB
   Future<void> setRecurringEvents(Event e) async {
     List<Event> recurringEvents = e.generateRecurringEvents();
     for (final e in recurringEvents) {
@@ -239,7 +248,7 @@ class DatabaseService {
       // search the corresponding events on that day for the right recurrence ID
       eventList.forEach((docID, event) {
         if (event.recurrenceRules.id == parentID) {
-          // if the recurrence ID matches, delete
+            // if the recurrence ID matches, delete
           users.doc(userid).collection("events").doc(docID).delete();
         }
       });

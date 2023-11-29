@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/models/task.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -7,6 +6,8 @@ import 'package:planner/view/taskView.dart';
 import 'package:planner/common/time_management.dart';
 
 class MonthlyTaskView extends StatefulWidget {
+  const MonthlyTaskView({super.key});
+
   @override
   _MonthlyTaskViewState createState() => _MonthlyTaskViewState();
 }
@@ -57,11 +58,11 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
             },
             onDaySelected: (selectedDay, focusedDay) async {
               if (!isSameDay(_selectedDay, selectedDay)) {
-                final _newTodayTasks = await db.fetchTodayTasks(selectedDay);
+                final newTodayTasks = await db.fetchTodayTasks(selectedDay);
                 setState(() {
                   _selectedDay = selectedDay;
                   _focusedDay = focusedDay;
-                  todayTasks = _newTodayTasks;
+                  todayTasks = newTodayTasks;
                 });
               }
             },
