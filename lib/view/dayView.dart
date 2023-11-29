@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
-import 'package:planner/models/task.dart';
 import 'package:planner/models/event.dart';
-import 'package:planner/view/taskDialogs.dart';
 import 'package:planner/view/eventDialogs.dart';
 
 DatabaseService db = DatabaseService();
@@ -18,21 +16,13 @@ class SingleDay extends StatefulWidget {
 
 class _SingleDayState extends State<SingleDay> {
   DateTime date;
-  List<Task> tasksDueToday = [];
   List<Event> eventsToday = [];
-  int taskCount = 0;
   int eventCount = 0;
   _SingleDayState(this.date) {
     db.getListOfEventsInDay(date: date).then((value) => setState(() {
           eventCount = value.length;
           eventsToday = value;
         }));
-    db
-        .getTasksDueDay(date)
-        .then((taskList) => setState(() {
-              taskCount = taskList.length;
-              tasksDueToday = taskList;
-            }));
   }
 
   @override
@@ -48,65 +38,6 @@ class _SingleDayState extends State<SingleDay> {
           appBar: AppBar(title: Text("${date.month}/${date.day}")),
           body: Column(
             children: [
-              //Displays the tasks for the day, along with the add task button
-              SizedBox(
-                height: 80,
-                child: Card(
-                  color: Colors.white,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          children: [
-                            const Row(
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.only(left: 5.0, top: 8.0),
-                                  child: Text(
-                                      style: TextStyle(
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 18),
-                                      "Tasks for today!"),
-                                ),
-                              ],
-                            ),
-                            Expanded(
-                              child: ListView(
-                                  scrollDirection: Axis.horizontal,
-                                  children: List.generate(taskCount, (index) {
-                                    return Row(
-                                      children: [
-                                        TaskCard(
-                                            tasksDueToday: tasksDueToday,
-                                            index: index),
-                                      ],
-                                    );
-                                  })),
-                            ),
-                          ],
-                        ),
-                      ),
-                      //Opens a dialog form to add a task for the day that is being viewed
-                      TextButton(
-                        onPressed: () async {
-                          await addTaskFormForDay(context, date);
-                        },
-                        child: Container(
-                          color: Colors.black,
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 20),
-                          child: const Text(
-                            'Add Task',
-                            style:
-                                TextStyle(color: Colors.white, fontSize: 15.0),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
               Expanded(
                 child: ListView(
                   children: List.generate(24, (index) {
@@ -213,63 +144,5 @@ class _SingleDayState extends State<SingleDay> {
                               child: Center(child: Text(item.name))))),
                 ))
             .toList());
-  }
-}
-
-class TaskCard extends StatefulWidget {
-  final List<Task> tasksDueToday;
-  final int index;
-  const TaskCard({super.key, required this.tasksDueToday, required this.index});
-
-  @override
-  _TaskCardState createState() => _TaskCardState();
-}
-
-class _TaskCardState extends State<TaskCard> {
-  TextDecoration dec = TextDecoration.none;
-
-  @override
-  Widget build(BuildContext context) {
-    Task task = widget.tasksDueToday[widget.index];
-    Color tilecolor = Colors.white;
-    if (task.completed) {
-      tilecolor = Colors.green;
-    }
-    return SizedBox(
-        height: 40,
-        child: Card(
-            color: tilecolor,
-            child: InkWell(
-              splashColor: Colors.blue.withAlpha(30),
-              onTap: () async {
-                showTaskDetailPopup(context, task);
-              },
-              onLongPress: () {
-                if (tilecolor == Colors.white) {
-                  task.completed = !task.completed;
-                  db.setTask(task);
-                  setState(() {
-                    tilecolor = Colors.green;
-                    dec = TextDecoration.lineThrough;
-                  });
-                } else {
-                  setState(() {
-                    task.completed = !task.completed;
-                    db.setTask(task);
-                    tilecolor = Colors.white;
-                    dec = TextDecoration.none;
-                  });
-                }
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                    style: TextStyle(
-                        decoration: dec,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15),
-                    task.name),
-              ),
-            )));
   }
 }

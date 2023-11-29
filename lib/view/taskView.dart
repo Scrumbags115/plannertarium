@@ -4,12 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/models/task.dart';
-import 'package:planner/view/eventView.dart';
 import 'dart:async';
 import 'package:planner/view/weekView.dart';
 import 'package:planner/view/weeklyTaskView.dart';
-import 'package:planner/view/monthlyTaskView.dart';
-import 'package:planner/view/dayView.dart';
 
 class taskView extends StatefulWidget {
   const taskView({super.key});
@@ -253,7 +250,7 @@ class _taskViewState extends State<taskView> {
                       if (forEvents) {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (context) => WeekView(),
+                            builder: (context) => const WeekView(),
                           ),
                         );
                       }
@@ -344,7 +341,7 @@ class _taskViewState extends State<taskView> {
           print('swipe detected');
           if (details.primaryVelocity! < 0) {
             Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => WeeklyTaskView(),
+              builder: (context) => const WeeklyTaskView(),
             ));
           }
           if (details.primaryVelocity! > 0) {
@@ -444,7 +441,7 @@ class _TaskCardState extends State<TaskCard> {
         }
       },
       background: Container(
-        color: Color.fromARGB(255, 255, 153, 0), // Swipe right background color
+        color: const Color.fromARGB(255, 255, 153, 0), // Swipe right background color
         alignment: Alignment.centerLeft,
         child: const Icon(
           Icons.access_time,
