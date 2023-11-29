@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:planner/view/dayView.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/models/event.dart';
-import 'package:planner/models/task.dart';
 import 'package:planner/common/time_management.dart';
-import 'package:planner/view/taskDialogs.dart';
 import 'package:planner/view/eventDialogs.dart';
 import 'package:planner/view/monthView.dart';
 import 'package:planner/view/taskView.dart';
+import 'package:intl/intl.dart';
 
 DatabaseService db = DatabaseService();
 
@@ -21,7 +20,7 @@ class WeekView extends StatefulWidget {
 class _WeekViewState extends State<WeekView> {
   bool forEvents = true;
   var scaffoldKey = GlobalKey<ScaffoldState>();
-  DateTime start = mostRecentMonday(
+  DateTime startDate = mostRecentMonday(
       DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day));
 
   @override
@@ -89,28 +88,62 @@ class _WeekViewState extends State<WeekView> {
               ],
             ),
             actions: [
-              IconButton(
-                  icon: const Icon(
-                      color: Colors.black, Icons.calendar_month_rounded),
-                  onPressed: () async {
-                    DateTime? picked = await showDatePicker(
-                      context: context,
-                      initialDate: start,
-                      firstDate: DateTime(2000),
-                      lastDate: DateTime(2101),
-                    );
-                    if (picked != null) {
-                      setState(() {
-                        start = picked;
-                      });
-                    }
-                  }),
+              MenuAnchor(
+                builder: (BuildContext context, MenuController controller,
+                    Widget? child) {
+                  return IconButton(
+                    color: Colors.black,
+                    onPressed: () {
+                      if (controller.isOpen) {
+                        controller.close();
+                      } else {
+                        controller.open();
+                      }
+                    },
+                    icon: const Icon(Icons.more_vert),
+                    tooltip: 'Show menu',
+                  );
+                },
+                menuChildren: [
+                  IconButton(
+                      icon: const Icon(
+                          color: Colors.black, Icons.calendar_month_rounded),
+                      onPressed: () async {
+                        DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: startDate,
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2101),
+                        );
+                        if (picked != null) {
+                          setState(() {
+                            startDate = mostRecentMonday(picked);
+                          });
+                        }
+                      }),
+                  IconButton(
+                      icon: const Icon(color: Colors.black, Icons.east),
+                      onPressed: () {
+                        setState(() {
+                          startDate = startDate.add(Duration(days: 7));
+                        });
+                      }),
+                  IconButton(
+                      icon: const Icon(color: Colors.black, Icons.west),
+                      onPressed: () {
+                        setState(() {
+                          startDate = startDate.subtract(Duration(days: 7));
+                        });
+                      })
+                ],
+              )
             ],
           ),
+          drawer: Drawer(),
           body: ListView(
-            children: List.generate(7, (index) {
+            children: List.generate(DateTime.daysPerWeek, (index) {
               //This generates 7 MultiDayCard in a vertical list
-              return MultiDayCard(index, start);
+              return MultiDayCard(index, startDate);
             }),
           ),
         ),
@@ -121,40 +154,64 @@ class _WeekViewState extends State<WeekView> {
 
 //Each of these navigates to dayView when tapped
 class MultiDayCard extends StatefulWidget {
-  const MultiDayCard(this.index, this.start, {super.key});
+  const MultiDayCard(this.index, this.startDate, {super.key});
   final int index;
-  final DateTime start;
+  final DateTime startDate;
 
   @override
-  State<StatefulWidget> createState() => _MultiDayCardState(index, start);
+  State<StatefulWidget> createState() => _MultiDayCardState(index, startDate);
 }
 
 class _MultiDayCardState extends State<MultiDayCard> {
   int eventCount = 0;
-  int taskCount = 0;
   List<Event> eventsToday = [];
-  List<Task> tasksDueToday = [];
-  _MultiDayCardState(this.index, this.start) {
+  int index;
+  DateTime startDate;
+  _MultiDayCardState(this.index, this.startDate) {
     db
-        .getListOfEventsInDay(date: getDateOnly(start, offsetDays: index))
+        .getListOfEventsInDay(date: getDateOnly(startDate, offsetDays: index))
         .then((value) => setState(() {
               eventCount = value.length;
               eventsToday = value;
             }));
-    db
-        .getTasksDueDay(getDateOnly(start, offsetDays: index))
-        .then((value) => setState(() {
-              taskCount = value.length;
-              tasksDueToday = value;
-            }));
   }
-  int index;
-  DateTime start;
+
+  String weekdayToString(int weekday) {
+    switch (weekday) {
+      case 1:
+        return "Mon";
+      case 2:
+        return "Tue";
+      case 3:
+        return "Wed";
+      case 4:
+        return "Thu";
+      case 5:
+        return "Fri";
+      case 6:
+        return "Sat";
+      case 7:
+        return "Sun";
+      default:
+        return "";
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    DateTime dateToDisplay = getDateOnly(start, offsetDays: index);
+    startDate = widget.startDate;
+    DateTime dateToDisplay = getDateOnly(startDate, offsetDays: index);
     String monthDayDisplayed = "${dateToDisplay.month}/${dateToDisplay.day}";
+    db
+        .getListOfEventsInDay(date: getDateOnly(startDate, offsetDays: index))
+        .then((value) {
+      if (mounted) {
+        setState(() {
+          eventCount = value.length;
+          eventsToday = value;
+        });
+      }
+    });
     return Row(
       children: [
         Flexible(
@@ -162,8 +219,22 @@ class _MultiDayCardState extends State<MultiDayCard> {
           child: SizedBox(
             width: 70,
             height: 140,
-            child: Center(
-              child: Text(monthDayDisplayed),
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => SingleDay(dateToDisplay)));
+              },
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(weekdayToString(dateToDisplay.weekday)),
+                    Text(monthDayDisplayed),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -189,82 +260,18 @@ class _MultiDayCardState extends State<MultiDayCard> {
                 },
                 child: Column(
                   children: [
-                    const Text(
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.left,
-                        "Tasks"),
                     Expanded(
                       child: Row(
                         children: [
                           Expanded(
-                            child: SizedBox(
-                              height: 40,
-                              child: ListView(
-                                scrollDirection: Axis.horizontal,
-                                children: List.generate(taskCount, (index) {
-                                  return Row(
-                                    children: [
-                                      /*TaskCard(
-                                        tasksDueToday: tasksDueToday,
-                                        index: index,
-                                      )*/
-                                    ],
-                                  );
-                                }),
-                              ),
-                            ),
+                            child: generateEventCardListView(dateToDisplay),
                           ),
                           Flexible(
                               flex: 0,
                               child: SizedBox(
-                                  height: 40,
                                   width: 40,
                                   child: Card(
-                                      child: InkWell(
-                                          onTap: () async {
-                                            await addTaskFormForDay(
-                                                context, dateToDisplay);
-                                          },
-                                          child: const Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                Icon(Icons.add_box)
-                                              ])))))
-                        ],
-                      ),
-                    ),
-                    const Text(
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.left,
-                        "Events"),
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: SizedBox(
-                              height: 40,
-                              child: ListView(
-                                scrollDirection: Axis.horizontal,
-                                children: List.generate(eventCount, (index) {
-                                  return Row(
-                                    children: [
-                                      EventCard(
-                                          eventsToday: eventsToday,
-                                          index: index,
-                                          date: dateToDisplay)
-                                    ],
-                                  );
-                                }),
-                              ),
-                            ),
-                          ),
-                          Flexible(
-                              flex: 0,
-                              child: SizedBox(
-                                  height: 40,
-                                  width: 40,
-                                  child: Card(
+                                      color: Colors.blue,
                                       child: InkWell(
                                           onTap: () async {
                                             await addEventFormForDay(
@@ -273,9 +280,7 @@ class _MultiDayCardState extends State<MultiDayCard> {
                                           child: const Column(
                                               mainAxisAlignment:
                                                   MainAxisAlignment.center,
-                                              children: [
-                                                Icon(Icons.add_box)
-                                              ])))))
+                                              children: [Icon(Icons.add)])))))
                         ],
                       ),
                     )
@@ -287,6 +292,34 @@ class _MultiDayCardState extends State<MultiDayCard> {
         ),
       ],
     );
+  }
+
+  ListView generateEventCardListView(DateTime dateToDisplay) {
+    if (eventCount == 0) {
+      return ListView(
+        shrinkWrap: true,
+        children: List.generate(eventCount, (index) {
+          return Row(
+            children: [
+              EventCard(
+                  eventsToday: eventsToday, index: index, date: dateToDisplay)
+            ],
+          );
+        }),
+      );
+    } else {
+      return ListView(
+        shrinkWrap: true,
+        children: List.generate(eventCount, (index) {
+          return Row(
+            children: [
+              EventCard(
+                  eventsToday: eventsToday, index: index, date: dateToDisplay)
+            ],
+          );
+        }),
+      );
+    }
   }
 }
 
@@ -308,21 +341,22 @@ class _EventCardState extends State<EventCard> {
   @override
   Widget build(BuildContext context) {
     Event event = widget.eventsToday[widget.index];
-    return SizedBox(
-      height: 40,
-      width: 100,
-      child: Card(
-        color: Colors.amber,
-        child: InkWell(
-          onTap: () {
-            showEventDetailPopup(context, event, widget.date);
-          },
-          child: Column(
-            children: [
-              Text(event.name),
-              Text(
-                  "${event.timeStart.hour}:${event.timeStart.minute} to ${event.timeEnd.hour}:${event.timeEnd.minute}"),
-            ],
+    return Expanded(
+      child: SizedBox(
+        height: 40,
+        child: Card(
+          color: Colors.amber,
+          child: InkWell(
+            onTap: () {
+              showEventDetailPopup(context, event, widget.date);
+            },
+            child: Column(
+              children: [
+                Text(event.name),
+                Text(
+                    "${DateFormat("h:mma").format(event.timeStart)} to ${DateFormat("h:mma").format(event.timeEnd)}")
+              ],
+            ),
           ),
         ),
       ),

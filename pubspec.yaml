@@ -44,6 +44,7 @@ dependencies:
   fake_cloud_firestore: ^2.4.3
   table_calendar: ^3.0.9
   slider_button: ^2.0.0
+  intl: ^0.18.1
   
 dev_dependencies:
   flutter_test:

@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import 'dart:async';
 import 'package:planner/common/database.dart';
 import 'package:planner/models/event.dart';
+import 'package:intl/intl.dart';
 
 Future<Event?> addEventFormForDay(BuildContext context, DateTime date) async {
   DatabaseService db = DatabaseService();
@@ -20,7 +21,7 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime date) async {
     builder: (context) {
       return SingleChildScrollView(
         child: AlertDialog(
-          title: const Text('Add Event'),
+          title: Text('Add Event on ${date.month}/${date.day}/${date.year}'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
@@ -115,8 +116,8 @@ void showEventDetailPopup(BuildContext context, Event event, DateTime date) {
             Text('Title: ${event.name}'),
             Text('Description: ${event.description}'),
             Text('Location: ${event.location}'),
-            Text('Starts at: ${event.timeStart.hour}:${event.timeStart.minute}'),
-            Text('Ends At: ${event.timeEnd.hour}:${event.timeEnd.minute}'),
+            Text('Starts at: ${DateFormat("h:mma").format(event.timeStart)}'),
+            Text('Ends At: ${DateFormat("h:mma").format(event.timeEnd)}'),
           ],
         ),
         actions: [
