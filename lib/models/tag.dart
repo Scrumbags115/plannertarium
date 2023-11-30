@@ -33,7 +33,10 @@ class Tag {
       _color = map['color'];
       _includedIDs = {};
       for (final key in map['includedIDs'].keys) {
-        _includedIDs[key] = map['includedIDs'][key];
+        _includedIDs[key] = [];
+        for (final task_string in map["includedIDs"][key]) {
+          _includedIDs[key]?.add(task_string);
+        }
       }
     } catch (e) {
       throw Exception("Given map is malformed!\n$e");
@@ -74,17 +77,30 @@ class Tag {
       'includedIDs': _includedIDs,
     };
   }
-
+  bool mapEquals(Map<String, List<String>> first, Map<String, List<String>> second) {
+    if (first.length != second.length) {
+      return false;
+    }
+    Function eq = const ListEquality().equals;
+    // now i can check by iterating through just one
+    for (final String typeString in first.keys) {
+      if (!eq(first[typeString], second[typeString])) {
+        return false;
+      }
+    }
+    return true;
+  }
   /// Operators
   @override
   bool operator ==(Object other) {
-    Function eq = const ListEquality().equals;
+    if (identical(this, other)) return true;
+    if (other is! Tag) return false;
+
     return identical(this, other) ||
-        (other is Tag &&
-            _name == other._name &&
+        (_name == other._name &&
             _id == other._id &&
             _color == other._color &&
-            eq(_includedIDs, other._includedIDs)) ||
+            mapEquals(_includedIDs, other._includedIDs)) ||
         super == other;
   }
 
