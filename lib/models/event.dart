@@ -1,6 +1,7 @@
 import 'package:planner/common/recurrence.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/models/undertaking.dart';
+import 'package:uuid/uuid.dart';
 
 // import recurrence class here
 class Event extends Undertaking {
@@ -52,7 +53,7 @@ class Event extends Undertaking {
   Event.clone(Event e, {generateNewID = false})
       : this(
             name: e.name,
-            id: generateNewID ? "${e.id}-copy-${DateTime.now().microsecondsSinceEpoch}" : e.id,
+            id: generateNewID ? "${e.id}-copy-${const Uuid().v4()}" : e.id,
             description: e.description,
             color: e.color,
             location: e.location,
@@ -64,8 +65,7 @@ class Event extends Undertaking {
             timeModified: e.timeModified);
 
   /// wrapper of clone to generate a new ID
-  Event.copy(Event e)
-      : this.clone(e, generateNewID: true);
+  Event.copy(Event e) : this.clone(e, generateNewID: true);
 
   /// Same as Event.clone()
   Event clone({generateNewID = false}) {
