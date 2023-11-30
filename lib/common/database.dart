@@ -909,39 +909,7 @@ class DatabaseService {
     return _snapshotToEvents(queriedEventResults);
   }
 
-  /// Query for tags with array-contains
-  /// takes a query, limit, collection key
-  Future<QuerySnapshot<Map<String, dynamic>>> _tagQuery(String query, int limit,
-      String collectionKey) async {
-    return await users
-        .doc(userid)
-        .collection(collectionKey)
-        .where('tags', arrayContains: query)
-        .limit(limit)
-        .get();
-  }
-
-  // /// Query for tags with array-contains
-  // /// takes a query, limit, collection key
-  // Future<QuerySnapshot<Map<String, dynamic>>> _tagQuery(
-  //     String query, int limit, String collectionKey) async {
-  //   return await users
-  //       .doc(userid)
-  //       .collection(collectionKey)
-  //       .where('tags', arrayContains: query)
-  //       .limit(limit)
-  //       .get();
-  // }
-
-  // /// Search function to query event tags
-  // /// Takes a query string and value to limit number of outputs
-  // /// Returns list of events that the query is in the tags of (not substring), with amount specified by limit
-  // Future<List<Event>> searchEventTags(String query, int limit) async {
-  //   final QuerySnapshot<Map<String, dynamic>> queriedEventResults =
-  //       await _tagQuery(query, limit, "events");
-  //   return _snapshotToEvents(queriedEventResults);
-  // }
-
+  /// Search all tasks with a query
   Future<List<Task>> searchAllTask(String query, {int limit = 100}) async {
     Set<Task> allTasks = {};
     var functionList = [
@@ -958,6 +926,7 @@ class DatabaseService {
     return allTasks.toList();
   }
 
+  /// Search all events with a query
   Future<List<Event>> searchAllEvent(String query, {int limit = 100}) async {
     Set<Event> allEvents = {};
     var functionList = [
