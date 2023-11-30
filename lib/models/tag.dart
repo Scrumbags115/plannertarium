@@ -14,7 +14,7 @@ class Tag {
   /// might replace the current _tags list in the Undertaking class with
   /// a list of Tag objects instead
   Tag(
-      {String? name,
+      {required String name,
       String? id,
       String? color,
       Map<String, List<String>>? includedIDs}) {
@@ -79,13 +79,15 @@ class Tag {
   }
 
   /// check if two includedID values are the same
-  bool includedIDEquals(Map<String, List<String>> first, Map<String, List<String>> second) {
+  bool includedIDEquals(
+      Map<String, List<String>> first, Map<String, List<String>> second) {
     // combine all the keys into one set
     Function eq = const ListEquality().equals;
     Set<String> keys = first.keys.toSet();
     keys.union(second.keys.toSet());
     for (final String typeString in keys) {
-      if ((first[typeString]??[]).isEmpty && (second[typeString]??[]).isEmpty) {
+      if ((first[typeString] ?? []).isEmpty &&
+          (second[typeString] ?? []).isEmpty) {
         continue;
       }
       if (!eq(first[typeString], second[typeString])) {
@@ -94,6 +96,7 @@ class Tag {
     }
     return true;
   }
+
   /// Operators
   @override
   bool operator ==(Object other) {
