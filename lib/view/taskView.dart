@@ -5,53 +5,62 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/models/task.dart';
 import 'dart:async';
-import 'package:planner/view/weekView.dart';
 import 'package:planner/view/weeklyTaskView.dart';
-import 'package:planner/view/monthlyTaskView.dart';
 import 'package:planner/view/dayView.dart';
 import 'package:intl/intl.dart';
+import 'package:planner/view/taskCard.dart';
 
-class taskView extends StatefulWidget {
-  const taskView({super.key});
+class TaskView extends StatefulWidget {
+  const TaskView({super.key});
 
   @override
-  _taskViewState createState() => _taskViewState();
+  TaskViewState createState() => TaskViewState();
 }
 
-class _taskViewState extends State<taskView> {
+class TaskViewState extends State<TaskView> {
   final FirebaseAuth auth = FirebaseAuth.instance;
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final User? user = FirebaseAuth.instance.currentUser;
   DatabaseService db = DatabaseService();
+
   List<Task> todayTasks = [];
   List<Task> selectedDateTasks = [];
+  List<Task> todayDelayedTasks = [];
+
   DateTime today = DateTime.now();
   bool forEvents = false;
+
   @override
+
+  /// Initializes the state of the widget.
   void initState() {
     super.initState();
     asyncInitState();
   }
 
+  /// Performs asynchronous initialization for the widget.
   void asyncInitState() async {
     todayTasks = await db.fetchTodayTasks(DateTime.now());
     setState(() {});
   }
 
+  ///A DatePicker function to prompt a calendar
+  ///Returns a selectedDate if chosen, defaulted to today if no selectedDate
   Future<DateTime?> datePicker() async {
-    DateTime? picked = await showDatePicker(
+    DateTime? selectedDate = await showDatePicker(
       context: context,
       initialDate: today,
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
     );
 
-    if (picked != null) {
-      return picked;
+    if (selectedDate != null) {
+      return selectedDate;
     }
     return today;
   }
 
+  /// A void function that asynchronously selects a date and fetches tasks for that date.
   Future<void> selectDate() async {
     DateTime selectedDate = await datePicker() ?? today;
     List<Task> newTasks = await db.fetchTodayTasks(selectedDate);
@@ -62,17 +71,15 @@ class _taskViewState extends State<taskView> {
     });
   }
 
+  ///A function that asynchronously shows a dialog for adding a new task.
   Future<Task?> addButtonForm(BuildContext context) async {
     DatabaseService db = DatabaseService();
     TextEditingController nameController = TextEditingController();
     TextEditingController descriptionController = TextEditingController();
     TextEditingController locationController = TextEditingController();
-    TextEditingController colorController = TextEditingController();
     TextEditingController tagController = TextEditingController();
-    TextEditingController recRulesController = TextEditingController();
     DateTime? dueDate;
     DateTime? startTime = DateTime.now();
-    TextEditingController dueDateController = TextEditingController();
     Completer<Task?> completer = Completer<Task?>();
 
     showDialog(
@@ -81,11 +88,9 @@ class _taskViewState extends State<taskView> {
         return AlertDialog(
           title: const Text('Add Task'),
           content: SingleChildScrollView(
-            child: Container(
-              height: MediaQuery.of(context).size.height *
-                  0.7, // Adjust the height as needed
-              width: MediaQuery.of(context).size.width *
-                  0.8, // Adjust the width as needed
+            child: SizedBox(
+              height: (MediaQuery.of(context).size.height * 0.7),
+              width: (MediaQuery.of(context).size.width * 0.8),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
@@ -102,8 +107,8 @@ class _taskViewState extends State<taskView> {
                     decoration: const InputDecoration(labelText: 'Location'),
                   ),
                   TextField(
-                    controller: colorController,
-                    decoration: const InputDecoration(labelText: 'Color'),
+                    controller: tagController,
+                    decoration: const InputDecoration(labelText: 'Tag'),
                   ),
                   Row(
                     children: [
@@ -112,7 +117,6 @@ class _taskViewState extends State<taskView> {
                         onPressed: () async {
                           startTime = await datePicker();
                           setState(() {});
-                          print(startTime);
                         },
                       ),
                       const SizedBox(width: 8),
@@ -147,7 +151,7 @@ class _taskViewState extends State<taskView> {
               child: const Text('Cancel'),
               onPressed: () {
                 Navigator.of(context).pop();
-                completer.complete(null); // Complete with null if canceled
+                completer.complete(null);
               },
             ),
             TextButton(
@@ -161,12 +165,8 @@ class _taskViewState extends State<taskView> {
                   timeDue: dueDate,
                   timeStart: startTime,
                 );
-
                 db.setTask(newTask);
-
-                // Complete with the new task
                 completer.complete(newTask);
-
                 Navigator.of(context).pop();
               },
             ),
@@ -174,11 +174,10 @@ class _taskViewState extends State<taskView> {
         );
       },
     );
-
-    // Return the Future that completes with the new task
     return completer.future;
   }
 
+  ///A void function that shows a dialog with a search bar to search for tasks.
   void showSearchBar(BuildContext context) {
     TextEditingController searchController = TextEditingController();
 
@@ -203,7 +202,7 @@ class _taskViewState extends State<taskView> {
               onPressed: () async {
                 String searchQuery = searchController.text;
                 List<Task> searchTask = await db.searchAllTask(searchQuery);
-                _showTaskDetailsDialog(searchQuery, searchTask);
+                showTaskDetailsDialog(searchQuery, searchTask);
               },
             ),
           ],
@@ -212,29 +211,35 @@ class _taskViewState extends State<taskView> {
     );
   }
 
-  void _showTaskDetailsDialog(String searchQuery, List<Task> tasks) {
+  ///A void function that searches in a query and a list of tasks to query from
+  ///Returns a list of tasks with informations of each tasks
+  void showTaskDetailsDialog(String searchQuery, List<Task> tasks) {
     showDialog(
       context: scaffoldKey.currentState!.context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Results for "$searchQuery"'),
-          content: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: tasks.map((task) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${task.completed ? "✅" : "❌"} ${task.name}',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text('  ${task.description}'),
-                  Text('  Currently on: ${getDateAsString(task.timeCurrent)}'),
-                  Text('  Date created: ${getDateAsString(task.timeCreated)}'),
-                  const Divider(),
-                ],
-              );
-            }).toList(),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: tasks.map((task) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${task.completed ? "✅" : "❌"} ${task.name}',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text('  ${task.description}'),
+                    Text(
+                        '  Currently on: ${getDateAsString(task.timeCurrent)}'),
+                    Text(
+                        '  Date created: ${getDateAsString(task.timeCreated)}'),
+                    const Divider(),
+                  ],
+                );
+              }).toList(),
+            ),
           ),
           actions: [
             TextButton(
@@ -249,26 +254,6 @@ class _taskViewState extends State<taskView> {
     );
   }
 
-  void _showTaskNotFoundDialog() {
-    showDialog(
-      context: scaffoldKey.currentState!.context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Task Not Found'),
-          content: const Text('The task with ID was not found.'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   var scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -276,8 +261,13 @@ class _taskViewState extends State<taskView> {
     return Scaffold(
       key: scaffoldKey,
       appBar: AppBar(
-        elevation: 0,
+        elevation: 1,
         backgroundColor: Colors.white,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
+        )),
         leading: IconButton(
           icon: const Icon(Icons.calendar_month_rounded, color: Colors.black),
           onPressed: () {
@@ -297,7 +287,6 @@ class _taskViewState extends State<taskView> {
                     ),
                   ),
                   Switch(
-                    // thumb color (round icon)
                     activeColor: Colors.white,
                     activeTrackColor: Colors.cyan,
                     inactiveThumbColor: Colors.blueGrey.shade600,
@@ -311,7 +300,7 @@ class _taskViewState extends State<taskView> {
                       if (forEvents) {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (context) => const WeekView(),
+                            builder: (context) => SingleDay(today),
                           ),
                         );
                       }
@@ -389,17 +378,13 @@ class _taskViewState extends State<taskView> {
             ListTile(
               leading: const Icon(Icons.logout),
               title: const Text('LogOut'),
-              onTap: () {
-                // Navigator.pop(context);
-                // fetchTodayTasks();
-              },
+              onTap: () {},
             ),
           ],
         ),
       ),
       body: GestureDetector(
         onHorizontalDragEnd: (details) {
-          print('swipe detected');
           if (details.primaryVelocity! < 0) {
             Navigator.of(context).push(MaterialPageRoute(
               builder: (context) => const WeeklyTaskView(),
@@ -422,311 +407,34 @@ class _taskViewState extends State<taskView> {
             ),
             Align(
               alignment: Alignment.bottomRight,
-              child: ClipOval(
-                child: ElevatedButton(
-                  onPressed: () async {
-                    Task? newTask = await addButtonForm(context);
-                    if (newTask != null) {
-                      setState(() {
-                        todayTasks.add(newTask);
-                      });
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(75, 75),
-                  ),
-                  child: const Icon(
-                    Icons.add_outlined,
-                    color: Colors.black,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                    0, 0, 20, 20), // Adjust the value as needed
+                child: ClipOval(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      Task? newTask = await addButtonForm(context);
+                      if (newTask != null) {
+                        setState(() {
+                          todayTasks.add(newTask);
+                        });
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey,
+                      minimumSize: const Size(75, 75),
+                    ),
+                    child: const Icon(
+                      Icons.add_outlined,
+                      color: Colors.black,
+                    ),
                   ),
                 ),
               ),
-            ),
+            )
           ],
         ),
       ),
     );
-  }
-}
-
-class TaskCard extends StatefulWidget {
-  final Task task;
-  const TaskCard({super.key, required this.task});
-
-  @override
-  _TaskCardState createState() => _TaskCardState();
-}
-
-class _TaskCardState extends State<TaskCard> {
-  DatabaseService db = DatabaseService();
-
-  Future<DateTime?> datePicker() async {
-    DateTime today = DateTime.now();
-    DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: today,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-
-    if (picked != null) {
-      return today;
-    }
-    return picked;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Dismissible(
-      key: UniqueKey(),
-      onDismissed: (direction) async {
-        if (direction == DismissDirection.startToEnd) {
-          setState(() {
-            widget.task.moveToNextDay();
-            db.setTask(widget.task);
-            print('move to next day completed');
-          });
-        } else if (direction == DismissDirection.endToStart) {
-          showDialog(
-            context: context,
-            builder: (context) {
-              return AlertDialog(
-                title: const Text('Confirm Deletion'),
-                content:
-                    const Text('Are you sure you want to delete this task?'),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Cancel'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      // Delete the task and close the dialog
-                      db.deleteTask(widget.task);
-                      print('swipe right!');
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Delete'),
-                  ),
-                ],
-              );
-            },
-          );
-        }
-      },
-      background: Container(
-        color: const Color.fromARGB(
-            255, 255, 153, 0), // Swipe right background color
-        alignment: Alignment.centerLeft,
-        child: const Icon(
-          Icons.access_time,
-          color: Colors.white,
-        ),
-      ),
-      secondaryBackground: Container(
-        color: Colors.red, // Swipe left background color
-        alignment: Alignment.centerRight,
-        child: const Icon(
-          Icons.delete,
-          color: Colors.white,
-        ),
-      ),
-      child: Card(
-        elevation: 0,
-        margin: const EdgeInsets.all(1.0),
-        child: InkWell(
-          onTap: () {
-            _showDetailPopup(context);
-          },
-          child: ListTile(
-            leading: InkWell(
-              onTap: () {
-                setState(() {
-                  widget.task.completed = !widget.task.completed;
-                  db.setTask(widget.task);
-                });
-              },
-              child: CircleAvatar(
-                backgroundColor:
-                    widget.task.completed ? Colors.green : Colors.blue,
-                child: widget.task.completed
-                    ? const Icon(Icons.check, color: Colors.white)
-                    : const Icon(Icons.circle, color: Colors.blue),
-              ),
-            ),
-            title: Text(widget.task.name),
-            subtitle: Text(widget.task.description),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showDetailPopup(BuildContext context) {
-    String formattedDate = widget.task.timeDue != null
-        ? DateFormat('yyyy-MM-dd').format(widget.task.timeDue!)
-        : ' ';
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Task Details'),
-          content: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Title: ${widget.task.name}'),
-              Text('Description: ${widget.task.description}'),
-              Text(
-                'Time: ${DateFormat('yyyy-MM-dd').format(widget.task.timeStart)}- $formattedDate',
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Close'),
-            ),
-            TextButton(
-              onPressed: () async {
-                // Wait for the _showEditPopup to complete and get the edited task
-                Task? editedTask = await _showEditPopup(context);
-                Navigator.of(context).pop();
-                // Update the state only if the user submitted changes
-                if (editedTask != null) {
-                  setState(() {});
-                }
-              },
-              child: const Text('Edit'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<Task?> _showEditPopup(BuildContext context) async {
-    DatabaseService db = DatabaseService();
-    TextEditingController nameController = TextEditingController();
-    TextEditingController descriptionController = TextEditingController();
-    TextEditingController locationController = TextEditingController();
-    TextEditingController colorController = TextEditingController();
-    TextEditingController tagController = TextEditingController();
-    TextEditingController recRulesController = TextEditingController();
-    DateTime? dueDate;
-    DateTime? startTime = DateTime.now();
-    TextEditingController dueDateController = TextEditingController();
-    Completer<Task?> completer = Completer<Task?>();
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Add Task'),
-          content: SingleChildScrollView(
-            child: Container(
-              height: MediaQuery.of(context).size.height *
-                  0.7, // Adjust the height as needed
-              width: MediaQuery.of(context).size.width *
-                  0.8, // Adjust the width as needed
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  TextField(
-                    controller: nameController,
-                    decoration: const InputDecoration(labelText: 'Task Name'),
-                  ),
-                  TextField(
-                    controller: descriptionController,
-                    decoration: const InputDecoration(labelText: 'Description'),
-                  ),
-                  TextField(
-                    controller: locationController,
-                    decoration: const InputDecoration(labelText: 'Location'),
-                  ),
-                  TextField(
-                    controller: colorController,
-                    decoration: const InputDecoration(labelText: 'Color'),
-                  ),
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.wallet),
-                        onPressed: () async {
-                          startTime = await datePicker();
-                          setState(() {});
-                          print(startTime);
-                        },
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        startTime != null
-                            ? 'Start Time: ${DateFormat('yyyy-MM-dd').format(startTime!)}'
-                            : 'No start time selected',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.calendar_month_rounded),
-                        onPressed: () async {
-                          dueDate = await datePicker();
-                        },
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'Due Time',
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                completer.complete(null); // Complete with null if canceled
-              },
-            ),
-            TextButton(
-              child: const Text('Submit'),
-              onPressed: () {
-                String name = nameController.text;
-                String description = descriptionController.text;
-                String location = locationController.text;
-                String color = colorController.text;
-                String tag = tagController.text;
-                //String recRules = recRulesController.text;
-                //String dueDate = dueDateController.text;
-
-                widget.task.name = name;
-                widget.task.description = description;
-                widget.task.location = location;
-                widget.task.color = color;
-                widget.task.color = tag;
-                //widget.task.recurrenceRules = recRules;
-
-                db.setTask(widget.task);
-
-                completer.complete(widget.task);
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-
-    // Return the Future that completes with the edited task
-    return completer.future;
   }
 }

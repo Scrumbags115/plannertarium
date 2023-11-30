@@ -4,28 +4,30 @@ import 'package:planner/common/time_management.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/view/taskView.dart';
 import 'package:planner/view/monthlyTaskView.dart';
-import 'package:planner/common/time_management.dart';
 import 'package:planner/view/weekView.dart';
+import 'package:planner/view/taskCard.dart';
 
 class WeeklyTaskView extends StatefulWidget {
   const WeeklyTaskView({super.key});
 
   @override
-  _WeeklyTaskViewState createState() => _WeeklyTaskViewState();
+  WeeklyTaskViewState createState() => WeeklyTaskViewState();
 }
 
-class _WeeklyTaskViewState extends State<WeeklyTaskView> {
-  // final FirebaseAuth _auth = FirebaseAuth.instance;
-  // final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+class WeeklyTaskViewState extends State<WeeklyTaskView> {
   final DatabaseService _db = DatabaseService();
   List<Task> _allTasks = [];
   DateTime today = getDateOnly(DateTime.now());
+
   @override
+
+  /// Initializes the state of the widget
   void initState() {
     super.initState();
     fetchData();
   }
 
+  /// Asynchronously fetches tasks for the current week
   Future<void> fetchData() async {
     List<Task> tasks = await _db.fetchWeeklyTask();
     setState(() {
@@ -33,6 +35,7 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
     });
   }
 
+  /// Asynchronously fetches tasks for the current week
   Future<List<Task>> fetchWeeklyTask() async {
     DateTime today = getDateOnly(DateTime.now());
     Map<DateTime, List<Task>> activeMap, delayedMap, completedMap;
@@ -47,11 +50,11 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
       ...?completedMap[today],
       ...?dueTasksMap[today],
     ];
-    print('All tasks for the week: $allTasks');
 
     return allTasks;
   }
 
+  /// Checks if a task is due on the current day
   bool isTaskDueOnCurrentDay(Task task, DateTime currentDate) {
     if (task.timeDue == null) {
       return false;
@@ -60,6 +63,7 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
         .isAtSameMomentAs(currentDate);
   }
 
+  /// Asynchronously loads tasks for the previous week and generates the screen
   void loadPreviousWeek() async {
     await fetchData();
     setState(() {
@@ -68,6 +72,7 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
     });
   }
 
+  /// Asynchronously loads tasks for the next week and generates the screen
   void loadNextWeek() async {
     setState(() {
       today = today.add(const Duration(days: 7));
@@ -76,32 +81,32 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
     generateScreen(today);
   }
 
+  ///A DatePicker function to prompt a calendar
+  ///Returns a selectedDate if chosen, defaulted to today if no selectedDate
   Future<void> datePicker() async {
-    DateTime? picked = await showDatePicker(
+    DateTime? selectedDate = await showDatePicker(
       context: context,
       initialDate: today,
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
     );
 
-    if (picked != null) {
+    if (selectedDate != null) {
       setState(() {
-        today = picked;
+        today = selectedDate;
       });
       await fetchData();
       generateScreen(today);
     }
   }
 
+  ///A function that generates the screen for the next 7 days
   List<Widget> generateScreen(DateTime dateStart) {
-    DateTime current = dateStart;
     List<Widget> dayWidgets = [];
 
     for (int i = 0; i < 7; i++) {
       DateTime thisMostRecentMonday = mostRecentMonday(today);
       DateTime currentDate = getDateOnly(thisMostRecentMonday, offsetDays: i);
-
-      // Use a Set to store unique tasks for each day
       Set<Task> uniqueTasksForDay = <Task>{};
 
       // Filter tasks for the current day and add them to the Set
@@ -162,7 +167,12 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
     DateTime today = DateTime.now();
     return Scaffold(
       appBar: AppBar(
-        elevation: 0,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
+        )),
+        elevation: 1,
         backgroundColor: Colors.white,
         leading: Row(
           mainAxisSize: MainAxisSize.min,
@@ -202,7 +212,6 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
                       ),
                     ),
                     Switch(
-                      // thumb color (round icon)
                       activeColor: Colors.white,
                       activeTrackColor: Colors.cyan,
                       inactiveThumbColor: Colors.blueGrey.shade600,
@@ -216,7 +225,7 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
                         if (forEvents) {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (context) => WeekView(),
+                              builder: (context) => const WeekView(),
                             ),
                           );
                         }
@@ -251,7 +260,6 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
       ),
       body: GestureDetector(
         onHorizontalDragEnd: (details) {
-          // print('swipe detected');
           if (details.primaryVelocity! < 0) {
             Navigator.of(context).push(MaterialPageRoute(
               builder: (context) => MonthlyTaskView(),
@@ -259,7 +267,7 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
           }
           if (details.primaryVelocity! > 0) {
             Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => const taskView(),
+              builder: (context) => const TaskView(),
             ));
           }
         },

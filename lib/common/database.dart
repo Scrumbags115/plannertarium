@@ -876,6 +876,18 @@ class DatabaseService {
     return _snapshotToEvents(queriedEventResults);
   }
 
+  /// Query for tags with array-contains
+  /// takes a query, limit, collection key
+  Future<QuerySnapshot<Map<String, dynamic>>> _tagQuery(
+      String query, int limit, String collectionKey) async {
+    return await users
+        .doc(userid)
+        .collection(collectionKey)
+        .where('tags', arrayContains: query)
+        .limit(limit)
+        .get();
+  }
+
   // /// Query for tags with array-contains
   // /// takes a query, limit, collection key
   // Future<QuerySnapshot<Map<String, dynamic>>> _tagQuery(

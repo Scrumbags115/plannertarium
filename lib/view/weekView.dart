@@ -28,8 +28,8 @@ class _WeekViewState extends State<WeekView> {
     return GestureDetector(
       onHorizontalDragEnd: (details) {
         if (details.primaryVelocity! > 0) {
-          Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => const MonthView()));
+          Navigator.of(context)
+              .push(MaterialPageRoute(builder: (context) => const MonthView()));
         }
       },
       child: Scaffold(
@@ -69,7 +69,7 @@ class _WeekViewState extends State<WeekView> {
                         if (!forEvents) {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (context) => taskView(),
+                              builder: (context) => TaskView(),
                             ),
                           );
                         }
@@ -207,7 +207,8 @@ class _MultiDayCardState extends State<MultiDayCard> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(DateFormat('EE').format(getDateOnly(startDate, offsetDays: index))),
+                    Text(DateFormat('EE')
+                        .format(getDateOnly(startDate, offsetDays: index))),
                     Text(monthDayDisplayed),
                   ],
                 ),
