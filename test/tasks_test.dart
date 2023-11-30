@@ -484,7 +484,6 @@ List<Task> tasksDue = [
 
 bool mapEquals(Map<DateTime, List<Task>> m1, Map<DateTime, List<Task>> m2) {
   if (m1.keys.length != m2.keys.length) {
-    // print('unequal keys');
     return false;
   }
   for (DateTime key in m1.keys) {

@@ -2,10 +2,14 @@ import 'package:planner/common/database.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:planner/common/time_management.dart';
 import 'package:planner/models/task.dart';
 import 'dart:async';
 import 'package:planner/view/weekView.dart';
+import 'package:planner/view/weeklyTaskView.dart';
 import 'package:planner/view/monthlyTaskView.dart';
+import 'package:planner/view/dayView.dart';
+import 'package:intl/intl.dart';
 
 class taskView extends StatefulWidget {
   const taskView({super.key});
@@ -20,26 +24,42 @@ class _taskViewState extends State<taskView> {
   final User? user = FirebaseAuth.instance.currentUser;
   DatabaseService db = DatabaseService();
   List<Task> todayTasks = [];
-
+  List<Task> selectedDateTasks = [];
+  DateTime today = DateTime.now();
+  bool forEvents = false;
   @override
   void initState() {
     super.initState();
-    fetchTodayTasks();
+    asyncInitState();
   }
 
-  void fetchTodayTasks() async {
-    List<Task> activeList, delayedList, completedList;
-    (activeList, delayedList, completedList) =
-        await db.getTaskMapsDay(DateTime.now());
-
-    todayTasks = [
-      ...activeList,
-      ...delayedList,
-      ...completedList
-    ];
-
+  void asyncInitState() async {
+    todayTasks = await db.fetchTodayTasks(DateTime.now());
     setState(() {});
-    print(todayTasks);
+  }
+
+  Future<DateTime?> datePicker() async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: today,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+
+    if (picked != null) {
+      return picked;
+    }
+    return today;
+  }
+
+  Future<void> selectDate() async {
+    DateTime selectedDate = await datePicker() ?? today;
+    List<Task> newTasks = await db.fetchTodayTasks(selectedDate);
+
+    setState(() {
+      today = selectedDate;
+      todayTasks = newTasks;
+    });
   }
 
   Future<Task?> addButtonForm(BuildContext context) async {
@@ -50,6 +70,8 @@ class _taskViewState extends State<taskView> {
     TextEditingController colorController = TextEditingController();
     TextEditingController tagController = TextEditingController();
     TextEditingController recRulesController = TextEditingController();
+    DateTime? dueDate;
+    DateTime? startTime = DateTime.now();
     TextEditingController dueDateController = TextEditingController();
     Completer<Task?> completer = Completer<Task?>();
 
@@ -58,38 +80,67 @@ class _taskViewState extends State<taskView> {
       builder: (context) {
         return AlertDialog(
           title: const Text('Add Task'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Task Name'),
+          content: SingleChildScrollView(
+            child: Container(
+              height: MediaQuery.of(context).size.height *
+                  0.7, // Adjust the height as needed
+              width: MediaQuery.of(context).size.width *
+                  0.8, // Adjust the width as needed
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  TextField(
+                    controller: nameController,
+                    decoration: const InputDecoration(labelText: 'Task Name'),
+                  ),
+                  TextField(
+                    controller: descriptionController,
+                    decoration: const InputDecoration(labelText: 'Description'),
+                  ),
+                  TextField(
+                    controller: locationController,
+                    decoration: const InputDecoration(labelText: 'Location'),
+                  ),
+                  TextField(
+                    controller: colorController,
+                    decoration: const InputDecoration(labelText: 'Color'),
+                  ),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.wallet),
+                        onPressed: () async {
+                          startTime = await datePicker();
+                          setState(() {});
+                          print(startTime);
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        startTime != null
+                            ? 'Start Time: ${DateFormat('yyyy-MM-dd').format(startTime!)}'
+                            : 'No start time selected',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.calendar_month_rounded),
+                        onPressed: () async {
+                          dueDate = await datePicker();
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Due Time',
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              TextField(
-                controller: descriptionController,
-                decoration: const InputDecoration(labelText: 'Description'),
-              ),
-              TextField(
-                controller: locationController,
-                decoration: const InputDecoration(labelText: 'Location'),
-              ),
-              TextField(
-                controller: colorController,
-                decoration: const InputDecoration(labelText: 'Color'),
-              ),
-              // TextField(
-              //   controller: tagController,
-              //   decoration: InputDecoration(labelText: 'Tag'),
-              // ),
-              // TextField(
-              //   controller: recRulesController,
-              //   decoration: InputDecoration(labelText: 'Recurrence Rules'),
-              // ),
-              TextField(
-                controller: dueDateController,
-                decoration: const InputDecoration(labelText: 'Due Date'),
-              ),
-            ],
+            ),
           ),
           actions: <Widget>[
             TextButton(
@@ -104,11 +155,12 @@ class _taskViewState extends State<taskView> {
               onPressed: () {
                 String name = nameController.text;
                 String description = descriptionController.text;
-
                 Task newTask = Task(
-                    name: name,
-                    description: description,
-                    );
+                  name: name,
+                  description: description,
+                  timeDue: dueDate,
+                  timeStart: startTime,
+                );
 
                 db.setTask(newTask);
 
@@ -150,15 +202,8 @@ class _taskViewState extends State<taskView> {
               child: const Text('Search'),
               onPressed: () async {
                 String searchQuery = searchController.text;
-                List<Task> searchTask = await db.getTasksOfName(searchQuery);
-
-                if (searchTask != null) {
-                  print('i am here');
-                  _showTaskDetailsDialog(searchTask);
-                } else {
-                  print('maybe');
-                  _showTaskNotFoundDialog();
-                }
+                List<Task> searchTask = await db.searchAllTask(searchQuery);
+                _showTaskDetailsDialog(searchQuery, searchTask);
               },
             ),
           ],
@@ -167,21 +212,25 @@ class _taskViewState extends State<taskView> {
     );
   }
 
-  void _showTaskDetailsDialog(List<Task> tasks) {
+  void _showTaskDetailsDialog(String searchQuery, List<Task> tasks) {
     showDialog(
       context: scaffoldKey.currentState!.context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Task Details'),
+          title: Text('Results for "$searchQuery"'),
           content: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: tasks.map((task) {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Task ID: ${task.id}'),
-                  Text('Name: ${task.name}'),
-                  Text('Description: ${task.description}'),
+                  Text(
+                    '${task.completed ? "✅" : "❌"} ${task.name}',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text('  ${task.description}'),
+                  Text('  Currently on: ${getDateAsString(task.timeCurrent)}'),
+                  Text('  Date created: ${getDateAsString(task.timeCreated)}'),
                   const Divider(),
                 ],
               );
@@ -227,16 +276,64 @@ class _taskViewState extends State<taskView> {
     return Scaffold(
       key: scaffoldKey,
       appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
         leading: IconButton(
-          icon: const Icon(Icons.menu),
+          icon: const Icon(Icons.calendar_month_rounded, color: Colors.black),
           onPressed: () {
-            scaffoldKey.currentState?.openDrawer();
+            selectDate();
           },
         ),
-        title: const Text('Task'),
+        title: Row(
+          children: <Widget>[
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  const Text(
+                    'Tasks ',
+                    style: TextStyle(
+                      color: Colors.black,
+                    ),
+                  ),
+                  Switch(
+                    // thumb color (round icon)
+                    activeColor: Colors.white,
+                    activeTrackColor: Colors.cyan,
+                    inactiveThumbColor: Colors.blueGrey.shade600,
+                    inactiveTrackColor: Colors.grey.shade400,
+                    splashRadius: 50.0,
+                    value: forEvents,
+                    onChanged: (value) {
+                      setState(() {
+                        forEvents = value;
+                      });
+                      if (forEvents) {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const WeekView(),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                  const Text(
+                    ' Events',
+                    style: TextStyle(
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
         actions: <Widget>[
           IconButton(
-            icon: const Icon(Icons.search),
+            icon: const Icon(
+              Icons.search,
+              color: Colors.black,
+            ),
             onPressed: () {
               showSearchBar(context);
             },
@@ -305,12 +402,11 @@ class _taskViewState extends State<taskView> {
           print('swipe detected');
           if (details.primaryVelocity! < 0) {
             Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) =>  const MonthlyTaskView(),
+              builder: (context) => const WeeklyTaskView(),
             ));
           }
           if (details.primaryVelocity! > 0) {
-            Navigator.of(context)
-                .push(MaterialPageRoute(builder: (context) => const WeekView()));
+            scaffoldKey.currentState?.openDrawer();
           }
         },
         child: Column(
@@ -330,7 +426,6 @@ class _taskViewState extends State<taskView> {
                 child: ElevatedButton(
                   onPressed: () async {
                     Task? newTask = await addButtonForm(context);
-
                     if (newTask != null) {
                       setState(() {
                         todayTasks.add(newTask);
@@ -340,7 +435,10 @@ class _taskViewState extends State<taskView> {
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size(75, 75),
                   ),
-                  child: const Icon(Icons.add_outlined),
+                  child: const Icon(
+                    Icons.add_outlined,
+                    color: Colors.black,
+                  ),
                 ),
               ),
             ),
@@ -353,7 +451,6 @@ class _taskViewState extends State<taskView> {
 
 class TaskCard extends StatefulWidget {
   final Task task;
-
   const TaskCard({super.key, required this.task});
 
   @override
@@ -362,6 +459,22 @@ class TaskCard extends StatefulWidget {
 
 class _TaskCardState extends State<TaskCard> {
   DatabaseService db = DatabaseService();
+
+  Future<DateTime?> datePicker() async {
+    DateTime today = DateTime.now();
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: today,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+
+    if (picked != null) {
+      return today;
+    }
+    return picked;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dismissible(
@@ -404,10 +517,11 @@ class _TaskCardState extends State<TaskCard> {
         }
       },
       background: Container(
-        color: Colors.green, // Swipe right background color
+        color: const Color.fromARGB(
+            255, 255, 153, 0), // Swipe right background color
         alignment: Alignment.centerLeft,
         child: const Icon(
-          Icons.check,
+          Icons.access_time,
           color: Colors.white,
         ),
       ),
@@ -451,6 +565,9 @@ class _TaskCardState extends State<TaskCard> {
   }
 
   void _showDetailPopup(BuildContext context) {
+    String formattedDate = widget.task.timeDue != null
+        ? DateFormat('yyyy-MM-dd').format(widget.task.timeDue!)
+        : ' ';
     showDialog(
       context: context,
       builder: (context) {
@@ -463,7 +580,7 @@ class _TaskCardState extends State<TaskCard> {
               Text('Title: ${widget.task.name}'),
               Text('Description: ${widget.task.description}'),
               Text(
-                'Time: ${widget.task.timeStart}- ${widget.task.timeDue}',
+                'Time: ${DateFormat('yyyy-MM-dd').format(widget.task.timeStart)}- $formattedDate',
               ),
             ],
           ),
@@ -500,54 +617,84 @@ class _TaskCardState extends State<TaskCard> {
     TextEditingController colorController = TextEditingController();
     TextEditingController tagController = TextEditingController();
     TextEditingController recRulesController = TextEditingController();
+    DateTime? dueDate;
+    DateTime? startTime = DateTime.now();
     TextEditingController dueDateController = TextEditingController();
-
     Completer<Task?> completer = Completer<Task?>();
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Edit Task'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Task Name'),
+          title: const Text('Add Task'),
+          content: SingleChildScrollView(
+            child: Container(
+              height: MediaQuery.of(context).size.height *
+                  0.7, // Adjust the height as needed
+              width: MediaQuery.of(context).size.width *
+                  0.8, // Adjust the width as needed
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  TextField(
+                    controller: nameController,
+                    decoration: const InputDecoration(labelText: 'Task Name'),
+                  ),
+                  TextField(
+                    controller: descriptionController,
+                    decoration: const InputDecoration(labelText: 'Description'),
+                  ),
+                  TextField(
+                    controller: locationController,
+                    decoration: const InputDecoration(labelText: 'Location'),
+                  ),
+                  TextField(
+                    controller: colorController,
+                    decoration: const InputDecoration(labelText: 'Color'),
+                  ),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.wallet),
+                        onPressed: () async {
+                          startTime = await datePicker();
+                          setState(() {});
+                          print(startTime);
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        startTime != null
+                            ? 'Start Time: ${DateFormat('yyyy-MM-dd').format(startTime!)}'
+                            : 'No start time selected',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.calendar_month_rounded),
+                        onPressed: () async {
+                          dueDate = await datePicker();
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Due Time',
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              TextField(
-                controller: descriptionController,
-                decoration: const InputDecoration(labelText: 'Description'),
-              ),
-              TextField(
-                controller: locationController,
-                decoration: const InputDecoration(labelText: 'Location'),
-              ),
-              TextField(
-                controller: colorController,
-                decoration: const InputDecoration(labelText: 'Color'),
-              ),
-              // TextField(
-              //   controller: tagController,
-              //   decoration: InputDecoration(labelText: 'Tag'),
-              // ),
-              // TextField(
-              //   controller: recRulesController,
-              //   decoration: InputDecoration(labelText: 'Recurrence Rules'),
-              // ),
-              TextField(
-                controller: dueDateController,
-                decoration: const InputDecoration(labelText: 'Due Date'),
-              ),
-            ],
+            ),
           ),
           actions: <Widget>[
             TextButton(
               child: const Text('Cancel'),
               onPressed: () {
                 Navigator.of(context).pop();
-                completer.complete(null);
+                completer.complete(null); // Complete with null if canceled
               },
             ),
             TextButton(

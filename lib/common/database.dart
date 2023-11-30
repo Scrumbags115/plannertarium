@@ -88,6 +88,11 @@ class DatabaseService {
         .set(event.toMap());
   }
 
+  /// delete an event from the database
+  Future<void> deleteEvent(Event event) async {
+    return await users.doc(userid).collection('events').doc(event.id).delete();
+  }
+
   /// Get all events within a date range as a Map
   /// Returns a map, with the eventID being the key and value being an Event class
   Future<Map<String, Event>> getEventsInDateRange(
@@ -97,21 +102,20 @@ class DatabaseService {
     // i can't do a composite search as it requires a composite index, which is not built automatically and has a limit in firestore
     // instead, get two query snapshots
     // one for catching time starts and one for catching time ends
+
     final QuerySnapshot<Map<String, dynamic>> eventsTimeStartInRange =
         await users
             .doc(userid)
             .collection("events")
-            .where("time start",
-                isGreaterThanOrEqualTo: timestampStart,
-                isLessThanOrEqualTo: timestampEnd)
+            .where("time start", isGreaterThanOrEqualTo: timestampStart)
+            .where("time start", isLessThanOrEqualTo: timestampEnd)
             .get();
 
     final QuerySnapshot<Map<String, dynamic>> eventsTimeEndInRange = await users
         .doc(userid)
         .collection("events")
-        .where("event time end",
-            isGreaterThanOrEqualTo: timestampStart,
-            isLessThanOrEqualTo: timestampEnd)
+        .where("time end", isGreaterThanOrEqualTo: timestampStart)
+        .where("time end", isLessThanOrEqualTo: timestampEnd)
         .get();
 
     // then merge everything into one single collection
@@ -232,6 +236,8 @@ class DatabaseService {
   }
 
   /// add all recurring events in the database
+  ///
+  /// given an event with recurrence enabled, create/set all recurring events in the DB
   Future<void> setRecurringEvents(Event e) async {
     List<Event> recurringEvents = e.generateRecurringEvents();
     for (final e in recurringEvents) {
@@ -577,7 +583,8 @@ class DatabaseService {
   /// Get ID of all Undertakings with the given tag
   /// Returns a list of IDs
   /// Returns empty list if tag doesn't exist
-  Future<List<String>> getUndertakingsWithTag(String tagName) async {
+  Future<List<String>> getUndertakingsWithTag(String tagName,
+      {int limit = 100}) async {
     List<String> out = [];
     Tag tag;
 
@@ -634,7 +641,6 @@ class DatabaseService {
   }
 
   /// Just a wrapper for addTagToUndertaking()
-  /// TODO: Add a check to make sure that the event is not recurring
   Future<void> addTagToEvent(Event event, Tag tag) async {
     await addTagToUndertaking(event, tag);
   }
@@ -667,7 +673,6 @@ class DatabaseService {
   }
 
   /// Just a wrapper for removeTagFromUndertaking()
-  /// TODO: Add a check to make sure that the event is not recurring
   Future<void> removeTagFromEvent(Event event, Tag tag) async {
     await removeTagFromUndertaking(event, tag);
   }
@@ -729,6 +734,55 @@ class DatabaseService {
     return getTasksDue(dateStart, nextMonth);
   }
 
+  /// Get daily and monthly tasks from a day as a single collection for each
+  /// return value is (List of daily tasks, map of monthly tasks)
+  Future<(List<Task>, Map<DateTime, List<Task>>)> fetchMonthlyTasks(
+      DateTime selectedDate) async {
+    DateTime dateStart = getDateOnly(selectedDate);
+    Map<DateTime, List<Task>> activeMap, delayedMap, completedMap;
+    (activeMap, delayedMap, completedMap) = await getTaskMapsMonth(dateStart);
+
+    var active = activeMap.map((key, value) => MapEntry(getDateOnly(key),
+        value)); // Use getDateOnly when setting tasks in the active map
+    final todayTasks = active[getDateOnly(selectedDate)] ??
+        []; // Use getDateOnly when getting tasks from the active map
+
+    return (todayTasks, active);
+  }
+
+  /// Get weekly tasks as a single list
+  Future<List<Task>> fetchWeeklyTask() async {
+    DateTime today = getDateOnly(DateTime.now());
+    Map<DateTime, List<Task>> activeMap, delayedMap, completedMap;
+
+    // Fetch task maps for the specified week
+    (activeMap, delayedMap, completedMap) = await getTaskMapsWeek(today);
+    Map<DateTime, List<Task>> dueTasksMap = await getTasksDueWeek(today);
+
+    List<Task> allTasks = [
+      ...?activeMap[today],
+      ...?delayedMap[today],
+      ...?completedMap[today],
+      ...?dueTasksMap[today],
+    ];
+    // print('All tasks for the week: $allTasks');
+
+    return allTasks;
+  }
+
+  /// Get daily tasks for a day as a single list
+  /// returns a list of tasks
+  Future<List<Task>> fetchTodayTasks(DateTime selectedDate) async {
+    List<Task> activeList, delayedList, completedList;
+    (activeList, delayedList, completedList) =
+        await getTaskMapsDay(selectedDate);
+
+    //active = activeMap;
+    final todayTasks = [...activeList, ...delayedList, ...completedList];
+
+    return todayTasks;
+  }
+
   // todo: figure out pagination support. from my findings, firestore has poor support for this when also doing queries, and this is only supported with third party services (there are libraries for 3rd parties though), which may not be free :(
   /// Perform a query on a user collection with a certain document key
   ///
@@ -749,137 +803,113 @@ class DatabaseService {
         .get();
   }
 
-  /// Turns a QuerySnapshot of tasks into a map of tasks
-  Map<String, Task> _collectTasks(
-      QuerySnapshot<Map<String, dynamic>> querySnapshot) {
-    Map<String, Task> taskMap = {};
-    for (final doc in querySnapshot.docs) {
-      taskMap[doc.id] = Task.fromMap(doc.data(), id: doc.id);
+  /// Turns a QuerySnapshot of task documents into a list of tasks
+  List<Task> _snapshotToTasks(QuerySnapshot<Map<String, dynamic>> snapshot) {
+    List<Task> taskList = [];
+    for (final doc in snapshot.docs) {
+      taskList.add(Task.fromMap(doc.data(), id: doc.id));
     }
-    return taskMap;
+    return taskList;
   }
 
-  /// Turns a QuerySnapshot of tasks into a map of tasks
-  Map<String, Event> _collectEvents(
-      QuerySnapshot<Map<String, dynamic>> querySnapshot) {
-    Map<String, Event> taskMap = {};
-    for (final doc in querySnapshot.docs) {
-      taskMap[doc.id] = Event.fromMap(doc.data(), id: doc.id);
+  /// Turns a QuerySnapshot of event documents into a list of events
+  List<Event> _snapshotToEvents(QuerySnapshot<Map<String, dynamic>> snapshot) {
+    List<Event> eventList = [];
+    for (final doc in snapshot.docs) {
+      eventList.add(Event.fromMap(doc.data(), id: doc.id));
     }
-    return taskMap;
+    return eventList;
   }
 
   /// Search function to query a task name
-  ///
   /// Takes a query string and value to limit number of outputs
-  /// Returns tasks that the query is a substring in, with amount specified by limit
-  /// Return format is map of tasks
-  Future<Map<String, Task>> searchTaskNames(String query, int limit) async {
+  /// Returns list of tasks that the query is a substring in, with amount specified by limit
+  Future<List<Task>> searchTaskName(String query, int limit) async {
     final QuerySnapshot<Map<String, dynamic>> queriedTaskResults =
         await _substringQuery(query, limit, "tasks", "name");
-    // collect outputs
-    return _collectTasks(queriedTaskResults);
+    return _snapshotToTasks(queriedTaskResults);
   }
 
   /// Search function to query a event name
-  ///
   /// Takes a query string and value to limit number of outputs
-  /// Returns events that the query is a substring in, with amount specified by limit
-  /// Return format is map of events
-  Future<Map<String, Event>> searchEventNames(String query, int limit) async {
+  /// Returns list of events that the query is a substring in, with amount specified by limit
+  Future<List<Event>> searchEventName(String query, int limit) async {
     final QuerySnapshot<Map<String, dynamic>> queriedEventResults =
         await _substringQuery(query, limit, "events", "name");
     // collect outputs
-    return _collectEvents(queriedEventResults);
+    return _snapshotToEvents(queriedEventResults);
   }
 
   /// Search function to query a task description
-  ///
   /// Takes a query string and value to limit number of outputs
-  /// Returns tasks that the query is a substring in, with amount specified by limit
-  /// Return format is map of tasks
-  Future<Map<String, Task>> searchTaskDescription(
-      String query, int limit) async {
+  /// Returns list of tasks that the query is a substring in, with amount specified by limit
+  Future<List<Task>> searchTaskDescription(String query, int limit) async {
     final QuerySnapshot<Map<String, dynamic>> queriedTaskResults =
         await _substringQuery(query, limit, "tasks", "description");
-    // collect outputs
-    return _collectTasks(queriedTaskResults);
+    return _snapshotToTasks(queriedTaskResults);
   }
 
   /// Search function to query a event description
-  ///
   /// Takes a query string and value to limit number of outputs
-  /// Returns events that the query is a substring in, with amount specified by limit
-  /// Return format is map of events
-  Future<Map<String, Event>> searchEventDescription(
-      String query, int limit) async {
+  /// Returns list of events that the query is a substring in, with amount specified by limit
+  Future<List<Event>> searchEventDescription(String query, int limit) async {
     final QuerySnapshot<Map<String, dynamic>> queriedEventResults =
         await _substringQuery(query, limit, "events", "description");
-    // collect outputs
-    return _collectEvents(queriedEventResults);
+    return _snapshotToEvents(queriedEventResults);
   }
 
   /// Search function to query a task location
-  ///
   /// Takes a query string and value to limit number of outputs
-  /// Returns tasks that the query is a substring in, with amount specified by limit
-  /// Return format is map of tasks
-  Future<Map<String, Task>> searchTaskLocation(String query, int limit) async {
+  /// Returns list of tasks that the query is a substring in, with amount specified by limit
+  Future<List<Task>> searchTaskLocation(String query, int limit) async {
     final QuerySnapshot<Map<String, dynamic>> queriedTaskResults =
         await _substringQuery(query, limit, "tasks", "location");
-    // collect outputs
-    return _collectTasks(queriedTaskResults);
+    return _snapshotToTasks(queriedTaskResults);
   }
 
   /// Search function to query a event location
-  ///
   /// Takes a query string and value to limit number of outputs
-  /// Returns events that the query is a substring in, with amount specified by limit
-  /// Return format is map of events
-  Future<Map<String, Event>> searchEventLocation(
-      String query, int limit) async {
+  /// Returns list of events that the query is a substring in, with amount specified by limit
+  Future<List<Event>> searchEventLocation(String query, int limit) async {
     final QuerySnapshot<Map<String, dynamic>> queriedEventResults =
         await _substringQuery(query, limit, "events", "location");
-    // collect outputs
-    return _collectEvents(queriedEventResults);
+    return _snapshotToEvents(queriedEventResults);
   }
 
-  /// Query for tags with array-contains
-  ///
-  /// takes a query, limit, collection key
-  Future<QuerySnapshot<Map<String, dynamic>>> _tagQuery(
-      String query, int limit, String collectionKey) async {
-    return await users
-        .doc(userid)
-        .collection(collectionKey)
-        .where('tags', arrayContains: query)
-        .limit(limit)
-        .get();
-  }
+  // /// Query for tags with array-contains
+  // /// takes a query, limit, collection key
+  // Future<QuerySnapshot<Map<String, dynamic>>> _tagQuery(
+  //     String query, int limit, String collectionKey) async {
+  //   return await users
+  //       .doc(userid)
+  //       .collection(collectionKey)
+  //       .where('tags', arrayContains: query)
+  //       .limit(limit)
+  //       .get();
+  // }
 
-  /// Search function to query task tags
-  ///
-  /// Takes a query string and value to limit number of outputs
-  /// Returns tasks that the query is in the tags of (not substring), with amount specified by limit
-  /// Return format is map of tasks
-  Future<Map<String, Task>> searchTaskTags(String query, int limit) async {
-    // tags are a little weird since they are stored as a list, and firestore doesn't support substring searching for complex types
-    // seems like the best they have available without 3rd party solutions is array-contains
-    final QuerySnapshot<Map<String, dynamic>> queriedTaskResults =
-        await _tagQuery(query, limit, "tasks");
-    // collect outputs
-    return _collectTasks(queriedTaskResults);
-  }
+  // /// Search function to query event tags
+  // /// Takes a query string and value to limit number of outputs
+  // /// Returns list of events that the query is in the tags of (not substring), with amount specified by limit
+  // Future<List<Event>> searchEventTags(String query, int limit) async {
+  //   final QuerySnapshot<Map<String, dynamic>> queriedEventResults =
+  //       await _tagQuery(query, limit, "events");
+  //   return _snapshotToEvents(queriedEventResults);
+  // }
 
-  /// Search function to query event tags
-  ///
-  /// Takes a query string and value to limit number of outputs
-  /// Returns events that the query is in the tags of (not substring), with amount specified by limit
-  /// Return format is map of events
-  Future<Map<String, Event>> searchEventTags(String query, int limit) async {
-    final QuerySnapshot<Map<String, dynamic>> queriedEventResults =
-        await _tagQuery(query, limit, "events");
-    // collect outputs
-    return _collectEvents(queriedEventResults);
+  Future<List<Task>> searchAllTask(String query, {int limit = 100}) async {
+    Set<Task> allTasks = Set();
+    var functionList = [
+      searchTaskName,
+      searchTaskDescription,
+      searchTaskLocation,
+      getUndertakingsWithTag
+    ];
+
+    for (var function in functionList) {
+      allTasks = allTasks.union((await function(query, limit)).toSet());
+    }
+
+    return allTasks.toList();
   }
 }

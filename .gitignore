@@ -38,9 +38,10 @@ app.*.symbols
 # Obfuscation related
 app.*.map.json
 
+# go away
+test/test_widget.dart
+
 # Android Studio will place build artifacts here
 /android/app/debug
 /android/app/profile
 /android/app/release
-
-CANVAS_SECRET_AUTH_TOKEN_DO_NOT_PUSH.dart

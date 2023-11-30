@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "86325497409-48anj4og1qs23qc32coqtoj8j18luft3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.planner",
+            "certificate_hash": "2984251e4c2063f278621f6544dd0061a2947d70"
+          }
+        },
+        {
           "client_id": "86325497409-a58c093vfcmjs3juft31k60449h7ko08.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
