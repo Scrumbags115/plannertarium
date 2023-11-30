@@ -5,9 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/models/task.dart';
 import 'dart:async';
-import 'package:planner/view/weekView.dart';
 import 'package:planner/view/weeklyTaskView.dart';
-import 'package:planner/view/monthlyTaskView.dart';
 import 'package:planner/view/dayView.dart';
 import 'package:intl/intl.dart';
 import 'package:planner/view/taskCard.dart';
@@ -16,45 +14,52 @@ class taskView extends StatefulWidget {
   const taskView({super.key});
 
   @override
-  _taskViewState createState() => _taskViewState();
+  taskViewState createState() => taskViewState();
 }
 
-class _taskViewState extends State<taskView> {
+class taskViewState extends State<taskView> {
   final FirebaseAuth auth = FirebaseAuth.instance;
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final User? user = FirebaseAuth.instance.currentUser;
   DatabaseService db = DatabaseService();
+
   List<Task> todayTasks = [];
   List<Task> selectedDateTasks = [];
-  DateTime today = DateTime.now();
   List<Task> todayDelayedTasks = [];
+
+  DateTime today = DateTime.now();
   bool forEvents = false;
+
   @override
+  /// Initializes the state of the widget.
   void initState() {
     super.initState();
     asyncInitState();
   }
 
+  /// Performs asynchronous initialization for the widget.
   void asyncInitState() async {
     todayTasks = await db.fetchTodayTasks(DateTime.now());
-
     setState(() {});
   }
 
+  ///A DatePicker function to prompt a calendar
+  ///Returns a selectedDate if chosen, defaulted to today if no selectedDate
   Future<DateTime?> datePicker() async {
-    DateTime? picked = await showDatePicker(
+    DateTime? selectedDate = await showDatePicker(
       context: context,
       initialDate: today,
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
     );
 
-    if (picked != null) {
-      return picked;
+    if (selectedDate != null) {
+      return selectedDate;
     }
     return today;
   }
 
+  /// A void function that asynchronously selects a date and fetches tasks for that date.
   Future<void> selectDate() async {
     DateTime selectedDate = await datePicker() ?? today;
     List<Task> newTasks = await db.fetchTodayTasks(selectedDate);
@@ -65,17 +70,15 @@ class _taskViewState extends State<taskView> {
     });
   }
 
+  ///A function that asynchronously shows a dialog for adding a new task.
   Future<Task?> addButtonForm(BuildContext context) async {
     DatabaseService db = DatabaseService();
     TextEditingController nameController = TextEditingController();
     TextEditingController descriptionController = TextEditingController();
     TextEditingController locationController = TextEditingController();
-    TextEditingController colorController = TextEditingController();
     TextEditingController tagController = TextEditingController();
-    TextEditingController recRulesController = TextEditingController();
     DateTime? dueDate;
     DateTime? startTime = DateTime.now();
-    TextEditingController dueDateController = TextEditingController();
     Completer<Task?> completer = Completer<Task?>();
 
     showDialog(
@@ -84,11 +87,9 @@ class _taskViewState extends State<taskView> {
         return AlertDialog(
           title: const Text('Add Task'),
           content: SingleChildScrollView(
-            child: Container(
-              height: MediaQuery.of(context).size.height *
-                  0.7, // Adjust the height as needed
-              width: MediaQuery.of(context).size.width *
-                  0.8, // Adjust the width as needed
+            child: SizedBox(
+              height: (MediaQuery.of(context).size.height * 0.7), 
+              width: (MediaQuery.of(context).size.width * 0.8), 
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
@@ -105,8 +106,8 @@ class _taskViewState extends State<taskView> {
                     decoration: const InputDecoration(labelText: 'Location'),
                   ),
                   TextField(
-                    controller: colorController,
-                    decoration: const InputDecoration(labelText: 'Color'),
+                    controller: tagController,
+                    decoration: const InputDecoration(labelText: 'Tag'),
                   ),
                   Row(
                     children: [
@@ -115,7 +116,6 @@ class _taskViewState extends State<taskView> {
                         onPressed: () async {
                           startTime = await datePicker();
                           setState(() {});
-                          print(startTime);
                         },
                       ),
                       const SizedBox(width: 8),
@@ -150,7 +150,7 @@ class _taskViewState extends State<taskView> {
               child: const Text('Cancel'),
               onPressed: () {
                 Navigator.of(context).pop();
-                completer.complete(null); // Complete with null if canceled
+                completer.complete(null); 
               },
             ),
             TextButton(
@@ -164,12 +164,8 @@ class _taskViewState extends State<taskView> {
                   timeDue: dueDate,
                   timeStart: startTime,
                 );
-
                 db.setTask(newTask);
-
-                // Complete with the new task
                 completer.complete(newTask);
-
                 Navigator.of(context).pop();
               },
             ),
@@ -177,11 +173,10 @@ class _taskViewState extends State<taskView> {
         );
       },
     );
-
-    // Return the Future that completes with the new task
     return completer.future;
   }
-
+  
+  ///A void function that shows a dialog with a search bar to search for tasks.
   void showSearchBar(BuildContext context) {
     TextEditingController searchController = TextEditingController();
 
@@ -206,7 +201,7 @@ class _taskViewState extends State<taskView> {
               onPressed: () async {
                 String searchQuery = searchController.text;
                 List<Task> searchTask = await db.searchAllTask(searchQuery);
-                _showTaskDetailsDialog(searchQuery, searchTask);
+                showTaskDetailsDialog(searchQuery, searchTask);
               },
             ),
           ],
@@ -215,7 +210,9 @@ class _taskViewState extends State<taskView> {
     );
   }
 
-  void _showTaskDetailsDialog(String searchQuery, List<Task> tasks) {
+  ///A void function that searches in a query and a list of tasks to query from
+  ///Returns a list of tasks with informations of each tasks
+  void showTaskDetailsDialog(String searchQuery, List<Task> tasks) {
     showDialog(
       context: scaffoldKey.currentState!.context,
       builder: (BuildContext context) {
@@ -256,26 +253,6 @@ class _taskViewState extends State<taskView> {
     );
   }
 
-  void _showTaskNotFoundDialog() {
-    showDialog(
-      context: scaffoldKey.currentState!.context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Task Not Found'),
-          content: const Text('The task with ID was not found.'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   var scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -309,7 +286,6 @@ class _taskViewState extends State<taskView> {
                     ),
                   ),
                   Switch(
-                    // thumb color (round icon)
                     activeColor: Colors.white,
                     activeTrackColor: Colors.cyan,
                     inactiveThumbColor: Colors.blueGrey.shade600,
@@ -402,8 +378,7 @@ class _taskViewState extends State<taskView> {
               leading: const Icon(Icons.logout),
               title: const Text('LogOut'),
               onTap: () {
-                // Navigator.pop(context);
-                // fetchTodayTasks();
+
               },
             ),
           ],
@@ -411,7 +386,6 @@ class _taskViewState extends State<taskView> {
       ),
       body: GestureDetector(
         onHorizontalDragEnd: (details) {
-          print('swipe detected');
           if (details.primaryVelocity! < 0) {
             Navigator.of(context).push(MaterialPageRoute(
               builder: (context) => const WeeklyTaskView(),

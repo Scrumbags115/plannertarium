@@ -1,14 +1,7 @@
 import 'package:planner/common/database.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:planner/common/time_management.dart';
 import 'package:planner/models/task.dart';
 import 'dart:async';
-import 'package:planner/view/weekView.dart';
-import 'package:planner/view/weeklyTaskView.dart';
-import 'package:planner/view/monthlyTaskView.dart';
-import 'package:planner/view/dayView.dart';
 import 'package:intl/intl.dart';
 
 class TaskCard extends StatefulWidget {
@@ -16,27 +9,31 @@ class TaskCard extends StatefulWidget {
   const TaskCard({super.key, required this.task});
 
   @override
-  _TaskCardState createState() => _TaskCardState();
+  TaskCardState createState() => TaskCardState();
 }
 
-class _TaskCardState extends State<TaskCard> {
+class TaskCardState extends State<TaskCard> {
   DatabaseService db = DatabaseService();
 
+  ///A DatePicker function to prompt a calendar
+  ///Returns a selectedDate if chosen, defaulted to today if no selectedDate
   Future<DateTime?> datePicker() async {
-    DateTime today = DateTime.now();
-    DateTime? picked = await showDatePicker(
+    DateTime todayDate = DateTime.now();
+    DateTime? selectedDate = await showDatePicker(
       context: context,
-      initialDate: today,
+      initialDate: todayDate,
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
     );
 
-    if (picked != null) {
-      return today;
+    if (selectedDate != null) {
+      return todayDate;
     }
-    return picked;
+    return selectedDate;
   }
 
+  ///A function to check if task is due today
+  ///Returns a boolean true if there is a dueDate && equals to dueDate && task is not completed
   bool isTaskDueToday() {
     DateTime today = DateTime.now();
     DateTime? dueDate = widget.task.timeDue;
@@ -48,6 +45,8 @@ class _TaskCardState extends State<TaskCard> {
         !isTaskCompleted());
   }
 
+  ///A function to check if task is completed
+  ///Returns a boolean true if task is completed
   bool isTaskCompleted() {
     bool completed = widget.task.completed;
     return completed;
@@ -59,11 +58,13 @@ class _TaskCardState extends State<TaskCard> {
       key: UniqueKey(),
       onDismissed: (direction) async {
         if (direction == DismissDirection.startToEnd) {
+          ///Gesture to delay task to next day
           setState(() {
             widget.task.moveToNextDay();
             db.setTask(widget.task);
           });
         } else if (direction == DismissDirection.endToStart) {
+          ///Gesture to delete task and prompts a dialog box for confirmation
           showDialog(
             context: context,
             builder: (context) {
@@ -73,12 +74,14 @@ class _TaskCardState extends State<TaskCard> {
                     const Text('Are you sure you want to delete this task?'),
                 actions: [
                   TextButton(
+                    ///Cancel Button
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
                     child: const Text('Cancel'),
                   ),
                   TextButton(
+                    ///Delete Button
                     onPressed: () {
                       db.deleteTask(widget.task);
                       Navigator.of(context).pop();
@@ -92,6 +95,7 @@ class _TaskCardState extends State<TaskCard> {
         }
       },
       background: Container(
+        ///Specification for gestures for delay tasks
         color: const Color.fromARGB(255, 255, 153, 0),
         alignment: Alignment.centerLeft,
         child: const Icon(
@@ -100,6 +104,7 @@ class _TaskCardState extends State<TaskCard> {
         ),
       ),
       secondaryBackground: Container(
+        ///Specification for gestures for delete task
         color: Colors.red,
         alignment: Alignment.centerRight,
         child: const Icon(
@@ -115,11 +120,13 @@ class _TaskCardState extends State<TaskCard> {
         color: isTaskDueToday() ? Colors.white : Colors.grey.withOpacity(0.5),
         margin: const EdgeInsets.fromLTRB(10, 5, 10, 5),
         child: InkWell(
+          ///Inkwell to prompt details of task
           onTap: () {
-            _showDetailPopup(context);
+            showDetailPopup(context);
           },
           child: ListTile(
             leading: InkWell(
+              ///Inkwell for setting a task completed
               onTap: () {
                 setState(() {
                   widget.task.completed = !widget.task.completed;
@@ -127,6 +134,7 @@ class _TaskCardState extends State<TaskCard> {
                 });
               },
               child: CircleAvatar(
+                ///Specifications for the looks of Inkwell for setting a task completed
                 backgroundColor: isTaskCompleted() ? Colors.green : Colors.blue,
                 child: isTaskCompleted()
                     ? const Icon(Icons.check, color: Colors.white)
@@ -134,6 +142,7 @@ class _TaskCardState extends State<TaskCard> {
               ),
             ),
             title: Text(
+              ///Specifications to cross through the taskName if task is completed
               widget.task.name,
               style: TextStyle(
                 decoration:
@@ -147,7 +156,8 @@ class _TaskCardState extends State<TaskCard> {
     );
   }
 
-  void _showDetailPopup(BuildContext context) {
+  ///A void function to prompt for details of a task
+  void showDetailPopup(BuildContext context) {
     String formattedDate = widget.task.timeDue != null
         ? DateFormat('yyyy-MM-dd').format(widget.task.timeDue!)
         : ' ';
@@ -175,12 +185,13 @@ class _TaskCardState extends State<TaskCard> {
               child: const Text('Close'),
             ),
             TextButton(
-              onPressed: () async {
-                Task? editedTask = await _showEditPopup(context);
-                Navigator.of(context).pop();
-                if (editedTask != null) {
-                  setState(() {});
-                }
+              onPressed: () {
+                showEditPopup(context).then((editedTask) {
+                  Navigator.of(context).pop();
+                  if (editedTask != null) {
+                    setState(() {});
+                  }
+                });
               },
               child: const Text('Edit'),
             ),
@@ -190,17 +201,16 @@ class _TaskCardState extends State<TaskCard> {
     );
   }
 
-  Future<Task?> _showEditPopup(BuildContext context) async {
+  ///A function to prompt for the edit details of a task
+  Future<Task?> showEditPopup(BuildContext context) async {
     DatabaseService db = DatabaseService();
     TextEditingController nameController = TextEditingController();
     TextEditingController descriptionController = TextEditingController();
     TextEditingController locationController = TextEditingController();
     TextEditingController colorController = TextEditingController();
     TextEditingController tagController = TextEditingController();
-    TextEditingController recRulesController = TextEditingController();
     DateTime? dueDate;
     DateTime? startTime = DateTime.now();
-    TextEditingController dueDateController = TextEditingController();
     Completer<Task?> completer = Completer<Task?>();
 
     showDialog(
@@ -209,11 +219,9 @@ class _TaskCardState extends State<TaskCard> {
         return AlertDialog(
           title: const Text('Add Task'),
           content: SingleChildScrollView(
-            child: Container(
-              height: MediaQuery.of(context).size.height *
-                  0.7, // Adjust the height as needed
-              width: MediaQuery.of(context).size.width *
-                  0.8, // Adjust the width as needed
+            child: SizedBox(
+              height: (MediaQuery.of(context).size.height * 0.7),
+              width: (MediaQuery.of(context).size.width * 0.8),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
@@ -230,8 +238,8 @@ class _TaskCardState extends State<TaskCard> {
                     decoration: const InputDecoration(labelText: 'Location'),
                   ),
                   TextField(
-                    controller: colorController,
-                    decoration: const InputDecoration(labelText: 'Color'),
+                    controller: tagController,
+                    decoration: const InputDecoration(labelText: 'Tag'),
                   ),
                   Row(
                     children: [
@@ -240,7 +248,6 @@ class _TaskCardState extends State<TaskCard> {
                         onPressed: () async {
                           startTime = await datePicker();
                           setState(() {});
-                          print(startTime);
                         },
                       ),
                       const SizedBox(width: 8),
@@ -275,7 +282,7 @@ class _TaskCardState extends State<TaskCard> {
               child: const Text('Cancel'),
               onPressed: () {
                 Navigator.of(context).pop();
-                completer.complete(null); // Complete with null if canceled
+                completer.complete(null);
               },
             ),
             TextButton(
@@ -286,18 +293,16 @@ class _TaskCardState extends State<TaskCard> {
                 String location = locationController.text;
                 String color = colorController.text;
                 String tag = tagController.text;
-                //String recRules = recRulesController.text;
-                //String dueDate = dueDateController.text;
 
                 widget.task.name = name;
                 widget.task.description = description;
                 widget.task.location = location;
                 widget.task.color = color;
                 widget.task.color = tag;
-                //widget.task.recurrenceRules = recRules;
-
+                widget.task.timeDue = dueDate;
+                widget.task.timeStart = startTime??DateTime.now();
+      
                 db.setTask(widget.task);
-
                 completer.complete(widget.task);
                 Navigator.of(context).pop();
               },
@@ -306,8 +311,6 @@ class _TaskCardState extends State<TaskCard> {
         );
       },
     );
-
-    // Return the Future that completes with the edited task
     return completer.future;
   }
 }
