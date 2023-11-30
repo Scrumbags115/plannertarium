@@ -1,18 +1,16 @@
 import 'package:planner/common/database.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:planner/common/login.dart';
 import 'package:planner/view/taskView.dart';
 import 'package:slider_button/slider_button.dart';
 
-
-class loginView extends StatefulWidget {
-  const loginView({super.key});
+class LoginView extends StatefulWidget {
+  const LoginView({super.key});
   @override
-  _loginViewState createState() => _loginViewState();
+  LoginViewwState createState() => LoginViewwState();
 }
 
-class _loginViewState extends State<loginView> {
+class LoginViewwState extends State<LoginView> {
   bool isLogin = false; // Assuming this is a state variable
 
   @override
@@ -23,18 +21,16 @@ class _loginViewState extends State<loginView> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
-                'Plannertarium',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                )
-              ),
+              const Text('Plannertarium',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                  )),
               const SizedBox(height: 50),
               Image.asset(
-                'assets/logo.png', 
-                width:300,
+                'assets/logo.png',
+                width: 300,
                 height: 300,
               ),
               const SizedBox(height: 300),
@@ -43,19 +39,20 @@ class _loginViewState extends State<loginView> {
                 child: SliderButton(
                   width: 200,
                   height: 60,
-                  action:() async {
-                    User? u = await runAuthFlow();
-                  DatabaseService db = DatabaseService();
-                  db.initUID(u!.uid);
-                  setState(() {
-                    isLogin = true;
-                  });
-                    Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const taskView(),
-                    ),
-                  );
+                  action: () {
+                    runAuthFlow().then((u) {
+                      DatabaseService db = DatabaseService();
+                      db.initUID(u!.uid);
+                      setState(() {
+                        isLogin = true;
+                      });
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const TaskView(),
+                        ),
+                      );
+                    });
                   },
                   label: const Text(
                     "Slide to login!",
@@ -66,7 +63,7 @@ class _loginViewState extends State<loginView> {
                     ),
                   ),
                 ),
-              ),
+              )
             ],
           ),
         ),

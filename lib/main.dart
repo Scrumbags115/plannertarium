@@ -14,7 +14,7 @@ void main() async {
   );
 
   //Uncomment below line and comment out above line to see weekView + dayView UI
-  runApp(const GetMaterialApp(home: loginView()));
+  runApp(const GetMaterialApp(home: LoginView()));
   // runApp(const MyApp());
   logout();
 }

@@ -69,7 +69,7 @@ class _WeekViewState extends State<WeekView> {
                         if (!forEvents) {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (context) => taskView(),
+                              builder: (context) => TaskView(),
                             ),
                           );
                         }

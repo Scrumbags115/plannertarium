@@ -266,7 +266,7 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
           }
           if (details.primaryVelocity! > 0) {
             Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => const taskView(),
+              builder: (context) => const TaskView(),
             ));
           }
         },
