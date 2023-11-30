@@ -4,18 +4,17 @@ class Tag {
   late String _name = ""; // tag name
   late final String _id; // tag id
   late String _color = "#ff0000"; // tag color in hex
-  late List<String> _includedIDs =
-      <String>[]; // list of IDs of undertakings with this tag
+  late Map<String, List<String>> _includedIDs = {}; // Map of type to IDs of objects of that type with this tag
 
   /// Default constructor
   /// Primarily for adding to the tags collection in the firestore, but
   /// might replace the current _tags list in the Undertaking class with
   /// a list of Tag objects instead
-  Tag({String? name, String? id, String? color, List<String>? includedIDs}) {
+  Tag({String? name, String? id, String? color, Map<String, List<String>>? includedIDs}) {
     _name = name ?? "";
     _id = id ?? DateTime.now().millisecondsSinceEpoch.toString();
     _color = color ?? "#ff0000";
-    _includedIDs = includedIDs ?? <String>[];
+    _includedIDs = includedIDs ?? {};
   }
 
   /// Constructor to get a tag obj from some valid map
@@ -25,10 +24,10 @@ class Tag {
       _name = map['name'];
       _id = map['id'];
       _color = map['color'];
-      _includedIDs = [];
-      map['includedIDs'].forEach((id) {
-        _includedIDs.add(id.toString());
-      });
+      _includedIDs = {};
+      for (final key in map['includedIDs'].keys) {
+        _includedIDs[key] = map['includedIDs'][key];
+      }
     } catch (e) {
       throw Exception("Given map is malformed!\n$e");
     }
@@ -39,7 +38,7 @@ class Tag {
       {required String name,
       required String id,
       required String color,
-      required List<String> includedIDs}) {
+      required Map<String, List<String>> includedIDs}) {
     _name = name;
     _id = id;
     _color = color;
@@ -50,12 +49,12 @@ class Tag {
   String get name => _name;
   String get id => _id;
   String get color => _color;
-  List<String> get includedIDs => _includedIDs;
+  Map<String, List<String>> get includedIDs => _includedIDs;
 
   /// Setters
   set name(String name) => _name = name;
   set color(String color) => _color = color;
-  set includedIDs(List<String> includedIDs) => _includedIDs = includedIDs;
+  set includedIDs(Map<String, List<String>> includedIDs) => _includedIDs = includedIDs;
 
   /// Convert to map
   /// Could be used later
@@ -77,7 +76,8 @@ class Tag {
             _name == other._name &&
             _id == other._id &&
             _color == other._color &&
-            eq(_includedIDs, other._includedIDs)) || super == other;
+            eq(_includedIDs, other._includedIDs)) ||
+        super == other;
   }
 
   @override
