@@ -583,9 +583,9 @@ class DatabaseService {
     }
   }
 
-  /// Get ID of all Tasks with the given tag
-  /// Returns a list of IDs
-  /// Returns empty list if tag doesn't exist
+  /// Get List of all Tasks with the given tag
+  /// Returns a List of Tasks
+  /// Returns empty List if tag doesn't exist
   Future<List<Task>> getTasksWithTag(String tagName, {int limit = 100}) async {
     List<Task> out = [];
     Tag tag;
@@ -626,7 +626,7 @@ class DatabaseService {
 
   /// Get all tags in the database
   /// Returns a list of maps, where each map is a tag and its data:
-  /// {"name": "tagName", "id": "tagID", "color": "tagColor", "includedIDs": ["taskID1", "taskID2", ...]}
+  /// {"name": "tagName", "id": "tagID", "color": "tagColor", "includedIDs": {"task": ["taskID1", "taskID2"], "event": ["eventID1", "eventID2"]}}
   /// (includedIDs is a list of task IDs)
   Future<List<Tag>> getAllTags() async {
     List<Tag> allTags = [];
