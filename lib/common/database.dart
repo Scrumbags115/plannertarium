@@ -959,7 +959,7 @@ class DatabaseService {
   }
 
   Future<List<Event>> searchAllEvent(String query, {int limit = 100}) async {
-    Set<Task> allEvents = {};
+    Set<Event> allEvents = {};
     var functionList = [
       searchEventName,
       searchEventDescription,
