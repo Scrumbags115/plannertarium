@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/models/event.dart';
@@ -101,19 +100,19 @@ List<Tag> tags = [
     name: "Tag 1",
     id: "tag-1",
     color: "#FF5733",
-    includedIDs: ["task-1"],
+    includedIDs: {"task": ["task-1"]},
   ),
   Tag(
     name: "Tag 2",
     id: "tag-2",
     color: "#3366FF",
-    includedIDs: ["task-1"],
+    includedIDs: {"task": ["task-1"]},
   ),
   Tag(
     name: "Tag 3",
     id: "tag-3",
     color: "#FF5733",
-    includedIDs: ["task-2"],
+    includedIDs: {"task": ["task-2"]},
   ),
 ];
 
@@ -143,7 +142,7 @@ tags_AddRemoveTags() async {
     }
 
     testTag = Tag(
-        name: "test tag", id: "tag-test", color: "#FFFFFF", includedIDs: []);
+        name: "test tag", id: "tag-test", color: "#FFFFFF", includedIDs: {});
   });
 
   group("Tests base task functionality first; set and get methods should work.",
@@ -238,7 +237,7 @@ tags_AuxilliaryFunctions() {
     }
 
     testTag = Tag(
-        name: "test tag", id: "tag-test", color: "#FFFFFF", includedIDs: []);
+        name: "test tag", id: "tag-test", color: "#FFFFFF", includedIDs: {});
   });
 
   test("Test getAllTags", () async {
