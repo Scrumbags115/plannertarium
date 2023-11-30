@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/view/weeklyTaskView.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:planner/view/taskView.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/view/monthView.dart';
 import 'package:planner/view/taskCard.dart';
 
 class MonthlyTaskView extends StatefulWidget {
+  const MonthlyTaskView({super.key});
   @override
-  _MonthlyTaskViewState createState() => _MonthlyTaskViewState();
+  MonthlyTaskViewState createState() => MonthlyTaskViewState();
 }
 
-class _MonthlyTaskViewState extends State<MonthlyTaskView> {
+class MonthlyTaskViewState extends State<MonthlyTaskView> {
   final CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
@@ -24,11 +23,14 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
   Map<DateTime, List<Task>> active = {};
 
   @override
+
+  /// Initializes the state of the widget
   void initState() {
     super.initState();
     asyncInitState();
   }
 
+  /// Performs asynchronous initialization for the widget
   void asyncInitState() async {
     final List<Task> newTodayTasks;
     final Map<DateTime, List<Task>> newMonthlyTasks;
@@ -40,6 +42,8 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
   }
 
   @override
+
+  /// Disposes of the resources used by the widget
   void dispose() {
     _pageController.dispose();
     super.dispose();
@@ -133,12 +137,11 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
                 },
                 onDaySelected: (selectedDay, focusedDay) async {
                   if (!isSameDay(_selectedDay, selectedDay)) {
-                    final _newTodayTasks =
-                        await db.fetchTodayTasks(selectedDay);
+                    final newTodayTasks = await db.fetchTodayTasks(selectedDay);
                     setState(() {
                       _selectedDay = selectedDay;
                       _focusedDay = focusedDay;
-                      todayTasks = _newTodayTasks;
+                      todayTasks = newTodayTasks;
                     });
                   }
                 },
@@ -147,12 +150,10 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
                 },
                 eventLoader: (day) {
                   var taskForDay = active[getDateOnly(day)] ?? [];
-                  print('TDate:$day, Task:$taskForDay');
                   return taskForDay;
                 },
                 calendarBuilders: CalendarBuilders(
                   markerBuilder: (context, date, tasks) {
-                    //print("Date: $date, Tasks: $tasks");
                     if (tasks.isNotEmpty) {
                       return Positioned(
                         right: 1,
