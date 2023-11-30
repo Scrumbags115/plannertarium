@@ -10,14 +10,14 @@ import 'package:planner/view/dayView.dart';
 import 'package:intl/intl.dart';
 import 'package:planner/view/taskCard.dart';
 
-class taskView extends StatefulWidget {
-  const taskView({super.key});
+class TaskView extends StatefulWidget {
+  const TaskView({super.key});
 
   @override
-  taskViewState createState() => taskViewState();
+  TaskViewState createState() => TaskViewState();
 }
 
-class taskViewState extends State<taskView> {
+class TaskViewState extends State<TaskView> {
   final FirebaseAuth auth = FirebaseAuth.instance;
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final User? user = FirebaseAuth.instance.currentUser;
@@ -31,6 +31,7 @@ class taskViewState extends State<taskView> {
   bool forEvents = false;
 
   @override
+
   /// Initializes the state of the widget.
   void initState() {
     super.initState();
@@ -88,8 +89,8 @@ class taskViewState extends State<taskView> {
           title: const Text('Add Task'),
           content: SingleChildScrollView(
             child: SizedBox(
-              height: (MediaQuery.of(context).size.height * 0.7), 
-              width: (MediaQuery.of(context).size.width * 0.8), 
+              height: (MediaQuery.of(context).size.height * 0.7),
+              width: (MediaQuery.of(context).size.width * 0.8),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
@@ -150,7 +151,7 @@ class taskViewState extends State<taskView> {
               child: const Text('Cancel'),
               onPressed: () {
                 Navigator.of(context).pop();
-                completer.complete(null); 
+                completer.complete(null);
               },
             ),
             TextButton(
@@ -175,7 +176,7 @@ class taskViewState extends State<taskView> {
     );
     return completer.future;
   }
-  
+
   ///A void function that shows a dialog with a search bar to search for tasks.
   void showSearchBar(BuildContext context) {
     TextEditingController searchController = TextEditingController();
@@ -377,9 +378,7 @@ class taskViewState extends State<taskView> {
             ListTile(
               leading: const Icon(Icons.logout),
               title: const Text('LogOut'),
-              onTap: () {
-
-              },
+              onTap: () {},
             ),
           ],
         ),
@@ -408,26 +407,31 @@ class taskViewState extends State<taskView> {
             ),
             Align(
               alignment: Alignment.bottomRight,
-              child: ClipOval(
-                child: ElevatedButton(
-                  onPressed: () async {
-                    Task? newTask = await addButtonForm(context);
-                    if (newTask != null) {
-                      setState(() {
-                        todayTasks.add(newTask);
-                      });
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(75, 75),
-                  ),
-                  child: const Icon(
-                    Icons.add_outlined,
-                    color: Colors.black,
+              child: Padding(
+                padding:
+                    const EdgeInsets.fromLTRB(0,0,20,20), // Adjust the value as needed
+                child: ClipOval(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      Task? newTask = await addButtonForm(context);
+                      if (newTask != null) {
+                        setState(() {
+                          todayTasks.add(newTask);
+                        });
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey,
+                      minimumSize: const Size(75, 75),
+                    ),
+                    child: const Icon(
+                      Icons.add_outlined,
+                      color: Colors.black,
+                    ),
                   ),
                 ),
               ),
-            ),
+            )
           ],
         ),
       ),
