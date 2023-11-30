@@ -77,13 +77,14 @@ class Tag {
       'includedIDs': _includedIDs,
     };
   }
+
+  /// check if two includedID values are the same
   bool includedIDEquals(Map<String, List<String>> first, Map<String, List<String>> second) {
-    if (first.length != second.length) {
-      return false;
-    }
+    // combine all the keys into one set
     Function eq = const ListEquality().equals;
-    // now i can check by iterating through just one
-    for (final String typeString in first.keys) {
+    Set<String> keys = first.keys.toSet();
+    keys.union(second.keys.toSet());
+    for (final String typeString in keys) {
       if ((first[typeString]??[]).isEmpty && (second[typeString]??[]).isEmpty) {
         continue;
       }
