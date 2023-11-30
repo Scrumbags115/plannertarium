@@ -283,17 +283,29 @@ List<Event> events = [
   ),
 ];
 
-const List<bool> RECURRENCE_DATES_MONDAY_WEDNESDAY_FRIDAY = [true, false, true, false, true, false, false];
+const List<bool> RECURRENCE_DATES_MONDAY_WEDNESDAY_FRIDAY = [
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  false
+];
 
-Event recurringEvent =
-Event(
+Event recurringEvent = Event(
   name: "Recurring Event 1",
   id: "RID-1",
   description: "Description for Recurring Event 21",
   location: "Location R1",
   color: "#3366FF",
   tags: ["Tag3"],
-  recurrenceRules: Recurrence.requireFields(enabled: true, timeStart: DateTime(2023, 11, 20), timeEnd: DateTime(2023, 12, 20), dates: RECURRENCE_DATES_MONDAY_WEDNESDAY_FRIDAY, nullOrId: "example recurrence id"),
+  recurrenceRules: Recurrence.requireFields(
+      enabled: true,
+      timeStart: DateTime(2023, 11, 20),
+      timeEnd: DateTime(2023, 12, 20),
+      dates: RECURRENCE_DATES_MONDAY_WEDNESDAY_FRIDAY,
+      nullOrId: "example recurrence id"),
   timeStart: DateTime(2023, 11, 20),
   timeEnd: DateTime(2023, 11, 21),
   timeCreated: DateTime(2023, 11, 14),
@@ -336,10 +348,10 @@ void main() async {
 }
 
 testEvent_createEventWorks() async {
-
   late DatabaseService db;
   setUp(() async {
-    db = DatabaseService.createTest(uid: "test_user_1", firestoreObject: FakeFirebaseFirestore());
+    db = DatabaseService.createTest(
+        uid: "test_user_1", firestoreObject: FakeFirebaseFirestore());
   });
 
   group("Test event creation works: ", () {
@@ -347,29 +359,34 @@ testEvent_createEventWorks() async {
       final Event event = events[0];
       await db.addEvent(event);
       Event retrievedEvent = await db.getEvent(event.id);
-      expect(
-          event, retrievedEvent
-      );
+      expect(event, retrievedEvent);
     });
-    test ("Test creating a bunch of events works", () async {
+    test("Test creating a bunch of events works", () async {
       for (final event in events) {
         await db.addEvent(event);
       }
       final DateTime dateStart = DateTime(2023, 10, 30);
       final DateTime dateEnd = DateTime(2023, 11, 13);
-      final retrievedEvents = await db.getEventsInDateRange(dateStart: dateStart, dateEnd: dateEnd);
-      final List<Event> expectedEventList = [events[1], events[10], events[18], events[9]];
-      final Map<String, Event> expectedEventMap = listOfEventsToMap(expectedEventList);
+      final retrievedEvents =
+          await db.getEventsInDateRange(dateStart: dateStart, dateEnd: dateEnd);
+      final List<Event> expectedEventList = [
+        events[1],
+        events[10],
+        events[18],
+        events[9]
+      ];
+      final Map<String, Event> expectedEventMap =
+          listOfEventsToMap(expectedEventList);
       expect(eventMapEqual(retrievedEvents, expectedEventMap), true);
     });
   });
 }
 
-
 testEvent_deleteEventWorks() async {
   late DatabaseService db;
   setUp(() async {
-    db = DatabaseService.createTest(uid: "test_user_1", firestoreObject: FakeFirebaseFirestore());
+    db = DatabaseService.createTest(
+        uid: "test_user_1", firestoreObject: FakeFirebaseFirestore());
     final Event event = events[0];
     await db.addEvent(event);
   });
@@ -379,9 +396,7 @@ testEvent_deleteEventWorks() async {
       List<Event> listOfEvents = await db.getAllEvents();
       db.deleteEvent(listOfEvents[0]);
       List<Event> retrievedEventsAfterDeletionCall = await db.getAllEvents();
-      expect(
-          retrievedEventsAfterDeletionCall, []
-      );
+      expect(retrievedEventsAfterDeletionCall, []);
     });
   });
 }
@@ -398,7 +413,8 @@ bool checkEventNamesAreSame(List<Event> listOfEvents, String eventName) {
 }
 
 /// For a map of events, check each event's timeStart with a list of datetimes
-bool checkEventDateTimesAreValid(Map<String, Event> mapOfEvents, List<DateTime> listOfDateTimes) {
+bool checkEventDateTimesAreValid(
+    Map<String, Event> mapOfEvents, List<DateTime> listOfDateTimes) {
   var index = 0;
   for (final event in mapOfEvents.values) {
     if (listOfDateTimes[index] != event.timeStart) {
@@ -412,52 +428,55 @@ bool checkEventDateTimesAreValid(Map<String, Event> mapOfEvents, List<DateTime> 
 testEvent_recurringEventCreationWorks() async {
   late DatabaseService db;
   setUp(() async {
-    db = DatabaseService.createTest(uid: "test_user_12", firestoreObject: FakeFirebaseFirestore());
+    db = DatabaseService.createTest(
+        uid: "test_user_12", firestoreObject: FakeFirebaseFirestore());
   });
 
   group("Test event recurrence creation works: ", () {
     test("Test creating a recurring event works", () async {
       await db.setRecurringEvents(recurringEvent);
       final List<Event> listOfEvents = await db.getAllEvents();
-      expect(
-          listOfEvents.length, 13
-      );
-      expect(
-        checkEventNamesAreSame(listOfEvents, recurringEvent.name), true
-      );
-      final Map<String, Event> retrievedEvents = await db.getEventsInDateRange(dateStart: DateTime(2023, 11, 26), dateEnd: DateTime(2023, 12, 2));
-      expect(
-        retrievedEvents.length, 3
-      );
-      final List<DateTime> dateTimeList = [DateTime(2023, 11, 27), DateTime(2023, 11, 29), DateTime(2023, 12, 1)];
+      expect(listOfEvents.length, 13);
+      expect(checkEventNamesAreSame(listOfEvents, recurringEvent.name), true);
+      final Map<String, Event> retrievedEvents = await db.getEventsInDateRange(
+          dateStart: DateTime(2023, 11, 26), dateEnd: DateTime(2023, 12, 2));
+      expect(retrievedEvents.length, 3);
+      final List<DateTime> dateTimeList = [
+        DateTime(2023, 11, 27),
+        DateTime(2023, 11, 29),
+        DateTime(2023, 12, 1)
+      ];
       expect(checkEventDateTimesAreValid(retrievedEvents, dateTimeList), true);
     });
   });
 }
 
-
 testEvent_recurringEventDeletionWorks() async {
   late DatabaseService db;
   setUp(() async {
-    db = DatabaseService.createTest(uid: "test_user_12", firestoreObject: FakeFirebaseFirestore());
+    db = DatabaseService.createTest(
+        uid: "test_user_12", firestoreObject: FakeFirebaseFirestore());
     await db.setRecurringEvents(recurringEvent);
   });
 
   group("Test event recurrence deletion works: ", () {
-    test("Test deleting a recurring event deletes rest of recurring events", () async {
+    test("Test deleting a recurring event deletes rest of recurring events",
+        () async {
       await db.deleteRecurringEvents(recurringEvent);
       final List<Event> retrievedEvents = await db.getAllEvents();
 
       expect(retrievedEvents, []);
     });
 
-    test("Test deleting a recurring event deletes rest of recurring events when not deleting from the base creation event", () async {
+    test(
+        "Test deleting a recurring event deletes rest of recurring events when not deleting from the base creation event",
+        () async {
       final List<Event> listOfEvents = await db.getAllEvents();
       final Event event = listOfEvents[0];
       await db.deleteRecurringEvents(event);
-      final List<Event> retrievedEventsAfterDeletionCall = await db.getAllEvents();
+      final List<Event> retrievedEventsAfterDeletionCall =
+          await db.getAllEvents();
       expect(retrievedEventsAfterDeletionCall, []);
     });
   });
 }
-

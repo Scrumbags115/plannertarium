@@ -69,7 +69,7 @@ class _WeekViewState extends State<WeekView> {
                         if (!forEvents) {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (context) => TaskView(),
+                              builder: (context) => const TaskView(),
                             ),
                           );
                         }
@@ -138,7 +138,7 @@ class _WeekViewState extends State<WeekView> {
             )
           ],
         ),
-        drawer: Drawer(),
+        drawer: const Drawer(),
         body: ListView(
           children: List.generate(DateTime.daysPerWeek, (index) {
             //This generates 7 MultiDayCard in a vertical list

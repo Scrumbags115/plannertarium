@@ -137,7 +137,10 @@ class _MonthViewState extends State<MonthView> {
             child: ListView.builder(
               itemCount: todayEvents.length,
               itemBuilder: (context, index) {
-                return EventCard(eventsToday: todayEvents, index: index, date: _selectedDay!);
+                return EventCard(
+                    eventsToday: todayEvents,
+                    index: index,
+                    date: _selectedDay!);
               },
             ),
           ),

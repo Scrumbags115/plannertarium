@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/view/weeklyTaskView.dart';

@@ -67,8 +67,10 @@ class DefaultFirebaseOptions {
     messagingSenderId: '86325497409',
     projectId: 'plannertarium-d1696',
     storageBucket: 'plannertarium-d1696.appspot.com',
-    androidClientId: '86325497409-f2410jcidfas1b8rl4gtonlckkc2ej6v.apps.googleusercontent.com',
-    iosClientId: '86325497409-ql5gu7ulc1gsvl2vvvssvgqvoj25men0.apps.googleusercontent.com',
+    androidClientId:
+        '86325497409-f2410jcidfas1b8rl4gtonlckkc2ej6v.apps.googleusercontent.com',
+    iosClientId:
+        '86325497409-ql5gu7ulc1gsvl2vvvssvgqvoj25men0.apps.googleusercontent.com',
     iosBundleId: 'com.example.planner',
   );
 
@@ -78,8 +80,10 @@ class DefaultFirebaseOptions {
     messagingSenderId: '86325497409',
     projectId: 'plannertarium-d1696',
     storageBucket: 'plannertarium-d1696.appspot.com',
-    androidClientId: '86325497409-f2410jcidfas1b8rl4gtonlckkc2ej6v.apps.googleusercontent.com',
-    iosClientId: '86325497409-tn3uvct9a9p9rmr2ek95g1vieojou7l0.apps.googleusercontent.com',
+    androidClientId:
+        '86325497409-f2410jcidfas1b8rl4gtonlckkc2ej6v.apps.googleusercontent.com',
+    iosClientId:
+        '86325497409-tn3uvct9a9p9rmr2ek95g1vieojou7l0.apps.googleusercontent.com',
     iosBundleId: 'com.example.planner.RunnerTests',
   );
 }
