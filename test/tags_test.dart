@@ -267,7 +267,7 @@ tags_AuxilliaryFunctions() {
     print("");
     print("");
     print("");
-    expect(res, [tasks[0].id], reason: "Tag should exist");
+    expect(res, [tasks[0]], reason: "Tag should exist");
 
     // check a random fake tag
     res = await db.getTasksWithTag("fake tag name");

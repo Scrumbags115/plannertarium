@@ -77,13 +77,16 @@ class Tag {
       'includedIDs': _includedIDs,
     };
   }
-  bool mapEquals(Map<String, List<String>> first, Map<String, List<String>> second) {
+  bool includedIDEquals(Map<String, List<String>> first, Map<String, List<String>> second) {
     if (first.length != second.length) {
       return false;
     }
     Function eq = const ListEquality().equals;
     // now i can check by iterating through just one
     for (final String typeString in first.keys) {
+      if ((first[typeString]??[]).isEmpty && (second[typeString]??[]).isEmpty) {
+        continue;
+      }
       if (!eq(first[typeString], second[typeString])) {
         return false;
       }
@@ -100,7 +103,7 @@ class Tag {
         (_name == other._name &&
             _id == other._id &&
             _color == other._color &&
-            mapEquals(_includedIDs, other._includedIDs)) ||
+            includedIDEquals(_includedIDs, other._includedIDs)) ||
         super == other;
   }
 
