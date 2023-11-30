@@ -5,7 +5,6 @@ import 'package:planner/common/time_management.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/models/tag.dart';
-import 'package:planner/models/undertaking.dart';
 
 class DatabaseService {
   static final DatabaseService _singleton = DatabaseService._internal();
