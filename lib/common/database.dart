@@ -535,9 +535,9 @@ class DatabaseService {
           .where("name", isEqualTo: tagName)
           .get();
 
-      // if there are any tags with the name tagName, return true
+      // if there are any tags with the name tagName, then add the IDs to a corresponding list in a map
       if (query.docs.isNotEmpty) {
-        List<String> pleaseWorkIDs = [];
+        Map<String, List<String>> pleaseWorkIDs = {"task": [], "event": []};
         for (var id in query.docs[0].data()["includedIDs"]) {
           pleaseWorkIDs.add(id.toString());
         }
@@ -550,7 +550,7 @@ class DatabaseService {
         );
         return out;
       } else {
-        // otherwise, return false
+        // otherwise, throw exception
         throw Exception("Tag not found");
       }
     } catch (e) {
@@ -580,23 +580,45 @@ class DatabaseService {
     }
   }
 
-  /// Get ID of all Undertakings with the given tag
+  /// Get ID of all Tasks with the given tag
   /// Returns a list of IDs
   /// Returns empty list if tag doesn't exist
-  Future<List<String>> getUndertakingsWithTag(String tagName,
-      {int limit = 100}) async {
-    List<String> out = [];
+  Future<List<Task>> getTasksWithTag(String tagName, {int limit = 100}) async {
+    List<Task> out = [];
     Tag tag;
 
     try {
       // attempt to get tag
       tag = await getTagByName(tagName);
+      for (var id in tag.includedIDs['task'] ?? []) {
+        out.add(await getTask(id));
+      }
+      return out;
     } catch (e) {
       // if tag doesn't exist, return empty list
       return out;
     }
+  }
 
-    return tag.includedIDs;
+  /// Get ID of all Events with the given tag
+  /// Returns a list of IDs
+  /// Returns empty list if tag doesn't exist
+  Future<List<Event>> getEventsWithTag(String tagName,
+      {int limit = 100}) async {
+    List<Event> out = [];
+    Tag tag;
+
+    try {
+      // attempt to get tag
+      tag = await getTagByName(tagName);
+      for (var id in tag.includedIDs['event'] ?? []) {
+        out.add(await getEvent(id));
+      }
+      return out;
+    } catch (e) {
+      // if tag doesn't exist, return empty list
+      return out;
+    }
   }
 
   /// Get all tags in the database
@@ -614,72 +636,74 @@ class DatabaseService {
     return allTags;
   }
 
-  /// Add an existing tag to an undertaking
-  /// Adds the task ID to the tag, and adds the tag ID to the task
-  Future<void> addTagToUndertaking(Undertaking ut, Tag tag) async {
-    // add undertaking ID to task
-    ut.tags.add(tag.id);
-    // add undertaking ID to tag
-    tag.includedIDs.add(ut.id);
+  Future<void> addTagToTask(Task task, Tag tag) async {
+    // add tag ID to task
+    task.tags.add(tag.id);
+    // add task ID to tag
+    tag.includedIDs['task'] ??= [];
+    tag.includedIDs['task']?.add(task.id);
 
-    // update undertaking
-    if (ut is Task) {
-      await setTask(ut);
-    } else if (ut is Event) {
-      await setEvent(ut);
-    } else {
-      throw Exception("Undertaking is neither a task nor an event! (somehow)");
-    }
+    // update task
+    await setTask(task);
 
     // update tag
     await setTag(tag);
   }
 
-  /// Just a wrapper for addTagToUndertaking()
-  Future<void> addTagToTask(Task task, Tag tag) async {
-    await addTagToUndertaking(task, tag);
-  }
-
-  /// Just a wrapper for addTagToUndertaking()
   Future<void> addTagToEvent(Event event, Tag tag) async {
-    await addTagToUndertaking(event, tag);
+    // add tag ID to event
+    event.tags.add(tag.id);
+    // add event ID to tag
+    tag.includedIDs['event'] ??= [];
+    tag.includedIDs['event']?.add(event.id);
+
+    // update event
+    await setEvent(event);
+
+    // update tag
+    await setTag(tag);
   }
 
-  /// Remove a tag from an undertaking
-  /// Removes the task ID from the tag, and removes the tag ID from the task
-  /// If the tag has no more tasks, delete the tag
-  Future<void> removeTagFromUndertaking(Undertaking utaken, Tag tag) async {
+  /// Remove a tag from an event, and delete the tag if there is no tasks or events with that tag
+  Future<void> removeTagFromEvent(Event event, Tag tag) async {
     // remove undertaking ID from task
-    utaken.tags.remove(tag.id);
+    event.tags.remove(tag.id);
     // remove undertaking ID from tag
-    tag.includedIDs.remove(utaken.id);
+    tag.includedIDs['event']?.remove(event.id);
 
-    // update task
-    if (utaken is Task) {
-      await setTask(utaken);
-    } else if (utaken is Event) {
-      await setEvent(utaken);
-    } else {
-      throw Exception("Undertaking is neither a task nor an event! (somehow)");
-    }
+    // update event
+    await setEvent(event);
 
     // update tag
     await setTag(tag);
 
     // delete tag if it has no more tasks
-    if (tag.includedIDs.isEmpty) {
+    var eventsEmpty = tag.includedIDs['event']?.isEmpty ?? true;
+    var tasksEmpty = tag.includedIDs['task']?.isEmpty ?? true;
+    if (eventsEmpty && tasksEmpty) {
       await deleteTag(tag);
     }
   }
 
-  /// Just a wrapper for removeTagFromUndertaking()
-  Future<void> removeTagFromEvent(Event event, Tag tag) async {
-    await removeTagFromUndertaking(event, tag);
-  }
-
-  /// Just a wrapper for removeTagFromUndertaking()
+  /// Remove a tag from a task, and delete the tag if there is no tasks or events with that tag
   Future<void> removeTagFromTask(Task task, Tag tag) async {
-    await removeTagFromUndertaking(task, tag);
+    // remove task ID from task
+    task.tags.remove(tag.id);
+    // remove undertaking ID from tag
+    tag.includedIDs['task']?.remove(task.id);
+
+    // update task
+    await setTask(task);
+
+    // update tag
+    await setTag(tag);
+
+    // delete tag if it has no more tasks
+    var tasksEmpty = tag.includedIDs['task']?.isEmpty ?? true;
+    var eventsEmpty = tag.includedIDs['event']?.isEmpty ?? true;
+    if (eventsEmpty && tasksEmpty) {
+      await deleteTag(tag);
+    }
   }
 
   /// Delete a tag from the database
