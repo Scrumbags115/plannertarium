@@ -100,19 +100,25 @@ List<Tag> tags = [
     name: "Tag 1",
     id: "tag-1",
     color: "#FF5733",
-    includedIDs: {"task": ["task-1"]},
+    includedIDs: {
+      "task": ["task-1"]
+    },
   ),
   Tag(
     name: "Tag 2",
     id: "tag-2",
     color: "#3366FF",
-    includedIDs: {"task": ["task-1"]},
+    includedIDs: {
+      "task": ["task-1"]
+    },
   ),
   Tag(
     name: "Tag 3",
     id: "tag-3",
     color: "#FF5733",
-    includedIDs: {"task": ["task-2"]},
+    includedIDs: {
+      "task": ["task-2"]
+    },
   ),
 ];
 
@@ -260,7 +266,7 @@ tags_AuxilliaryFunctions() {
     expect(res, false, reason: "Tag should not exist");
   });
 
-  test("Test getUndertakingsWithTag", () async {
+  test("Test getTasksWithTag", () async {
     // check for existing tags
     var res = await db.getTasksWithTag(tags[0].name);
     print("");
