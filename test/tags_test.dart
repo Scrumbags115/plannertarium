@@ -156,10 +156,8 @@ tags_AddRemoveTags() async {
     // test that adding a tag to a task works
     test("Test that adding and reading a tag to a task works", () async {
       // add a tag to the task
-      print("test");
       await db.addTagToTask(tasks[0], testTag);
       var gettingTestTag = await db.getTag(testTag.id);
-      print(gettingTestTag == testTag);
       expect(gettingTestTag, testTag, reason: "Tag should be added to task");
     });
 
@@ -269,10 +267,6 @@ tags_AuxilliaryFunctions() {
   test("Test getTasksWithTag", () async {
     // check for existing tags
     var res = await db.getTasksWithTag(tags[0].name);
-    print("");
-    print("");
-    print("");
-    print("");
     expect(res, [tasks[0]], reason: "Tag should exist");
 
     // check a random fake tag
