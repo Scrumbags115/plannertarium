@@ -7,6 +7,7 @@ import 'package:planner/view/eventDialogs.dart';
 import 'package:planner/view/monthView.dart';
 import 'package:planner/view/taskView.dart';
 import 'package:intl/intl.dart';
+import 'package:planner/view/weeklyTaskView.dart';
 
 DatabaseService db = DatabaseService();
 
@@ -25,125 +26,160 @@ class _WeekViewState extends State<WeekView> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onHorizontalDragEnd: (details) {
-        if (details.primaryVelocity! > 0) {
-          Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => const MonthView()));
-        }
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          elevation: 0,
-          backgroundColor: Colors.white,
-          leading: IconButton(
-            icon: const Icon(Icons.menu, color: Colors.black),
-            onPressed: () {
-              scaffoldKey.currentState?.openDrawer();
-            },
-          ),
-          title: Row(
-            children: <Widget>[
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    const Text(
-                      'Tasks ',
-                      style: TextStyle(
-                        color: Colors.black,
-                      ),
+    return Scaffold(
+      appBar: AppBar(
+        elevation: 1,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
+        )),
+        backgroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.menu, color: Colors.black),
+          onPressed: () {
+            scaffoldKey.currentState?.openDrawer();
+          },
+        ),
+        title: Row(
+          children: <Widget>[
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  const Text(
+                    'Tasks ',
+                    style: TextStyle(
+                      color: Colors.black,
                     ),
-                    Switch(
-                      // thumb color (round icon)
-                      activeColor: Colors.white,
-                      activeTrackColor: Colors.cyan,
-                      inactiveThumbColor: Colors.blueGrey.shade600,
-                      inactiveTrackColor: Colors.grey.shade400,
-                      splashRadius: 50.0,
-                      value: forEvents,
-                      onChanged: (value) {
-                        setState(() {
-                          forEvents = value;
-                        });
-                        if (!forEvents) {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => TaskView(),
-                            ),
-                          );
-                        }
-                      },
-                    ),
-                    const Text(
-                      ' Events',
-                      style: TextStyle(
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            MenuAnchor(
-              builder: (BuildContext context, MenuController controller,
-                  Widget? child) {
-                return IconButton(
-                  color: Colors.black,
-                  onPressed: () {
-                    if (controller.isOpen) {
-                      controller.close();
-                    } else {
-                      controller.open();
-                    }
-                  },
-                  icon: const Icon(Icons.more_vert),
-                  tooltip: 'Show menu',
-                );
-              },
-              menuChildren: [
-                IconButton(
-                    icon: const Icon(
-                        color: Colors.black, Icons.calendar_month_rounded),
-                    onPressed: () async {
-                      DateTime? picked = await showDatePicker(
-                        context: context,
-                        initialDate: startDate,
-                        firstDate: DateTime(2000),
-                        lastDate: DateTime(2101),
-                      );
-                      if (picked != null) {
-                        setState(() {
-                          startDate = mostRecentMonday(picked);
-                        });
+                  ),
+                  Switch(
+                    // thumb color (round icon)
+                    activeColor: Colors.white,
+                    activeTrackColor: Colors.cyan,
+                    inactiveThumbColor: Colors.blueGrey.shade600,
+                    inactiveTrackColor: Colors.grey.shade400,
+                    splashRadius: 50.0,
+                    value: forEvents,
+                    onChanged: (value) {
+                      setState(() {
+                        forEvents = value;
+                      });
+                      if (!forEvents) {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => WeeklyTaskView(),
+                          ),
+                        );
                       }
-                    }),
-                IconButton(
-                    icon: const Icon(color: Colors.black, Icons.east),
-                    onPressed: () {
-                      setState(() {
-                        startDate = getDateOnly(startDate, offsetDays: 7);
-                      });
-                    }),
-                IconButton(
-                    icon: const Icon(color: Colors.black, Icons.west),
-                    onPressed: () {
-                      setState(() {
-                        startDate = getDateOnly(startDate, offsetDays: -7);
-                      });
-                    })
-              ],
-            )
+                    },
+                  ),
+                  const Text(
+                    ' Events',
+                    style: TextStyle(
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
-        drawer: Drawer(),
-        body: ListView(
-          children: List.generate(DateTime.daysPerWeek, (index) {
-            //This generates 7 MultiDayCard in a vertical list
-            return MultiDayCard(index, startDate);
-          }),
+        actions: [
+          MenuAnchor(
+            builder: (BuildContext context, MenuController controller,
+                Widget? child) {
+              return IconButton(
+                color: Colors.black,
+                onPressed: () {
+                  if (controller.isOpen) {
+                    controller.close();
+                  } else {
+                    controller.open();
+                  }
+                },
+                icon: const Icon(Icons.more_vert),
+                tooltip: 'Show menu',
+              );
+            },
+            menuChildren: [
+              IconButton(
+                  icon: const Icon(
+                      color: Colors.black, Icons.calendar_month_rounded),
+                  onPressed: () async {
+                    DateTime? picked = await showDatePicker(
+                      context: context,
+                      initialDate: startDate,
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2101),
+                    );
+                    if (picked != null) {
+                      setState(() {
+                        startDate = mostRecentMonday(picked);
+                      });
+                    }
+                  }),
+              IconButton(
+                  icon: const Icon(color: Colors.black, Icons.east),
+                  onPressed: () {
+                    setState(() {
+                      startDate = getDateOnly(startDate, offsetDays: 7);
+                    });
+                  }),
+              IconButton(
+                  icon: const Icon(color: Colors.black, Icons.west),
+                  onPressed: () {
+                    setState(() {
+                      startDate = getDateOnly(startDate, offsetDays: -7);
+                    });
+                  })
+            ],
+          )
+        ],
+      ),
+      drawer: Drawer(),
+      body: GestureDetector(
+        onHorizontalDragEnd: (details) {
+          if (details.primaryVelocity! < 0) {
+            Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => MonthView()));
+          }
+          if (details.primaryVelocity! > 0) {
+            Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => SingleDay(startDate)));
+          }
+        },
+        child: Stack(
+          children: [
+            ListView(
+              children: List.generate(DateTime.daysPerWeek, (index) {
+                //This generates 7 MultiDayCard in a vertical list
+                return MultiDayCard(index, startDate);
+              }),
+            ),
+            Align(
+              alignment: Alignment.bottomRight,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                    0, 0, 20, 20), // Adjust the value as needed
+                child: ClipOval(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      await addEventFormForDay(context, startDate);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey,
+                      minimumSize: const Size(75, 75),
+                    ),
+                    child: const Icon(
+                      Icons.add_outlined,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+            )
+          ],
         ),
       ),
     );
@@ -168,10 +204,14 @@ class _MultiDayCardState extends State<MultiDayCard> {
   _MultiDayCardState(this.index, this.startDate) {
     db
         .getListOfEventsInDay(date: getDateOnly(startDate, offsetDays: index))
-        .then((value) => setState(() {
-              eventCount = value.length;
-              eventsToday = value;
-            }));
+        .then((value) {
+      if (mounted) {
+        setState(() {
+          eventCount = value.length;
+          eventsToday = value;
+        });
+      }
+    });
   }
 
   @override
@@ -207,7 +247,8 @@ class _MultiDayCardState extends State<MultiDayCard> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(DateFormat('EE').format(getDateOnly(startDate, offsetDays: index))),
+                    Text(DateFormat('EE')
+                        .format(getDateOnly(startDate, offsetDays: index))),
                     Text(monthDayDisplayed),
                   ],
                 ),

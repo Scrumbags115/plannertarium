@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
+import 'package:planner/common/time_management.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/view/eventDialogs.dart';
+import 'package:planner/view/taskView.dart';
+import 'package:planner/view/weekView.dart';
 
 DatabaseService db = DatabaseService();
 
@@ -18,6 +21,7 @@ class _SingleDayState extends State<SingleDay> {
   DateTime date;
   List<Event> eventsToday = [];
   int eventCount = 0;
+  bool forEvents = true;
   _SingleDayState(this.date) {
     db.getListOfEventsInDay(date: date).then((value) => setState(() {
           eventCount = value.length;
@@ -30,12 +34,81 @@ class _SingleDayState extends State<SingleDay> {
     return SafeArea(
       child: GestureDetector(
         onHorizontalDragEnd: (details) {
-          if (details.primaryVelocity! > 0) {
-            Navigator.of(context).pop();
+          if (details.primaryVelocity! < 0) {
+            Navigator.of(context)
+                .push(MaterialPageRoute(builder: (context) => WeekView()));
           }
         },
         child: Scaffold(
-          appBar: AppBar(title: Text("${date.month}/${date.day}")),
+          appBar: AppBar(
+              elevation: 1,
+              shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
+              )),
+              backgroundColor: Colors.white,
+              leading: IconButton(
+                icon: const Icon(Icons.west, color: Colors.black),
+                onPressed: () {
+                  date = getDateOnly(date, offsetDays: -1);
+                  setState(() {});
+                },
+              ),
+              title: Row(
+                children: <Widget>[
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Text(style: TextStyle(color: Colors.black), "${date.month}/${date.day}"),
+                        const Text(
+                          'Tasks ',
+                          style: TextStyle(
+                            color: Colors.black,
+                          ),
+                        ),
+                        Switch(
+                          // thumb color (round icon)
+                          activeColor: Colors.white,
+                          activeTrackColor: Colors.cyan,
+                          inactiveThumbColor: Colors.blueGrey.shade600,
+                          inactiveTrackColor: Colors.grey.shade400,
+                          splashRadius: 50.0,
+                          value: forEvents,
+                          onChanged: (value) {
+                            setState(() {
+                              forEvents = value;
+                            });
+                            if (!forEvents) {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => TaskView(),
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                        const Text(
+                          ' Events',
+                          style: TextStyle(
+                            color: Colors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.east, color: Colors.black),
+                  onPressed: () {
+                    date = getDateOnly(date, offsetDays: 1);
+                    setState(() {});
+                  },
+                ),
+              ]),
           body: Column(
             children: [
               Expanded(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/models/task.dart';
+import 'package:planner/view/monthlyTaskView.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/view/weekView.dart';
@@ -19,6 +20,7 @@ class _MonthViewState extends State<MonthView> {
   DatabaseService db = DatabaseService();
   List<Task> todayTasks = [];
   List<Event> todayEvents = [];
+  bool forEvents = true;
 
   // Add a PageController for handling page navigation
   final PageController _pageController = PageController();
@@ -55,93 +57,160 @@ class _MonthViewState extends State<MonthView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Monthly View'),
+        elevation: 1,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
+        )),
+        backgroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.menu, color: Colors.black),
+          onPressed: () {},
+        ),
+        title: Row(
+          children: <Widget>[
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  const Text(
+                    'Tasks ',
+                    style: TextStyle(
+                      color: Colors.black,
+                    ),
+                  ),
+                  Switch(
+                    // thumb color (round icon)
+                    activeColor: Colors.white,
+                    activeTrackColor: Colors.cyan,
+                    inactiveThumbColor: Colors.blueGrey.shade600,
+                    inactiveTrackColor: Colors.grey.shade400,
+                    splashRadius: 50.0,
+                    value: forEvents,
+                    onChanged: (value) {
+                      setState(() {
+                        forEvents = value;
+                      });
+                      if (!forEvents) {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => MonthlyTaskView(),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                  const Text(
+                    ' Events',
+                    style: TextStyle(
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [Icon(Icons.access_alarm)],
       ),
-      body: Column(
-        children: [
-          TableCalendar(
-            firstDay: DateTime(DateTime.now().year, DateTime.now().month, 1),
-            lastDay: DateTime(DateTime.now().year, DateTime.now().month + 1, 0),
-            focusedDay: _focusedDay,
-            calendarFormat: _calendarFormat,
-            selectedDayPredicate: (day) {
-              return isSameDay(_selectedDay, day);
-            },
-            onDaySelected: (selectedDay, focusedDay) {
-              if (!isSameDay(_selectedDay, selectedDay)) {
+      body: GestureDetector(
+        onHorizontalDragEnd: (details) {
+          if (details.primaryVelocity! > 0) {
+            Navigator.of(context)
+                .push(MaterialPageRoute(builder: (context) => WeekView()));
+          }
+        },
+        child: Column(
+          children: [
+            TableCalendar(
+              firstDay: DateTime(DateTime.now().year, DateTime.now().month, 1),
+              lastDay:
+                  DateTime(DateTime.now().year, DateTime.now().month + 1, 0),
+              focusedDay: _focusedDay,
+              calendarFormat: _calendarFormat,
+              selectedDayPredicate: (day) {
+                return isSameDay(_selectedDay, day);
+              },
+              onDaySelected: (selectedDay, focusedDay) {
+                if (!isSameDay(_selectedDay, selectedDay)) {
+                  setState(() {
+                    _selectedDay = selectedDay;
+                    _focusedDay = focusedDay;
+                  });
+
+                  // Call the fetchTodayTasks function without await
+                  fetchTodayEvents(selectedDay);
+                }
+              },
+              onFormatChanged: (format) {
+                if (_calendarFormat != format) {
+                  setState(() {
+                    _calendarFormat = format;
+                  });
+                }
+              },
+              onPageChanged: (focusedDay) {
+                // Update the focusedDay when navigating to previous/next months
                 setState(() {
-                  _selectedDay = selectedDay;
                   _focusedDay = focusedDay;
                 });
-
-                // Call the fetchTodayTasks function without await
-                fetchTodayEvents(selectedDay);
-              }
-            },
-            onFormatChanged: (format) {
-              if (_calendarFormat != format) {
-                setState(() {
-                  _calendarFormat = format;
-                });
-              }
-            },
-            onPageChanged: (focusedDay) {
-              // Update the focusedDay when navigating to previous/next months
-              setState(() {
-                _focusedDay = focusedDay;
-              });
-            },
-            calendarBuilders: CalendarBuilders(
-              todayBuilder: (context, date, events) {
-                return Container(
-                  margin: const EdgeInsets.all(4.0),
-                  alignment: Alignment.center,
-                  decoration: const BoxDecoration(
-                    color: Colors.transparent, // No color for today
-                    shape: BoxShape.circle,
-                  ),
-                  child: Text(
-                    '${date.day}',
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                );
               },
-            ),
-            headerStyle: HeaderStyle(
-              titleCentered: true, // Center the title
-              formatButtonVisible: false, // Hide the format button
-              leftChevronIcon: GestureDetector(
-                onTap: () {
-                  _pageController.previousPage(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOut,
+              calendarBuilders: CalendarBuilders(
+                todayBuilder: (context, date, events) {
+                  return Container(
+                    margin: const EdgeInsets.all(4.0),
+                    alignment: Alignment.center,
+                    decoration: const BoxDecoration(
+                      color: Colors.transparent, // No color for today
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      '${date.day}',
+                      style: const TextStyle(color: Colors.black),
+                    ),
                   );
                 },
-                child: const Icon(Icons.arrow_back),
-              ), // Set custom left chevron icon
-              rightChevronIcon: GestureDetector(
-                onTap: () {
-                  _pageController.nextPage(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOut,
-                  );
+              ),
+              headerStyle: HeaderStyle(
+                titleCentered: true, // Center the title
+                formatButtonVisible: false, // Hide the format button
+                leftChevronIcon: GestureDetector(
+                  onTap: () {
+                    _pageController.previousPage(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOut,
+                    );
+                  },
+                  child: const Icon(Icons.arrow_back),
+                ), // Set custom left chevron icon
+                rightChevronIcon: GestureDetector(
+                  onTap: () {
+                    _pageController.nextPage(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOut,
+                    );
+                  },
+                  child: const Icon(Icons.arrow_forward),
+                ), // Set custom right chevron icon
+              ),
+            ),
+            const SizedBox(
+              height: 16,
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: todayEvents.length,
+                itemBuilder: (context, index) {
+                  return EventCard(
+                      eventsToday: todayEvents,
+                      index: index,
+                      date: _selectedDay!);
                 },
-                child: const Icon(Icons.arrow_forward),
-              ), // Set custom right chevron icon
+              ),
             ),
-          ),
-          const SizedBox(
-            height: 16,
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: todayEvents.length,
-              itemBuilder: (context, index) {
-                return EventCard(eventsToday: todayEvents, index: index, date: _selectedDay!);
-              },
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
