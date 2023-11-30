@@ -6,6 +6,7 @@ import 'package:planner/view/taskView.dart';
 import 'package:planner/view/monthlyTaskView.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/view/weekView.dart';
+import 'package:planner/view/taskCard.dart';
 
 class WeeklyTaskView extends StatefulWidget {
   const WeeklyTaskView({super.key});
@@ -162,7 +163,12 @@ class _WeeklyTaskViewState extends State<WeeklyTaskView> {
     DateTime today = DateTime.now();
     return Scaffold(
       appBar: AppBar(
-        elevation: 0,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
+        )),
+        elevation: 1,
         backgroundColor: Colors.white,
         leading: Row(
           mainAxisSize: MainAxisSize.min,
