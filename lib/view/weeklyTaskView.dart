@@ -20,6 +20,7 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
   DateTime today = getDateOnly(DateTime.now());
 
   @override
+
   /// Initializes the state of the widget
   void initState() {
     super.initState();
@@ -261,7 +262,7 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
         onHorizontalDragEnd: (details) {
           if (details.primaryVelocity! < 0) {
             Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => MonthlyTaskView(),
+              builder: (context) => const MonthlyTaskView(),
             ));
           }
           if (details.primaryVelocity! > 0) {

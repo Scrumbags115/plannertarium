@@ -408,8 +408,8 @@ class TaskViewState extends State<TaskView> {
             Align(
               alignment: Alignment.bottomRight,
               child: Padding(
-                padding:
-                    const EdgeInsets.fromLTRB(0,0,20,20), // Adjust the value as needed
+                padding: const EdgeInsets.fromLTRB(
+                    0, 0, 20, 20), // Adjust the value as needed
                 child: ClipOval(
                   child: ElevatedButton(
                     onPressed: () async {

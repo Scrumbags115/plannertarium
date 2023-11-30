@@ -4,10 +4,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/models/task.dart';
+import 'package:planner/models/tag.dart';
 
 class DatabaseService {
   static final DatabaseService _singleton = DatabaseService._internal();
   late String userid;
+  late FirebaseFirestore fs;
 
   // TODO: Add caching layer here if time permits
 
@@ -25,13 +27,18 @@ class DatabaseService {
   DatabaseService.createTest({required String uid, required firestoreObject}) {
     userid = uid;
     users = firestoreObject.collection('users');
+    fs = firestoreObject;
   }
+
+  get firestoreObject => fs;
 
   /// Assign UID. This must be ran before any other database function is called else it will crash
   /// takes the string ID
   initUID(String uid) {
     userid = uid;
   }
+
+////////////////////////////////////////////////////
 
   Future<Event> getEvent(String eventID) async {
     try {
@@ -95,22 +102,19 @@ class DatabaseService {
     // instead, get two query snapshots
     // one for catching time starts and one for catching time ends
 
-    final QuerySnapshot<Map<String, dynamic>> eventsTimeStartInRange = await users
-        .doc(userid)
-        .collection("events")
-        .where("time start",
-            isGreaterThanOrEqualTo: timestampStart)
-        .where("time start",
-            isLessThanOrEqualTo: timestampEnd)
-        .get();
+    final QuerySnapshot<Map<String, dynamic>> eventsTimeStartInRange =
+        await users
+            .doc(userid)
+            .collection("events")
+            .where("time start", isGreaterThanOrEqualTo: timestampStart)
+            .where("time start", isLessThanOrEqualTo: timestampEnd)
+            .get();
 
     final QuerySnapshot<Map<String, dynamic>> eventsTimeEndInRange = await users
         .doc(userid)
         .collection("events")
-        .where("time end",
-            isGreaterThanOrEqualTo: timestampStart)
-        .where("time end",
-            isLessThanOrEqualTo: timestampEnd)
+        .where("time end", isGreaterThanOrEqualTo: timestampStart)
+        .where("time end", isLessThanOrEqualTo: timestampEnd)
         .get();
 
     // then merge everything into one single collection
@@ -254,12 +258,14 @@ class DatabaseService {
       // search the corresponding events on that day for the right recurrence ID
       eventList.forEach((docID, event) {
         if (event.recurrenceRules.id == parentID) {
-            // if the recurrence ID matches, delete
+          // if the recurrence ID matches, delete
           users.doc(userid).collection("events").doc(docID).delete();
         }
       });
     }
   }
+
+////////////////////////////////////////////////////
 
   Future<Task> getTask(String taskID) async {
     try {
@@ -494,6 +500,238 @@ class DatabaseService {
     return dueDateMap;
   }
 
+////////////////////////////////////////////////////
+
+  // Updates an existing tag, or creates a new tag if it doesn't exist
+  // Takes in a Tag object
+  Future<void> setTag(Tag tag) async {
+    return await users
+        .doc(userid)
+        .collection("tags")
+        .doc(tag.id)
+        .set(tag.toMap());
+  }
+
+  // Get a tag from the database by ID
+  Future<Tag> getTag(String tagID) async {
+    DocumentSnapshot<Map<String, dynamic>> tagDocument =
+        await users.doc(userid).collection('tags').doc(tagID).get();
+    if (tagDocument.exists) {
+      var tagMap = tagDocument.data() ?? {"getTag Error": 1};
+      return Tag.fromMap(tagMap);
+    } else {
+      throw Exception("Tag not found");
+    }
+  }
+
+  // Get a tag from the database by name
+  Future<Tag> getTagByName(String tagName) async {
+    try {
+      // get all tags with the name tagName
+      var query = await users
+          .doc(userid)
+          .collection('tags')
+          .where("name", isEqualTo: tagName)
+          .get();
+
+      // if there are any tags with the name tagName, then add the IDs to a corresponding list in a map
+      if (query.docs.isNotEmpty) {
+        final includedIDs = query.docs[0].data()["includedIDs"];
+
+        // create a new map with the includedIDs in the proper format
+        Map<String, List<String>> newMap = {"task": [], "event": []};
+        newMap["task"] = [...(includedIDs["task"] ?? [])];
+        newMap["event"] = [...(includedIDs["event"] ?? [])];
+
+        // create a new tag with the proper format and pulled data
+        Tag out = Tag(
+          name: query.docs[0].data()["name"],
+          id: query.docs[0].data()["id"],
+          color: query.docs[0].data()["color"],
+          includedIDs: newMap,
+        );
+        return out;
+      } else {
+        // otherwise, throw exception
+        throw Exception("Tag not found");
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Returns whether or not a tag with name tagName exists
+  Future<bool> doesTagExist(String tagName) async {
+    try {
+      // get all tags with the name tagName
+      var query = await users
+          .doc(userid)
+          .collection('tags')
+          .where("name", isEqualTo: tagName)
+          .get();
+
+      // if there are any tags with the name tagName, return true
+      if (query.docs.isNotEmpty) {
+        return true;
+      } else {
+        // otherwise, return false
+        return false;
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get List of all Tasks with the given tag
+  /// Returns a List of Tasks
+  /// Returns empty List if tag doesn't exist
+  Future<List<Task>> getTasksWithTag(String tagName, {int limit = 100}) async {
+    List<Task> out = [];
+    Tag tag;
+
+    try {
+      // attempt to get tag
+      tag = await getTagByName(tagName);
+      for (var id in tag.includedIDs['task'] ?? []) {
+        out.add(await getTask(id));
+      }
+      return out;
+    } catch (e) {
+      // if tag doesn't exist, return empty list
+      return out;
+    }
+  }
+
+  /// Get ID of all Events with the given tag
+  /// Returns a list of IDs
+  /// Returns empty list if tag doesn't exist
+  Future<List<Event>> getEventsWithTag(String tagName,
+      {int limit = 100}) async {
+    List<Event> out = [];
+    Tag tag;
+
+    try {
+      // attempt to get tag
+      tag = await getTagByName(tagName);
+      for (var id in tag.includedIDs['event'] ?? []) {
+        out.add(await getEvent(id));
+      }
+      return out;
+    } catch (e) {
+      // if tag doesn't exist, return empty list
+      return out;
+    }
+  }
+
+  /// Get all tags in the database
+  /// Returns a list of maps, where each map is a tag and its data:
+  /// {"name": "tagName", "id": "tagID", "color": "tagColor", "includedIDs": {"task": ["taskID1", "taskID2"], "event": ["eventID1", "eventID2"]}}
+  /// (includedIDs is a list of task IDs)
+  Future<List<Tag>> getAllTags() async {
+    List<Tag> allTags = [];
+    final tagDocs = await users.doc(userid).collection("tags").get();
+
+    for (var doc in tagDocs.docs) {
+      allTags.add(Tag.fromMap(doc.data()));
+    }
+
+    return allTags;
+  }
+
+  Future<void> addTagToTask(Task task, Tag tag) async {
+    // add tag ID to task
+    task.tags.add(tag.id);
+    // add task ID to tag
+    tag.includedIDs['task'] ??= [];
+    tag.includedIDs['task']?.add(task.id);
+
+    // update task
+    await setTask(task);
+
+    // update tag
+    await setTag(tag);
+  }
+
+  Future<void> addTagToEvent(Event event, Tag tag) async {
+    // add tag ID to event
+    event.tags.add(tag.id);
+    // add event ID to tag
+    tag.includedIDs['event'] ??= [];
+    tag.includedIDs['event']?.add(event.id);
+
+    // update event
+    await setEvent(event);
+
+    // update tag
+    await setTag(tag);
+  }
+
+  /// Remove a tag from an event, and delete the tag if there is no tasks or events with that tag
+  Future<void> removeTagFromEvent(Event event, Tag tag) async {
+    // remove undertaking ID from task
+    event.tags.remove(tag.id);
+    // remove undertaking ID from tag
+    tag.includedIDs['event']?.remove(event.id);
+
+    // update event
+    await setEvent(event);
+
+    // update tag
+    await setTag(tag);
+
+    // delete tag if it has no more tasks
+    var eventsEmpty = tag.includedIDs['event']?.isEmpty ?? true;
+    var tasksEmpty = tag.includedIDs['task']?.isEmpty ?? true;
+    if (eventsEmpty && tasksEmpty) {
+      await deleteTag(tag);
+    }
+  }
+
+  /// Remove a tag from a task, and delete the tag if there is no tasks or events with that tag
+  Future<void> removeTagFromTask(Task task, Tag tag) async {
+    // remove task ID from task
+    task.tags.remove(tag.id);
+    // remove undertaking ID from tag
+    tag.includedIDs['task']?.remove(task.id);
+
+    // update task
+    await setTask(task);
+
+    // update tag
+    await setTag(tag);
+
+    // delete tag if it has no more tasks
+    var tasksEmpty = tag.includedIDs['task']?.isEmpty ?? true;
+    var eventsEmpty = tag.includedIDs['event']?.isEmpty ?? true;
+    if (eventsEmpty && tasksEmpty) {
+      await deleteTag(tag);
+    }
+  }
+
+  /// Delete a tag from the database
+  /// DOES NOT ALTER EXISTING TASKS, E.G.
+  /// IF A TASK HAS A TAG THAT IS DELETED, THE TASK WILL STILL HAVE THE TAG
+  /// USE removeTagFromUndertaking() TO REMOVE A TAG FROM A TASK
+  /// Returns true if tag was deleted, false if tag doesn't exist
+  Future<bool> deleteTag(Tag tag) async {
+    // check if tag exists
+    final tagDocs = await users
+        .doc(userid)
+        .collection("tags")
+        .where("name", isEqualTo: tag.name)
+        .get();
+
+    if (tagDocs.docs.isEmpty) {
+      return false;
+    }
+
+    // delete tag
+    await users.doc(userid).collection("tags").doc(tagDocs.docs[0].id).delete();
+    return true;
+  }
+
+  ///////////////////////////////////////////////////////////////////////
+
   /// Returns a 3-tuple of List<Task>
   /// Each list has tasks that are either active, completed, or delayed in a time window
   Future<List<Task>> getTasksDueDay(DateTime dateStart) async {
@@ -664,52 +902,36 @@ class DatabaseService {
     return _snapshotToEvents(queriedEventResults);
   }
 
-  /// Query for tags with array-contains
-  /// takes a query, limit, collection key
-  Future<QuerySnapshot<Map<String, dynamic>>> _tagQuery(
-      String query, int limit, String collectionKey) async {
-    return await users
-        .doc(userid)
-        .collection(collectionKey)
-        .where('tags', arrayContains: query)
-        .limit(limit)
-        .get();
-  }
-
-  /// Search function to query task tags
-  /// Takes a query string and value to limit number of outputs
-  /// Returns list of tasks that the query is in the tags of (not substring), with amount specified by limit
-  Future<List<Task>> searchTaskTags(String query, int limit) async {
-    // tags are a little weird since they are stored as a list, and firestore doesn't support substring searching for complex types
-    // seems like the best they have available without 3rd party solutions is array-contains
-    final QuerySnapshot<Map<String, dynamic>> queriedTaskResults =
-        await _tagQuery(query, limit, "tasks");
-    return _snapshotToTasks(queriedTaskResults);
-  }
-
-  /// Search function to query event tags
-  /// Takes a query string and value to limit number of outputs
-  /// Returns list of events that the query is in the tags of (not substring), with amount specified by limit
-  Future<List<Event>> searchEventTags(String query, int limit) async {
-    final QuerySnapshot<Map<String, dynamic>> queriedEventResults =
-        await _tagQuery(query, limit, "events");
-    return _snapshotToEvents(queriedEventResults);
-  }
-
   Future<List<Task>> searchAllTask(String query, {int limit = 100}) async {
-    Set<Task> allTasks = Set();
+    Set<Task> allTasks = {};
     var functionList = [
       searchTaskName,
       searchTaskDescription,
       searchTaskLocation,
-      searchTaskTags
+      getTasksWithTag
     ];
 
     for (var function in functionList) {
       allTasks = allTasks.union((await function(query, limit)).toSet());
     }
-    print(allTasks);
 
     return allTasks.toList();
+  }
+
+  /// Search all events with a query
+  Future<List<Event>> searchAllEvent(String query, {int limit = 100}) async {
+    Set<Event> allEvents = {};
+    var functionList = [
+      searchEventName,
+      searchEventDescription,
+      searchEventLocation,
+      getEventsWithTag
+    ];
+
+    for (var function in functionList) {
+      allEvents = allEvents.union((await function(query, limit)).toSet());
+    }
+
+    return allEvents.toList();
   }
 }

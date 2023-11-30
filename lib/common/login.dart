@@ -79,8 +79,6 @@ Future<User> triggerAuthFlowiOS() async {
   return user;
 }
 
-
-
 /// Sign in with Google SSO, taken from documentation
 Future<UserCredential> signInWithGoogleWeb() async {
 // Create a new provider
@@ -117,8 +115,9 @@ Future<UserCredential> signInWithGoogleAndroid() async {
 Future<UserCredential> signInWithGoogleiOS() async {
 // Trigger the authentication flow
   final GoogleSignInAccount? googleUser = await GoogleSignIn(
-    clientId: "86325497409-ql5gu7ulc1gsvl2vvvssvgqvoj25men0.apps.googleusercontent.com"
-  ).signIn();
+          clientId:
+              "86325497409-ql5gu7ulc1gsvl2vvvssvgqvoj25men0.apps.googleusercontent.com")
+      .signIn();
 
 // Obtain the auth details from the request
   final GoogleSignInAuthentication? googleAuth =
