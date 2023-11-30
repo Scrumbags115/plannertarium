@@ -7,6 +7,7 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:planner/view/taskView.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/view/monthView.dart';
+import 'package:planner/view/taskCard.dart';
 
 class MonthlyTaskView extends StatefulWidget {
   @override
@@ -57,8 +58,13 @@ class _MonthlyTaskViewState extends State<MonthlyTaskView> {
         },
         child: Scaffold(
           appBar: AppBar(
-            elevation: 0,
+            elevation: 1,
             backgroundColor: Colors.white,
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(20),
+              bottomRight: Radius.circular(20),
+            )),
             title: Row(
               children: <Widget>[
                 Expanded(
