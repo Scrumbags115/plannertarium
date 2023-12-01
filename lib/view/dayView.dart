@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
+import 'package:planner/common/view/topbar.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/view/eventDialogs.dart';
 
@@ -35,7 +36,7 @@ class _SingleDayState extends State<SingleDay> {
           }
         },
         child: Scaffold(
-          appBar: AppBar(title: Text("${date.month}/${date.day}")),
+          appBar: getTopBar(Event, "daily", context, this),
           body: Column(
             children: [
               Expanded(
