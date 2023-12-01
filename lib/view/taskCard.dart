@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:planner/models/task.dart';
 import 'dart:async';
 import 'package:intl/intl.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:planner/models/tag.dart';
 
 class TaskCard extends StatefulWidget {
   final Task task;
@@ -120,38 +122,50 @@ class TaskCardState extends State<TaskCard> {
         color: isTaskDueToday() ? Colors.white : Colors.grey.withOpacity(0.5),
         margin: const EdgeInsets.fromLTRB(10, 5, 10, 5),
         child: InkWell(
-          ///Inkwell to prompt details of task
-          onTap: () {
-            showDetailPopup(context);
-          },
-          child: ListTile(
-            leading: InkWell(
-              ///Inkwell for setting a task completed
-              onTap: () {
-                setState(() {
-                  widget.task.completed = !widget.task.completed;
-                  db.setTask(widget.task);
-                });
-              },
-              child: CircleAvatar(
-                ///Specifications for the looks of Inkwell for setting a task completed
-                backgroundColor: isTaskCompleted() ? Colors.green : Colors.blue,
-                child: isTaskCompleted()
-                    ? const Icon(Icons.check, color: Colors.white)
-                    : const Icon(Icons.circle, color: Colors.blue),
+
+            ///Inkwell to prompt details of task
+            onTap: () {
+              showDetailPopup(context);
+            },
+            child: ListTile(
+              leading: InkWell(
+                onTap: () {
+                  setState(() {
+                    widget.task.completed = !widget.task.completed;
+                    db.setTask(widget.task);
+                  });
+                },
+                child: CircleAvatar(
+                  backgroundColor:
+                      isTaskCompleted() ? Colors.green : Colors.blue,
+                  child: isTaskCompleted()
+                      ? const Icon(Icons.check, color: Colors.white)
+                      : const Icon(Icons.circle, color: Colors.blue),
+                ),
               ),
-            ),
-            title: Text(
-              ///Specifications to cross through the taskName if task is completed
-              widget.task.name,
-              style: TextStyle(
-                decoration:
-                    isTaskCompleted() ? TextDecoration.lineThrough : null,
+              title: Text(
+                widget.task.name,
+                style: TextStyle(
+                  decoration:
+                      isTaskCompleted() ? TextDecoration.lineThrough : null,
+                ),
               ),
-            ),
-            subtitle: Text(widget.task.description),
-          ),
-        ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(widget.task.description),
+                  if (widget.task.tags.isNotEmpty)
+                    Wrap(
+                      spacing: 8.0,
+                      children: widget.task.tags.map((tag) {
+                        return Chip(
+                          label: Text(tag),
+                        );
+                      }).toList(),
+                    ),
+                ],
+              ),
+            )),
       ),
     );
   }
@@ -201,23 +215,92 @@ class TaskCardState extends State<TaskCard> {
     );
   }
 
-  ///A function to prompt for the edit details of a task
+  Future<Map<String, dynamic>?> showTagSelectionDialog(
+      BuildContext context) async {
+    TextEditingController nameController = TextEditingController();
+    Color selectedColor = Colors.blue; // Default color
+    Color pickerColor = Color(0xff443a49);
+
+    void changeColor(Color color) {
+      setState(() {
+        pickerColor = color;
+        selectedColor = color; // Update the selectedColor as well
+      });
+    }
+
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Add Tag'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(labelText: 'Tag Name'),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Tag Color:'),
+                    Container(
+                      width: 200,
+                      child: ColorPicker(
+                        pickerColor: pickerColor,
+                        onColorChanged: changeColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                // Map<String, dynamic> selectedTag = {
+                //   'name': nameController.text,
+                //   'color': selectedColor,
+                // };
+                Tag selectedTag =
+                    Tag(name: nameController.text, color: selectedColor.toString());
+                Navigator.pop(context, selectedTag);
+              },
+              child: const Text('Add'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<Task?> showEditPopup(BuildContext context) async {
     DatabaseService db = DatabaseService();
     TextEditingController nameController = TextEditingController();
     TextEditingController descriptionController = TextEditingController();
     TextEditingController locationController = TextEditingController();
-    TextEditingController colorController = TextEditingController();
     TextEditingController tagController = TextEditingController();
     DateTime? dueDate;
     DateTime? startTime = DateTime.now();
     Completer<Task?> completer = Completer<Task?>();
 
+    // Create a variable to store the selected tag
+    Tag? selectedTag;
+
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Add Task'),
+          title: const Text('Edit Task'),
           content: SingleChildScrollView(
             child: SizedBox(
               height: (MediaQuery.of(context).size.height * 0.7),
@@ -240,6 +323,17 @@ class TaskCardState extends State<TaskCard> {
                   TextField(
                     controller: tagController,
                     decoration: const InputDecoration(labelText: 'Tag'),
+                    onTap: () async {
+                      Map<String, dynamic>? result =
+                          await showTagSelectionDialog(context);
+                      if (result != null) {
+                        Tag? tag = Tag.fromMap(result);
+                        setState(() {
+                          selectedTag = tag;
+                          tagController.text = selectedTag!.name;
+                        });
+                      }
+                    },
                   ),
                   Row(
                     children: [
@@ -291,14 +385,18 @@ class TaskCardState extends State<TaskCard> {
                 String name = nameController.text;
                 String description = descriptionController.text;
                 String location = locationController.text;
-                String color = colorController.text;
-                String tag = tagController.text;
-
+                print('st: $selectedTag');
+                // Set the selected tag to the task
+                if (selectedTag != null) {
+                  widget.task.tags = [
+                    selectedTag!.name
+                  ]; // Wrap selectedTag in a List<Tag>
+                }
+                List<String> wtn = widget.task.tags;
+                print('wtn:: $wtn');
                 widget.task.name = name;
                 widget.task.description = description;
                 widget.task.location = location;
-                widget.task.color = color;
-                widget.task.color = tag;
                 widget.task.timeDue = dueDate;
                 widget.task.timeStart = startTime ?? DateTime.now();
 
@@ -311,6 +409,7 @@ class TaskCardState extends State<TaskCard> {
         );
       },
     );
+
     return completer.future;
   }
 }
