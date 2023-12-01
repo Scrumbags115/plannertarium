@@ -64,10 +64,6 @@ class _MonthViewState extends State<MonthView> {
           bottomRight: Radius.circular(20),
         )),
         backgroundColor: Colors.white,
-        leading: IconButton(
-          icon: const Icon(Icons.menu, color: Colors.black),
-          onPressed: () {},
-        ),
         title: Row(
           children: <Widget>[
             Expanded(
@@ -112,7 +108,7 @@ class _MonthViewState extends State<MonthView> {
             ),
           ],
         ),
-        actions: [Icon(Icons.access_alarm)],
+        actions: [Icon(Icons.search)],
       ),
       body: GestureDetector(
         onHorizontalDragEnd: (details) {
@@ -139,7 +135,6 @@ class _MonthViewState extends State<MonthView> {
                     _focusedDay = focusedDay;
                   });
 
-                  // Call the fetchTodayTasks function without await
                   fetchTodayEvents(selectedDay);
                 }
               },

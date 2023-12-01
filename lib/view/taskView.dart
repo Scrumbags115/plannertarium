@@ -300,7 +300,7 @@ class TaskViewState extends State<TaskView> {
                       if (forEvents) {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (context) => SingleDay(today),
+                            builder: (context) => DayView(today),
                           ),
                         );
                       }

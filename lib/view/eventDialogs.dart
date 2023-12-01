@@ -23,16 +23,18 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date) async {
           child: AlertDialog(
             title: Row(
               children: [
-                Text('Add Event on'),
+                const Text('Add Event on'),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
                   child: ElevatedButton(
                       onPressed: () async {
+                        DateTime? originalDate = date;
                         date = (await showDatePicker(
                             context: context,
                             initialDate: date!,
                             firstDate: DateTime(2000),
                             lastDate: DateTime(2101)));
+                        date ??= originalDate; //in case user cancels date picker, show original date
                         setState(() {});
                       },
                       child: Text('${date?.month}/${date?.day}/${date?.year}')),
@@ -58,8 +60,9 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date) async {
                   onPressed: () async {
                     TimeOfDay? startTOD = await showTimePicker(
                         context: context, initialTime: TimeOfDay.now());
+                    startTOD ??= TimeOfDay.now(); //in case of cancel
                     timeStart = DateTime(date!.year, date!.month, date!.day,
-                        startTOD!.hour, startTOD.minute);
+                        startTOD.hour, startTOD.minute);
                     setState(() {});
                   },
                   child: Text(
@@ -67,10 +70,11 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date) async {
                 ),
                 ElevatedButton(
                   onPressed: () async {
-                    TimeOfDay? startTOD = await showTimePicker(
+                    TimeOfDay? endTOD = await showTimePicker(
                         context: context, initialTime: TimeOfDay.now());
+                    endTOD ??= TimeOfDay.now(); //in case of cancel
                     timeEnd = DateTime(date!.year, date!.month, date!.day,
-                        startTOD!.hour, startTOD.minute);
+                        endTOD.hour, endTOD.minute);
                     setState(() {});
                   },
                   child:
@@ -164,7 +168,7 @@ void showEventDetailPopup(BuildContext context, Event event, DateTime date) {
 }
 
 Future<Event?> _showEditPopup(
-    BuildContext context, Event event, DateTime date) async {
+    BuildContext context, Event event, DateTime? date) async {
   DatabaseService db = DatabaseService();
   TextEditingController nameController = TextEditingController();
   nameController.text = event.name;
@@ -185,7 +189,28 @@ Future<Event?> _showEditPopup(
       return StatefulBuilder(builder: (context, setState) {
         return SingleChildScrollView(
           child: AlertDialog(
-            title: const Text('Edit Event'),
+            title: Row(
+              children: [
+                const Text('Edit Event on'),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
+                  child: ElevatedButton(
+                      onPressed: () async {
+                        DateTime? originalDate = date;
+                        date = (await showDatePicker(
+                            context: context,
+                            initialDate: date!,
+                            firstDate: DateTime(2000),
+                            lastDate: DateTime(2101)));
+                        setState(() {
+                          //in case user cancels date picker, show original date
+                          date ??= originalDate;
+                        });
+                      },
+                      child: Text('${date?.month}/${date?.day}/${date?.year}')),
+                )
+              ],
+            ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
@@ -213,18 +238,22 @@ Future<Event?> _showEditPopup(
                   onPressed: () async {
                     TimeOfDay? startTOD = await showTimePicker(
                         context: context, initialTime: TimeOfDay.now());
-                    timeStart = DateTime(date.year, date.month, date.day,
-                        startTOD!.hour, startTOD.minute);
+                    startTOD ??= TimeOfDay(
+                        hour: timeStart.hour, minute: timeStart.minute);
+                    timeStart = DateTime(date!.year, date!.month, date!.day,
+                        startTOD.hour, startTOD.minute);
                     setState(() {});
                   },
                   child: Text(DateFormat("h:mma").format(timeStart)),
                 ),
                 ElevatedButton(
                   onPressed: () async {
-                    TimeOfDay? startTOD = await showTimePicker(
+                    TimeOfDay? endTOD = await showTimePicker(
                         context: context, initialTime: TimeOfDay.now());
-                    timeEnd = DateTime(date.year, date.month, date.day,
-                        startTOD!.hour, startTOD.minute);
+                    endTOD ??=
+                        TimeOfDay(hour: timeEnd.hour, minute: timeEnd.minute);
+                    timeEnd = DateTime(date!.year, date!.month, date!.day,
+                        endTOD.hour, endTOD.minute);
                     setState(() {});
                   },
                   child: Text(DateFormat("h:mma").format(timeEnd)),

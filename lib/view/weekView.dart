@@ -146,7 +146,7 @@ class _WeekViewState extends State<WeekView> {
           }
           if (details.primaryVelocity! > 0) {
             Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => SingleDay(startDate)));
+                MaterialPageRoute(builder: (context) => DayView(getDateOnly(DateTime.now()))));
           }
         },
         child: Stack(
@@ -241,7 +241,7 @@ class _MultiDayCardState extends State<MultiDayCard> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => SingleDay(dateToDisplay)));
+                        builder: (context) => DayView(dateToDisplay)));
               },
               child: Center(
                 child: Column(
@@ -274,7 +274,7 @@ class _MultiDayCardState extends State<MultiDayCard> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => SingleDay(dateToDisplay)));
+                          builder: (context) => DayView(dateToDisplay)));
                 },
                 child: Column(
                   children: [
