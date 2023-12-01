@@ -5,6 +5,7 @@ import 'package:planner/common/time_management.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/models/tag.dart';
+import 'package:planner/models/undertaking.dart';
 
 class DatabaseService {
   static final DatabaseService _singleton = DatabaseService._internal();
@@ -728,6 +729,81 @@ class DatabaseService {
     // delete tag
     await users.doc(userid).collection("tags").doc(tagDocs.docs[0].id).delete();
     return true;
+  }
+
+  /// Gets tags of an undertaking given the undertaking ID and type ("task" or "event")
+  Future<List<Tag>> getTagsOfUndertaking(String id, String utType) async {
+    if (utType != "task" && utType != "event") {
+      throw Exception("Invalid argument for utType");
+    }
+
+    Undertaking ut;
+    if (utType == "task") {
+      ut = await getTask(id);
+    } else {
+      ut = await getEvent(id);
+    }
+    List<Tag> tags = [];
+
+    for (var tagID in ut.tags) {
+      tags.add(await getTag(tagID));
+    }
+
+    return tags;
+  }
+
+  /// Wrapper of getTagsOfUndertaking()
+  /// Gets tags of a task given the task ID
+  /// Returns a list of tags
+  Future<List<Tag>> getTagsOfTask(String taskID) async {
+    return await getTagsOfUndertaking(taskID, "task");
+  }
+
+  /// Wrapper of getTagsOfUndertaking()
+  /// Gets tags of a event given the event ID
+  /// Returns a list of tags
+  Future<List<Tag>> getTagsOfEvent(String eventID) async {
+    return await getTagsOfUndertaking(eventID, "event");
+  }
+
+  /// Gets tag by name from a task given the ut ID and type ("task" or "event")
+  Future<Tag> getTagByNameOfUndertaking(
+      String id, String name, String utType) async {
+    if (utType != "task" && utType != "event") {
+      throw Exception("Invalid argument for utType");
+    }
+
+    Undertaking ut;
+    if (utType == "task") {
+      ut = await getTask(id);
+    } else {
+      ut = await getEvent(id);
+    }
+    List<Tag> tags = [];
+
+    for (var tagID in ut.tags) {
+      tags.add(await getTag(tagID));
+    }
+
+    for (var tag in tags) {
+      if (tag.name == name) {
+        return tag;
+      }
+    }
+
+    throw Exception("Tag not found");
+  }
+
+  /// Gets tag by name from a task given the task ID
+  /// Returns a tag
+  Future<Tag> getTagByNameOfTask(String taskID, String name) async {
+    return await getTagByNameOfUndertaking(taskID, name, "task");
+  }
+
+  /// Gets tag by name from a event given the event ID
+  /// Returns a tag
+  Future<Tag> getTagByNameOfEvent(String eventID, String name) async {
+    return await getTagByNameOfUndertaking(eventID, name, "event");
   }
 
   ///////////////////////////////////////////////////////////////////////
