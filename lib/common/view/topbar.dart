@@ -7,15 +7,18 @@ import 'package:planner/view/taskView.dart';
 import 'package:planner/view/weekView.dart';
 import 'package:planner/view/weeklyTaskView.dart';
 
+RoundedRectangleBorder roundedRectangleBackground =
+    const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+  bottomLeft: Radius.circular(20),
+  bottomRight: Radius.circular(20),
+));
+
 AppBar _getTopBarDaily(bool forEvents, BuildContext context, state) {
   return AppBar(
     elevation: 1,
     backgroundColor: Colors.white,
-    shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-      bottomLeft: Radius.circular(20),
-      bottomRight: Radius.circular(20),
-    )),
+    shape: roundedRectangleBackground,
     leading: IconButton(
       icon: const Icon(Icons.calendar_month_rounded, color: Colors.black),
       onPressed: () {
@@ -87,11 +90,7 @@ AppBar _getTopBarDaily(bool forEvents, BuildContext context, state) {
 
 AppBar _getTopBarWeekly(bool forEvents, BuildContext context, state) {
   return AppBar(
-    shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-      bottomLeft: Radius.circular(20),
-      bottomRight: Radius.circular(20),
-    )),
+    shape: roundedRectangleBackground,
     elevation: 1,
     backgroundColor: Colors.white,
     leading: Row(
@@ -189,11 +188,7 @@ _getTopBarMonthly(bool forEvents, BuildContext context, state) {
   return AppBar(
     elevation: 1,
     backgroundColor: Colors.white,
-    shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-      bottomLeft: Radius.circular(20),
-      bottomRight: Radius.circular(20),
-    )),
+    shape: roundedRectangleBackground,
     title: Row(
       children: <Widget>[
         Expanded(
@@ -207,7 +202,6 @@ _getTopBarMonthly(bool forEvents, BuildContext context, state) {
                 ),
               ),
               Switch(
-                // thumb color (round icon)
                 activeColor: Colors.white,
                 activeTrackColor: Colors.cyan,
                 inactiveThumbColor: Colors.blueGrey.shade600,
