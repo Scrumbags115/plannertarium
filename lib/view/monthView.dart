@@ -3,7 +3,6 @@ import 'package:planner/common/database.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/common/view/topbar.dart';
 import 'package:planner/models/task.dart';
-import 'package:planner/view/monthlyTaskView.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/view/weekView.dart';

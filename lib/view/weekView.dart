@@ -6,7 +6,6 @@ import 'package:planner/models/event.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/view/eventDialogs.dart';
 import 'package:planner/view/monthView.dart';
-import 'package:planner/view/taskView.dart';
 import 'package:intl/intl.dart';
 
 DatabaseService db = DatabaseService();

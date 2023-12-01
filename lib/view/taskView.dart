@@ -7,7 +7,6 @@ import 'package:planner/common/view/topbar.dart';
 import 'package:planner/models/task.dart';
 import 'dart:async';
 import 'package:planner/view/weeklyTaskView.dart';
-import 'package:planner/view/dayView.dart';
 import 'package:intl/intl.dart';
 import 'package:planner/view/taskCard.dart';
 
