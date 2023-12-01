@@ -45,6 +45,7 @@ dependencies:
   table_calendar: ^3.0.9
   slider_button: ^2.0.0
   intl: ^0.18.1
+  uuid: ^4.2.1
   
 dev_dependencies:
   flutter_test:

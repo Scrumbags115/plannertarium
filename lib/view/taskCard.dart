@@ -300,8 +300,8 @@ class TaskCardState extends State<TaskCard> {
                 widget.task.color = color;
                 widget.task.color = tag;
                 widget.task.timeDue = dueDate;
-                widget.task.timeStart = startTime??DateTime.now();
-      
+                widget.task.timeStart = startTime ?? DateTime.now();
+
                 db.setTask(widget.task);
                 completer.complete(widget.task);
                 Navigator.of(context).pop();

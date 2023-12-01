@@ -7,10 +7,10 @@ import 'package:slider_button/slider_button.dart';
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
   @override
-  LoginViewwState createState() => LoginViewwState();
+  LoginViewState createState() => LoginViewState();
 }
 
-class LoginViewwState extends State<LoginView> {
+class LoginViewState extends State<LoginView> {
   bool isLogin = false; // Assuming this is a state variable
 
   @override
