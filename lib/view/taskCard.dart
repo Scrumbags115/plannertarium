@@ -371,36 +371,6 @@ class TaskCardState extends State<TaskCard> {
                         decoration:
                             const InputDecoration(labelText: 'Location'),
                       ),
-                      Container(
-                        height: 40,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: enteredTags.length,
-                          itemBuilder: (context, index) {
-                            return Container(
-                              margin: EdgeInsets.symmetric(horizontal: 4),
-                              padding: EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.blue,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Row(
-                                children: [
-                                  Text(enteredTags[index].name),
-                                  IconButton(
-                                    icon: Icon(Icons.clear),
-                                    onPressed: () {
-                                      setState(() {
-                                        enteredTags.removeAt(index);
-                                      });
-                                    },
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                      ),
                       TextField(
                         controller: tagController,
                         decoration: const InputDecoration(labelText: 'Tag'),
@@ -413,6 +383,40 @@ class TaskCardState extends State<TaskCard> {
                             });
                           }
                         },
+                      ),
+                      SizedBox(
+                        height: 60,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: enteredTags.length,
+                          itemBuilder: (context, index) {
+                            return Container(
+                              margin: EdgeInsets.symmetric(
+                                  horizontal: 4, vertical: 10),
+                              padding: EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.grey,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        enteredTags.removeAt(index);
+                                      });
+                                    },
+                                    child: Row(
+                                      children: [
+                                        Text(enteredTags[index].name),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
                       ),
                       Row(
                         children: [
@@ -484,7 +488,7 @@ class TaskCardState extends State<TaskCard> {
 
                     completer.complete(widget.task);
                     Navigator.of(context).pop;
-                    setState(() {  
+                    setState(() {
                       for (Tag tag in enteredTags) {
                         allTags.add(tag);
                       }
