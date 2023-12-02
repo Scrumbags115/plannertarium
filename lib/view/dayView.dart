@@ -6,7 +6,7 @@ import 'package:planner/models/event.dart';
 import 'package:planner/view/eventDialogs.dart';
 import 'package:planner/view/taskView.dart';
 import 'package:planner/view/weekView.dart';
-
+import 'package:planner/common/view/topbar.dart';
 DatabaseService db = DatabaseService();
 
 class DayView extends StatefulWidget {
@@ -31,120 +31,7 @@ class _DayViewState extends State<DayView> {
         }
       },
       child: Scaffold(
-          appBar: AppBar(
-              elevation: 1,
-              shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(20),
-                bottomRight: Radius.circular(20),
-              )),
-              backgroundColor: Colors.white,
-              leading: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                      style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black),
-                      "${widget.date.month}/${widget.date.day}"),
-                ],
-              ),
-              title: Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        const Text(
-                          'Tasks ',
-                          style: TextStyle(
-                            color: Colors.black,
-                          ),
-                        ),
-                        Switch(
-                          // thumb color (round icon)
-                          activeColor: Colors.white,
-                          activeTrackColor: Colors.cyan,
-                          inactiveThumbColor: Colors.blueGrey.shade600,
-                          inactiveTrackColor: Colors.grey.shade400,
-                          splashRadius: 50.0,
-                          value: forEvents,
-                          onChanged: (value) {
-                            setState(() {
-                              forEvents = value;
-                            });
-                            if (!forEvents) {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => TaskView(),
-                                ),
-                              );
-                            }
-                          },
-                        ),
-                        const Text(
-                          ' Events',
-                          style: TextStyle(
-                            color: Colors.black,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              actions: [
-                MenuAnchor(
-                  builder: (BuildContext context, MenuController controller,
-                      Widget? child) {
-                    return IconButton(
-                      color: Colors.black,
-                      onPressed: () {
-                        if (controller.isOpen) {
-                          controller.close();
-                        } else {
-                          controller.open();
-                        }
-                      },
-                      icon: const Icon(Icons.more_vert),
-                      tooltip: 'Show menu',
-                    );
-                  },
-                  menuChildren: [
-                    IconButton(
-                        icon: const Icon(
-                            color: Colors.black, Icons.calendar_month_rounded),
-                        onPressed: () async {
-                          DateTime? picked = await showDatePicker(
-                            context: context,
-                            initialDate: widget.date,
-                            firstDate: DateTime(2000),
-                            lastDate: DateTime(2101),
-                          );
-                          if (picked != null) {
-                            setState(() {
-                              widget.date = picked;
-                            });
-                          }
-                        }),
-                    IconButton(
-                        icon: const Icon(color: Colors.black, Icons.east),
-                        onPressed: () {
-                          setState(() {
-                            widget.date = getDateOnly(widget.date, offsetDays: 1);
-                          });
-                        }),
-                    IconButton(
-                        icon: const Icon(color: Colors.black, Icons.west),
-                        onPressed: () {
-                          setState(() {
-                            widget.date = getDateOnly(widget.date, offsetDays: -1);
-                          });
-                        })
-                  ],
-                )
-              ]),
+          appBar: getTopBar(Event, "daily", context, this),
           body: Stack(children: [
             SingleDay(widget.date),
             Align(

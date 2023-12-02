@@ -58,60 +58,7 @@ class _MonthViewState extends State<MonthView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        elevation: 1,
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(20),
-          bottomRight: Radius.circular(20),
-        )),
-        backgroundColor: Colors.white,
-        title: Row(
-          children: <Widget>[
-            Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  const Text(
-                    'Tasks ',
-                    style: TextStyle(
-                      color: Colors.black,
-                    ),
-                  ),
-                  Switch(
-                    // thumb color (round icon)
-                    activeColor: Colors.white,
-                    activeTrackColor: Colors.cyan,
-                    inactiveThumbColor: Colors.blueGrey.shade600,
-                    inactiveTrackColor: Colors.grey.shade400,
-                    splashRadius: 50.0,
-                    value: forEvents,
-                    onChanged: (value) {
-                      setState(() {
-                        forEvents = value;
-                      });
-                      if (!forEvents) {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => MonthlyTaskView(),
-                          ),
-                        );
-                      }
-                    },
-                  ),
-                  const Text(
-                    ' Events',
-                    style: TextStyle(
-                      color: Colors.black,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [Icon(Icons.search)],
-      ),
+      appBar: getTopBar(Event, "monthly", context, this),
       body: GestureDetector(
         onHorizontalDragEnd: (details) {
           if (details.primaryVelocity! > 0) {
