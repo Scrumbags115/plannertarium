@@ -20,9 +20,7 @@ class _MonthViewState extends State<MonthView> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   DatabaseService db = DatabaseService();
-  List<Task> todayTasks = [];
   List<Event> todayEvents = [];
-  bool forEvents = true;
 
   // Add a PageController for handling page navigation
   final PageController _pageController = PageController();

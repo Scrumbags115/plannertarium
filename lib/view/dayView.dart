@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' as intl;
 import 'package:planner/common/database.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/models/event.dart';
@@ -7,6 +7,7 @@ import 'package:planner/view/eventDialogs.dart';
 import 'package:planner/view/taskView.dart';
 import 'package:planner/view/weekView.dart';
 import 'package:planner/common/view/topbar.dart';
+
 DatabaseService db = DatabaseService();
 
 class DayView extends StatefulWidget {
@@ -18,7 +19,6 @@ class DayView extends StatefulWidget {
 }
 
 class _DayViewState extends State<DayView> {
-  bool forEvents = true;
   var scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -71,6 +71,7 @@ class SingleDay extends StatefulWidget {
 
 class _SingleDayState extends State<SingleDay> {
   List<Event> eventsToday = [];
+  List<int> eventStartHours = [];
   int eventCount = 0;
 
   _SingleDayState(DateTime date);
@@ -84,74 +85,72 @@ class _SingleDayState extends State<SingleDay> {
   void asyncInitState() async {
     eventsToday = await db.getListOfEventsInDay(date: widget.date);
     eventCount = eventsToday.length;
+    for (var event in eventsToday) {
+      eventStartHours.add(event.timeStart.hour);
+    }
     setState(() {});
   }
 
   Widget build(BuildContext context) {
-    DateTime date = widget.date;
-    Map<int,Row> hours = generateHours();
     return Stack(children: [
       Column(
         children: [
           Expanded(
-            child: Stack(children: [
-              ListView.builder(
-                itemCount: 24,
-                itemBuilder: (context, index) {
-                  return Column(
-                    children: [
-                      Row(
-                        children: [
-                          /*Flexible(
-                            flex: 0,
-                            child: SizedBox(
-                              width: 50,
-                              child: Center(
-                                child: Text(DateFormat('j').format(
-                                    getDateOnly(DateTime.now())
-                                        .add(Duration(hours: index)))),
-                              ),
+            child: ListView.builder(
+              itemCount: 24,
+              itemBuilder: (context, index) {
+                return Column(
+                  children: [
+                    Row(
+                      children: [
+                        /*Flexible(
+                          flex: 0,
+                          child: SizedBox(
+                            width: 50,
+                            child: Center(
+                              child: Text(DateFormat('j').format(
+                                  getDateOnly(DateTime.now())
+                                      .add(Duration(hours: index)))),
                             ),
                           ),
-                          const Expanded(
-                            child: Divider(
-                              height: 1,
-                              thickness: 2,
-                              color: Colors.lightBlueAccent,
-                            ),
-                          ),*/
-                          Column(children: [
-                            SizedBox(
-                                width: 50,
-                                height: 40,
-                                child: Center(
-                                  child: Text(DateFormat('j').format(
-                                      getDateOnly(DateTime.now())
-                                          .add(Duration(hours: index)))),
-                                )),
-                          ]),
-                          Expanded(
-                            child: Column(
-                              children: [
-                                /*Divider(
-                                  height: 1,
-                                  thickness: 2,
-                                  color: Colors.lightBlueAccent,
-                                ),*/
-                                generateEventsInHour(index),
-                              ],
-                            ),
-                          )
-                        ],
-                      ),
-                      /*SizedBox(
-                          height: 40,
-                          child: Card(color: Colors.black, child: Text("hi")))*/
-                    ],
-                  );
-                },
-              ),
-            ]),
+                        ),
+                        const Expanded(
+                          child: Divider(
+                            height: 1,
+                            thickness: 2,
+                            color: Colors.lightBlueAccent,
+                          ),
+                        ),*/
+                        Column(children: [
+                          SizedBox(
+                              width: 50,
+                              height: 40,
+                              child: Center(
+                                child: Text(intl.DateFormat('j').format(
+                                    getDateOnly(DateTime.now())
+                                        .add(Duration(hours: index)))),
+                              )),
+                        ]),
+                        Expanded(
+                          child: Stack(
+                            children: [
+                              Divider(
+                                height: 1,
+                                thickness: 2,
+                              ),
+                              generateEventsInHour(index),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                    /*SizedBox(
+                        height: 40,
+                        child: Card(color: Colors.black, child: Text("hi")))*/
+                  ],
+                );
+              },
+            ),
           )
         ],
       ),
@@ -172,7 +171,7 @@ class _SingleDayState extends State<SingleDay> {
       }
       if (eventsInHour.length != 0) {
         hours[i] = Row(
-          children: [SizedBox(height:50, child: Text("hi"))],
+          children: [SizedBox(height: 50, child: Text("hi"))],
         );
       } else {
         hours[i] = Row(
@@ -188,26 +187,47 @@ class _SingleDayState extends State<SingleDay> {
   }
 
   Row generateEventsInHour(hour) {
+    Set<int> h = {};
     List<Event> eventsInHour = [];
-    for (var event in eventsToday) {
+    /*for (var event in eventsToday) {
       if (event.timeStart.hour <= hour && event.timeEnd.hour >= hour + 1) {
         eventsInHour.add(event);
       }
+    }*/
+    for (var hr in eventStartHours) {
+      if (hr == hour) {
+        h.add(hr);
+      }
     }
+    for (var i in h) {
+      for (var event in eventsToday) {
+        if (event.timeStart.hour == i) {
+          eventsInHour.add(event);
+        }
+      }
+    }
+    double width = MediaQuery.of(context).size.width - 50;
+    double space = width / eventCount;
     return Row(
-        children: eventsInHour
-            .map((item) => Expanded(
-                  child: SizedBox(
-                      height: 40,
-                      child: Card(
-                          color: Colors.amber,
-                          child: InkWell(
-                              onTap: () {
-                                showEventDetailPopup(context, item, widget.date);
-                              },
-                              child: Center(child: Text(item.name))))),
-                ))
-            .toList());
+        children: /*eventsInHour
+              .map((item) => Expanded(
+                    child: SizedBox(
+                        height: 40,
+                        child: Card(
+                            color: Colors.amber,
+                            child: InkWell(
+                                onTap: () {
+                                  showEventDetailPopup(
+                                      context, item, widget.date);
+                                },
+                                child: Center(child: Text(item.name))))),
+                  ))
+              .toList());*/
+            eventsInHour
+                .map((item) => CustomPaint(
+                    painter: MyPainter(eventSpace: space, event: item),
+                    child: SizedBox(width: space + 10)))
+                .toList());
   } /*Column(
       children: [
         Expanded(
@@ -314,6 +334,44 @@ class _SingleDayState extends State<SingleDay> {
                 ))
             .toList());
   }*/
+}
+
+class MyPainter extends CustomPainter {
+  double eventSpace;
+  Event event;
+  MyPainter({required this.eventSpace, required this.event});
+  @override
+  void paint(canvas, size) {
+    final myPaint = Paint()
+      ..strokeWidth = 10
+      ..color = Colors.amber
+      ..style = PaintingStyle.fill;
+    canvas.drawRect(
+        Rect.fromLTWH(5, 0, eventSpace,
+            40 * (event.timeEnd.hour - event.timeStart.hour).toDouble()),
+        myPaint);
+    TextStyle textStyle = TextStyle(color: Colors.black, fontSize: 15);
+    TextSpan textSpan = TextSpan(text: event.name, style: textStyle);
+    TextPainter textPainter =
+        TextPainter(text: textSpan, textDirection: (TextDirection.rtl));
+    textPainter.layout(minWidth: 0, maxWidth: size.width);
+    textPainter.paint(canvas, Offset.fromDirection(0, 6));
+    textStyle = TextStyle(color: Colors.black, fontSize: 10.5);
+    textSpan = TextSpan(
+        text:
+            "${intl.DateFormat("h:mm").format(event.timeStart)} - ${intl.DateFormat("h:mma").format(event.timeEnd)}",
+        style: textStyle);
+    textPainter =
+        TextPainter(text: textSpan, textDirection: (TextDirection.ltr));
+    textPainter.layout(minWidth: 0, maxWidth: size.width);
+    textPainter.paint(
+        canvas, Offset.fromDirection(90, 20) + Offset.fromDirection(0, 16));
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return false;
+  }
 }
 /*class SingleDay extends StatefulWidget {
   DateTime date;

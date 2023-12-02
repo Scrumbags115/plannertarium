@@ -19,7 +19,6 @@ class WeekView extends StatefulWidget {
 }
 
 class _WeekViewState extends State<WeekView> {
-  bool forEvents = true;
   var scaffoldKey = GlobalKey<ScaffoldState>();
   DateTime startDate = mostRecentMonday(
       DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day));
