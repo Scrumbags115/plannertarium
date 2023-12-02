@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
+import 'package:planner/common/time_management.dart';
+import 'package:planner/common/view/topbar.dart';
 import 'package:planner/models/task.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:planner/models/event.dart';
@@ -54,14 +56,13 @@ class _MonthViewState extends State<MonthView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Monthly View'),
-      ),
+      appBar: getTopBar(Event, "monthly", context, this),
       body: Column(
         children: [
           TableCalendar(
-            firstDay: DateTime(DateTime.now().year, DateTime.now().month, 1),
-            lastDay: DateTime(DateTime.now().year, DateTime.now().month + 1, 0),
+            firstDay: getMonthAsDateTime(DateTime.now()),
+            lastDay: getDateOnly(getNextMonthAsDateTime(DateTime.now()),
+                offsetDays: -1),
             focusedDay: _focusedDay,
             calendarFormat: _calendarFormat,
             selectedDayPredicate: (day) {

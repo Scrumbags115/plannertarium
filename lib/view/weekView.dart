@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:planner/common/view/topbar.dart';
 import 'package:planner/view/dayView.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/view/eventDialogs.dart';
 import 'package:planner/view/monthView.dart';
-import 'package:planner/view/taskView.dart';
 import 'package:intl/intl.dart';
 
 DatabaseService db = DatabaseService();
@@ -33,111 +33,7 @@ class _WeekViewState extends State<WeekView> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(
-          elevation: 0,
-          backgroundColor: Colors.white,
-          leading: IconButton(
-            icon: const Icon(Icons.menu, color: Colors.black),
-            onPressed: () {
-              scaffoldKey.currentState?.openDrawer();
-            },
-          ),
-          title: Row(
-            children: <Widget>[
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    const Text(
-                      'Tasks ',
-                      style: TextStyle(
-                        color: Colors.black,
-                      ),
-                    ),
-                    Switch(
-                      // thumb color (round icon)
-                      activeColor: Colors.white,
-                      activeTrackColor: Colors.cyan,
-                      inactiveThumbColor: Colors.blueGrey.shade600,
-                      inactiveTrackColor: Colors.grey.shade400,
-                      splashRadius: 50.0,
-                      value: forEvents,
-                      onChanged: (value) {
-                        setState(() {
-                          forEvents = value;
-                        });
-                        if (!forEvents) {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => const TaskView(),
-                            ),
-                          );
-                        }
-                      },
-                    ),
-                    const Text(
-                      ' Events',
-                      style: TextStyle(
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            MenuAnchor(
-              builder: (BuildContext context, MenuController controller,
-                  Widget? child) {
-                return IconButton(
-                  color: Colors.black,
-                  onPressed: () {
-                    if (controller.isOpen) {
-                      controller.close();
-                    } else {
-                      controller.open();
-                    }
-                  },
-                  icon: const Icon(Icons.more_vert),
-                  tooltip: 'Show menu',
-                );
-              },
-              menuChildren: [
-                IconButton(
-                    icon: const Icon(
-                        color: Colors.black, Icons.calendar_month_rounded),
-                    onPressed: () async {
-                      DateTime? picked = await showDatePicker(
-                        context: context,
-                        initialDate: startDate,
-                        firstDate: DateTime(2000),
-                        lastDate: DateTime(2101),
-                      );
-                      if (picked != null) {
-                        setState(() {
-                          startDate = mostRecentMonday(picked);
-                        });
-                      }
-                    }),
-                IconButton(
-                    icon: const Icon(color: Colors.black, Icons.east),
-                    onPressed: () {
-                      setState(() {
-                        startDate = getDateOnly(startDate, offsetDays: 7);
-                      });
-                    }),
-                IconButton(
-                    icon: const Icon(color: Colors.black, Icons.west),
-                    onPressed: () {
-                      setState(() {
-                        startDate = getDateOnly(startDate, offsetDays: -7);
-                      });
-                    })
-              ],
-            )
-          ],
-        ),
+        appBar: getTopBar(Event, "weekly", context, this),
         drawer: const Drawer(),
         body: ListView(
           children: List.generate(DateTime.daysPerWeek, (index) {
