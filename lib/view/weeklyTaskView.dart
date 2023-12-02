@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/common/time_management.dart';
+import 'package:planner/common/view/topbar.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/view/taskView.dart';
 import 'package:planner/view/monthlyTaskView.dart';
-import 'package:planner/view/weekView.dart';
 import 'package:planner/view/taskCard.dart';
 
 class WeeklyTaskView extends StatefulWidget {
@@ -163,101 +163,9 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
 
   @override
   Widget build(BuildContext context) {
-    bool forEvents = false;
     DateTime today = DateTime.now();
     return Scaffold(
-      appBar: AppBar(
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(20),
-          bottomRight: Radius.circular(20),
-        )),
-        elevation: 1,
-        backgroundColor: Colors.white,
-        leading: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Expanded(
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: () {
-                  loadPreviousWeek();
-                },
-              ),
-            ),
-            const SizedBox(width: 5),
-            Expanded(
-              child: IconButton(
-                icon: const Icon(Icons.calendar_month_rounded,
-                    color: Colors.black),
-                onPressed: () {
-                  datePicker();
-                },
-              ),
-            ),
-          ],
-        ),
-        title: Center(
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    const SizedBox(width: 20),
-                    const Text(
-                      'Tasks ',
-                      style: TextStyle(
-                        color: Colors.black,
-                      ),
-                    ),
-                    Switch(
-                      activeColor: Colors.white,
-                      activeTrackColor: Colors.cyan,
-                      inactiveThumbColor: Colors.blueGrey.shade600,
-                      inactiveTrackColor: Colors.grey.shade400,
-                      splashRadius: 50.0,
-                      value: forEvents,
-                      onChanged: (value) {
-                        setState(() {
-                          forEvents = value;
-                        });
-                        if (forEvents) {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => const WeekView(),
-                            ),
-                          );
-                        }
-                      },
-                    ),
-                    const Text(
-                      ' Events',
-                      style: TextStyle(
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search, color: Colors.black),
-            onPressed: () {
-              //showSearchBar();
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.arrow_forward, color: Colors.black),
-            onPressed: () {
-              loadNextWeek();
-            },
-          ),
-        ],
-      ),
+      appBar: getTopBar(Task, "weekly", context, this),
       body: GestureDetector(
         onHorizontalDragEnd: (details) {
           if (details.primaryVelocity! < 0) {

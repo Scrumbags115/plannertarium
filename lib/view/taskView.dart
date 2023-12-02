@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:planner/common/time_management.dart';
+import 'package:planner/common/view/topbar.dart';
 import 'package:planner/models/task.dart';
 import 'dart:async';
 import 'package:planner/view/weeklyTaskView.dart';
-import 'package:planner/view/dayView.dart';
 import 'package:intl/intl.dart';
 import 'package:planner/view/taskCard.dart';
 
@@ -260,75 +260,7 @@ class TaskViewState extends State<TaskView> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      appBar: AppBar(
-        elevation: 1,
-        backgroundColor: Colors.white,
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(20),
-          bottomRight: Radius.circular(20),
-        )),
-        leading: IconButton(
-          icon: const Icon(Icons.calendar_month_rounded, color: Colors.black),
-          onPressed: () {
-            selectDate();
-          },
-        ),
-        title: Row(
-          children: <Widget>[
-            Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  const Text(
-                    'Tasks ',
-                    style: TextStyle(
-                      color: Colors.black,
-                    ),
-                  ),
-                  Switch(
-                    activeColor: Colors.white,
-                    activeTrackColor: Colors.cyan,
-                    inactiveThumbColor: Colors.blueGrey.shade600,
-                    inactiveTrackColor: Colors.grey.shade400,
-                    splashRadius: 50.0,
-                    value: forEvents,
-                    onChanged: (value) {
-                      setState(() {
-                        forEvents = value;
-                      });
-                      if (forEvents) {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => DayView(today),
-                          ),
-                        );
-                      }
-                    },
-                  ),
-                  const Text(
-                    ' Events',
-                    style: TextStyle(
-                      color: Colors.black,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(
-              Icons.search,
-              color: Colors.black,
-            ),
-            onPressed: () {
-              showSearchBar(context);
-            },
-          ),
-        ],
-      ),
+      appBar: getTopBar(Task, "daily", context, this),
       drawer: Drawer(
         child: ListView(
           padding: const EdgeInsets.all(0),
