@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:planner/common/database.dart';
 import 'package:flutter/material.dart';
 import 'package:planner/models/task.dart';
@@ -15,6 +17,17 @@ class TaskCard extends StatefulWidget {
 }
 
 class TaskCardState extends State<TaskCard> {
+  List<Tag> allTags = [];
+  @override
+  void initState() {
+    asyncInitState();
+    super.initState();
+  }
+
+  void asyncInitState() async {
+    allTags = await db.getAllTags();
+  }
+
   DatabaseService db = DatabaseService();
 
   Future<DateTime?> datePicker() async {
@@ -48,6 +61,21 @@ class TaskCardState extends State<TaskCard> {
     return completed;
   }
 
+  Future<Color> getColorForTag(String tagID) async {
+    Tag log = await db.getTag(tagID);
+
+    return Color(int.parse(log.color));
+  }
+
+  Future<List<Color>> getColorsForTags(List<String> tags) async {
+    List<Color> colors = [];
+    for (String tagName in tags) {
+      colors.add(await getColorForTag(
+          tagName)); // Assuming getColorForTag returns a Future<Color>
+    }
+    return colors;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dismissible(
@@ -64,7 +92,8 @@ class TaskCardState extends State<TaskCard> {
             builder: (context) {
               return AlertDialog(
                 title: const Text('Confirm Deletion'),
-                content: const Text('Are you sure you want to delete this task?'),
+                content:
+                    const Text('Are you sure you want to delete this task?'),
                 actions: [
                   TextButton(
                     onPressed: () {
@@ -113,46 +142,76 @@ class TaskCardState extends State<TaskCard> {
             showDetailPopup(context);
           },
           child: ListTile(
-            leading: InkWell(
-              onTap: () {
-                setState(() {
-                  widget.task.completed = !widget.task.completed;
-                  db.setTask(widget.task);
-                });
-              },
-              child: CircleAvatar(
-                backgroundColor: isTaskCompleted() ? Colors.green : Colors.blue,
-                child: isTaskCompleted()
-                    ? const Icon(Icons.check, color: Colors.white)
-                    : const Icon(Icons.circle, color: Colors.blue),
+              leading: InkWell(
+                onTap: () {
+                  setState(() {
+                    widget.task.completed = !widget.task.completed;
+                    db.setTask(widget.task);
+                  });
+                },
+                child: CircleAvatar(
+                  backgroundColor:
+                      isTaskCompleted() ? Colors.green : Colors.blue,
+                  child: isTaskCompleted()
+                      ? const Icon(Icons.check, color: Colors.white)
+                      : const Icon(Icons.circle, color: Colors.blue),
+                ),
               ),
-            ),
-            title: Text(
-              widget.task.name,
-              style: TextStyle(
-                decoration:
-                    isTaskCompleted() ? TextDecoration.lineThrough : null,
+              title: Text(
+                widget.task.name,
+                style: TextStyle(
+                  decoration:
+                      isTaskCompleted() ? TextDecoration.lineThrough : null,
+                ),
               ),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(widget.task.description),
-                if (widget.task.tags.isNotEmpty)
-                  Wrap(
-                    spacing: 8.0,
-                    children: widget.task.tags.map((tag) {
-                      return Chip(
-                        label: Text(tag),
-                      );
-                    }).toList(),
-                  ),
-              ],
-            ),
-          ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(widget.task.description),
+                  if (widget.task.tags.isNotEmpty)
+                    FutureBuilder<List<Color>>(
+                      future: getColorsForTags(
+                          widget.task.tags), // Use the new function here
+                      builder: (BuildContext context,
+                          AsyncSnapshot<List<Color>> snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return CircularProgressIndicator(); // Show a loader while waiting
+                        } else if (snapshot.hasError) {
+                          return Text(
+                              'Error: ${snapshot.error}'); //exception: tag not found!
+                        } else if (snapshot.hasData) {
+                          return Wrap(
+                            spacing: 8.0,
+                            children: List<Widget>.generate(
+                                widget.task.tags.length, (int index) {
+                              return Chip(
+                                label: Text(getTagNameInLocalTagListWithTagID(
+                                    widget.task.tags[index])),
+                                backgroundColor: snapshot.data![
+                                    index], // Use the color from the snapshot
+                              );
+                            }),
+                          );
+                        } else {
+                          return Container(); // Return an empty container if there's no data
+                        }
+                      },
+                    ),
+                ],
+              )),
         ),
       ),
     );
+  }
+
+  String getTagNameInLocalTagListWithTagID(String tagID) {
+    for (final Tag tag in allTags) {
+      if (tag.id == tagID) {
+        return tag.name;
+      }
+    }
+    throw Exception("Tag not found in local tag list");
   }
 
   void showDetailPopup(BuildContext context) {
@@ -254,7 +313,7 @@ class TaskCardState extends State<TaskCard> {
               onPressed: () {
                 Tag selectedTag = Tag(
                   name: nameController.text,
-                  color: selectedColor.toString(),
+                  color: selectedColor.value.toString(), // turn color into int
                 );
                 selectedTags.add(selectedTag);
                 nameController.clear();
@@ -271,6 +330,7 @@ class TaskCardState extends State<TaskCard> {
 
   Future<Task?> showEditPopup(BuildContext context) async {
     DatabaseService db = DatabaseService();
+
     TextEditingController nameController = TextEditingController();
     TextEditingController descriptionController = TextEditingController();
     TextEditingController locationController = TextEditingController();
@@ -280,7 +340,7 @@ class TaskCardState extends State<TaskCard> {
     Completer<Task?> completer = Completer<Task?>();
 
     List<Tag> enteredTags = [];
-    Tag? selectedTag;
+    //Tag? selectedTag;
 
     showDialog(
       context: context,
@@ -298,15 +358,18 @@ class TaskCardState extends State<TaskCard> {
                     children: <Widget>[
                       TextField(
                         controller: nameController,
-                        decoration: const InputDecoration(labelText: 'Task Name'),
+                        decoration:
+                            const InputDecoration(labelText: 'Task Name'),
                       ),
                       TextField(
                         controller: descriptionController,
-                        decoration: const InputDecoration(labelText: 'Description'),
+                        decoration:
+                            const InputDecoration(labelText: 'Description'),
                       ),
                       TextField(
                         controller: locationController,
-                        decoration: const InputDecoration(labelText: 'Location'),
+                        decoration:
+                            const InputDecoration(labelText: 'Location'),
                       ),
                       Container(
                         height: 40,
@@ -342,7 +405,8 @@ class TaskCardState extends State<TaskCard> {
                         controller: tagController,
                         decoration: const InputDecoration(labelText: 'Tag'),
                         onTap: () async {
-                          List<Tag> result = await showTagSelectionDialog(context);
+                          List<Tag> result =
+                              await showTagSelectionDialog(context);
                           if (result.isNotEmpty) {
                             setState(() {
                               enteredTags.addAll(result);
@@ -396,7 +460,8 @@ class TaskCardState extends State<TaskCard> {
                   child: const Text('Submit'),
                   onPressed: () {
                     if (enteredTags.isNotEmpty) {
-                      widget.task.tags = enteredTags.map((tag) => tag.name).toList();
+                      widget.task.tags =
+                          enteredTags.map((tag) => tag.id).toList();
                     }
                     String name = nameController.text;
                     String description = descriptionController.text;
@@ -408,9 +473,23 @@ class TaskCardState extends State<TaskCard> {
                     widget.task.timeDue = dueDate;
                     widget.task.timeStart = startTime ?? DateTime.now();
 
+                    widget.task.tags = [];
+
                     db.setTask(widget.task);
+
+                    for (Tag tag in enteredTags) {
+                      db.addTagToTask(widget.task, tag);
+                      allTags.add(tag);
+                    }
+
                     completer.complete(widget.task);
-                    Navigator.of(context).pop();
+                    Navigator.of(context).pop;
+                    setState(() {  
+                      for (Tag tag in enteredTags) {
+                        allTags.add(tag);
+                      }
+                      asyncInitState();
+                    });
                   },
                 ),
               ],
