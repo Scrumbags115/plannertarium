@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/common/time_management.dart';
+import 'package:planner/common/view/addTaskButton.dart';
 import 'package:planner/common/view/topbar.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/view/taskView.dart';
@@ -83,7 +84,7 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
 
   ///A DatePicker function to prompt a calendar
   ///Returns a selectedDate if chosen, defaulted to today if no selectedDate
-  Future<void> datePicker() async {
+  Future<void> calendarIconDatePicker() async {
     DateTime? selectedDate = await showDatePicker(
       context: context,
       initialDate: today,
@@ -180,7 +181,7 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
           }
         },
         child: ListView(
-          children: generateScreen(today),
+          children: generateScreen(today) + [getAddTaskButton(this, context)],
         ),
       ),
     );

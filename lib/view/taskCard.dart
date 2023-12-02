@@ -17,15 +17,27 @@ class TaskCard extends StatefulWidget {
 }
 
 class TaskCardState extends State<TaskCard> {
-  List<Tag> allTags = [];
+  List<Tag> allTagsofTask = [];
+
   @override
   void initState() {
-    asyncInitState();
     super.initState();
+    asyncInitState();
   }
 
   void asyncInitState() async {
-    allTags = await db.getAllTags();
+    // widget.task = await db.getTask(widget.task.id);
+    db.setTask(widget.task);
+    allTagsofTask = await db.getTagsOfTask(widget.task.id);
+    print("initializing tag list ${allTagsofTask}");
+    setState(() {});
+  }
+
+  void callMeInSetState() {
+    db.setTask(widget.task);
+    for (Tag tag in allTagsofTask) {
+      db.addTagToTask(widget.task, tag);
+    }
   }
 
   DatabaseService db = DatabaseService();
@@ -67,9 +79,9 @@ class TaskCardState extends State<TaskCard> {
     return Color(int.parse(log.color));
   }
 
-  Future<List<Color>> getColorsForTags(List<String> tags) async {
+  Future<List<Color>> getColorsForTags(List<String> tagIDs) async {
     List<Color> colors = [];
-    for (String tagName in tags) {
+    for (String tagName in tagIDs) {
       colors.add(await getColorForTag(
           tagName)); // Assuming getColorForTag returns a Future<Color>
     }
@@ -206,12 +218,22 @@ class TaskCardState extends State<TaskCard> {
   }
 
   String getTagNameInLocalTagListWithTagID(String tagID) {
-    for (final Tag tag in allTags) {
+    for (final Tag tag in allTagsofTask) {
       if (tag.id == tagID) {
         return tag.name;
       }
     }
-    throw Exception("Tag not found in local tag list");
+    return ("Tag not found in local tag list, list was ${allTagsofTask}");
+  }
+
+  void showExistingTags(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Existing Tags'),
+          );
+        });
   }
 
   void showDetailPopup(BuildContext context) {
@@ -335,12 +357,16 @@ class TaskCardState extends State<TaskCard> {
     TextEditingController descriptionController = TextEditingController();
     TextEditingController locationController = TextEditingController();
     TextEditingController tagController = TextEditingController();
-    DateTime? dueDate;
-    DateTime? startTime = DateTime.now();
+    DateTime? dueDate = widget.task.timeDue;
+    DateTime? startTime = widget.task.timeStart;
     Completer<Task?> completer = Completer<Task?>();
 
     List<Tag> enteredTags = [];
     //Tag? selectedTag;
+
+    nameController.text = widget.task.name;
+    descriptionController.text = widget.task.description;
+    locationController.text = widget.task.location;
 
     showDialog(
       context: context,
@@ -423,15 +449,24 @@ class TaskCardState extends State<TaskCard> {
                           IconButton(
                             icon: const Icon(Icons.wallet),
                             onPressed: () async {
-                              startTime = await datePicker();
-                              setState(() {});
+                              final DateTime? pickedDate = await datePicker();
+                              if (pickedDate != null &&
+                                  pickedDate != startTime) {
+                                setState(() {
+                                  startTime = pickedDate;
+                                  for (Tag tag in enteredTags) {
+                                    db.setTag(tag);
+                                  }
+                                  db.setTask(widget.task);
+                                });
+                              }
                             },
                           ),
                           const SizedBox(width: 8),
                           Text(
                             startTime != null
-                                ? 'Start Time: ${DateFormat('yyyy-MM-dd').format(startTime!)}'
-                                : 'No start time selected',
+                                ? 'Start Date: ${DateFormat('MM-dd-yyyy').format(startTime!)}'
+                                : 'No start date selected',
                             style: const TextStyle(fontSize: 16),
                           ),
                         ],
@@ -441,11 +476,23 @@ class TaskCardState extends State<TaskCard> {
                           IconButton(
                             icon: const Icon(Icons.calendar_month_rounded),
                             onPressed: () async {
-                              dueDate = await datePicker();
+                              final DateTime? pickedDueDate =
+                                  await datePicker();
+                              if (pickedDueDate != null &&
+                                  pickedDueDate != dueDate) {
+                                setState(() {
+                                  dueDate = pickedDueDate;
+                                });
+                              }
                             },
                           ),
                           const SizedBox(width: 8),
-                          const Text('Due Time'),
+                          Text(
+                            dueDate != null
+                                ? 'Due Date: ${DateFormat('MM-dd-yyyy').format(dueDate!)}'
+                                : 'No due date selected',
+                            style: const TextStyle(fontSize: 16),
+                          ),
                         ],
                       ),
                     ],
@@ -483,16 +530,17 @@ class TaskCardState extends State<TaskCard> {
 
                     for (Tag tag in enteredTags) {
                       db.addTagToTask(widget.task, tag);
-                      allTags.add(tag);
+                      allTagsofTask.add(tag);
                     }
 
                     completer.complete(widget.task);
                     Navigator.of(context).pop;
                     setState(() {
-                      for (Tag tag in enteredTags) {
-                        allTags.add(tag);
-                      }
+                      // for (Tag tag in enteredTags) {
+                      //   allTagsofTask.add(tag);
+                      // }
                       asyncInitState();
+                      //Navigator.of(context).reassemble();
                     });
                   },
                 ),
