@@ -186,7 +186,6 @@ class _WeekViewState extends State<WeekView> {
   }
 }
 
-//Each of these navigates to dayView when tapped
 class MultiDayCard extends StatefulWidget {
   const MultiDayCard(this.index, this.startDate, {super.key});
   final int index;
@@ -284,7 +283,7 @@ class _MultiDayCardState extends State<MultiDayCard> {
                           Expanded(
                             child: generateEventCardListView(dateToDisplay),
                           ),
-                          Flexible(
+                          /*Flexible(
                               flex: 0,
                               child: SizedBox(
                                   width: 40,
@@ -298,7 +297,7 @@ class _MultiDayCardState extends State<MultiDayCard> {
                                           child: const Column(
                                               mainAxisAlignment:
                                                   MainAxisAlignment.center,
-                                              children: [Icon(Icons.add)])))))
+                                              children: [Icon(Icons.add)])))))*/
                         ],
                       ),
                     )

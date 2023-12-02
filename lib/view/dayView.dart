@@ -18,7 +18,6 @@ class DayView extends StatefulWidget {
 }
 
 class _DayViewState extends State<DayView> {
-  DateTime date = DateTime.now();
   bool forEvents = true;
   var scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -48,7 +47,7 @@ class _DayViewState extends State<DayView> {
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: Colors.black),
-                      "${date.month}/${date.day}"),
+                      "${widget.date.month}/${widget.date.day}"),
                 ],
               ),
               title: Row(
@@ -119,13 +118,13 @@ class _DayViewState extends State<DayView> {
                         onPressed: () async {
                           DateTime? picked = await showDatePicker(
                             context: context,
-                            initialDate: date,
+                            initialDate: widget.date,
                             firstDate: DateTime(2000),
                             lastDate: DateTime(2101),
                           );
                           if (picked != null) {
                             setState(() {
-                              date = picked;
+                              widget.date = picked;
                             });
                           }
                         }),
@@ -133,21 +132,21 @@ class _DayViewState extends State<DayView> {
                         icon: const Icon(color: Colors.black, Icons.east),
                         onPressed: () {
                           setState(() {
-                            date = getDateOnly(date, offsetDays: 1);
+                            widget.date = getDateOnly(widget.date, offsetDays: 1);
                           });
                         }),
                     IconButton(
                         icon: const Icon(color: Colors.black, Icons.west),
                         onPressed: () {
                           setState(() {
-                            date = getDateOnly(date, offsetDays: -1);
+                            widget.date = getDateOnly(widget.date, offsetDays: -1);
                           });
                         })
                   ],
                 )
               ]),
           body: Stack(children: [
-            SingleDay(date),
+            SingleDay(widget.date),
             Align(
               alignment: Alignment.bottomRight,
               child: Padding(
@@ -156,7 +155,7 @@ class _DayViewState extends State<DayView> {
                 child: ClipOval(
                   child: ElevatedButton(
                     onPressed: () async {
-                      await addEventFormForDay(context, date);
+                      await addEventFormForDay(context, widget.date);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.grey,
@@ -184,7 +183,6 @@ class SingleDay extends StatefulWidget {
 }
 
 class _SingleDayState extends State<SingleDay> {
-  DateTime date = DateTime.now();
   List<Event> eventsToday = [];
   int eventCount = 0;
 
@@ -197,13 +195,13 @@ class _SingleDayState extends State<SingleDay> {
   }
 
   void asyncInitState() async {
-    eventsToday = await db.getListOfEventsInDay(date: date);
+    eventsToday = await db.getListOfEventsInDay(date: widget.date);
     eventCount = eventsToday.length;
     setState(() {});
   }
 
   Widget build(BuildContext context) {
-    date = widget.date;
+    DateTime date = widget.date;
     Map<int,Row> hours = generateHours();
     return Stack(children: [
       Column(
@@ -238,6 +236,7 @@ class _SingleDayState extends State<SingleDay> {
                           Column(children: [
                             SizedBox(
                                 width: 50,
+                                height: 40,
                                 child: Center(
                                   child: Text(DateFormat('j').format(
                                       getDateOnly(DateTime.now())
@@ -247,14 +246,12 @@ class _SingleDayState extends State<SingleDay> {
                           Expanded(
                             child: Column(
                               children: [
-                                Divider(
+                                /*Divider(
                                   height: 1,
                                   thickness: 2,
                                   color: Colors.lightBlueAccent,
-                                ),
-                                if(hours[index]!=null) 
-                                  hours[index]!
-                                //generateEventsInHour(index),
+                                ),*/
+                                generateEventsInHour(index),
                               ],
                             ),
                           )
@@ -319,7 +316,7 @@ class _SingleDayState extends State<SingleDay> {
                           color: Colors.amber,
                           child: InkWell(
                               onTap: () {
-                                showEventDetailPopup(context, item, date);
+                                showEventDetailPopup(context, item, widget.date);
                               },
                               child: Center(child: Text(item.name))))),
                 ))
