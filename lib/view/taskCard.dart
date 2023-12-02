@@ -16,6 +16,23 @@ class TaskCard extends StatefulWidget {
 
 class TaskCardState extends State<TaskCard> {
   DatabaseService db = DatabaseService();
+  late List<Tag> tagList;
+  final StreamController<List<Tag>> tagListStream = StreamController();
+  
+  @override
+  void initState() {
+    super.initState();
+    updateTagList();
+  }
+
+  /// Get the latest list of tags and input it into the streambuilder controller
+  void updateTagList() async {
+    List<Tag> newTagList = [];
+    for (final String tagID in widget.task.tags) {
+      newTagList.add(await db.getTag(tagID));
+    }
+    tagListStream.add(newTagList);
+  }
 
   ///A DatePicker function to prompt a calendar
   ///Returns a selectedDate if chosen, defaulted to today if no selectedDate
@@ -152,17 +169,28 @@ class TaskCardState extends State<TaskCard> {
               ),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                children: <Widget>[
                   Text(widget.task.description),
-                  if (widget.task.tags.isNotEmpty)
-                    Wrap(
-                      spacing: 8.0,
-                      children: widget.task.tags.map((tag) {
-                        return Chip(
-                          label: Text(tag),
-                        );
-                      }).toList(),
-                    ),
+                  StreamBuilder<List<Tag>>(
+                      stream: tagListStream.stream,
+                      builder: (BuildContext context,
+                          AsyncSnapshot<List<Tag>> snapshot) {
+                        if (snapshot.connectionState != ConnectionState.done) {
+                          // setState(() {});
+                          // not sure what to do here
+                        }
+                        if (snapshot.hasData) {
+                          List<Chip> chipList = [];
+                          for (final Tag tag in (snapshot.data!)) {
+                            Chip tagChip = Chip(
+                                label: Text(tag.name),
+                                backgroundColor: Color(int.parse(tag.color)));
+                            chipList.add(tagChip);
+                          }
+                          return Wrap(spacing: 8.0, children: chipList);
+                        }
+                        return const Text('Loading...');
+                      }),
                 ],
               ),
             )),
@@ -215,8 +243,55 @@ class TaskCardState extends State<TaskCard> {
     );
   }
 
-  Future<Map<String, dynamic>?> showTagSelectionDialog(
-      BuildContext context) async {
+  Future<Tag?> showExistingTag() async {
+    Completer<Tag?> completer = Completer<Tag?>();
+    List<Tag> userTags = await db.getAllTags();
+    print(userTags);
+    void showTagDialog(BuildContext dialogContext) {
+      showDialog(
+        context: dialogContext,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Select Existing Tag'),
+            content: SingleChildScrollView(
+              child: SizedBox(
+                height: (MediaQuery.of(dialogContext).size.height * 0.5),
+                width: (MediaQuery.of(dialogContext).size.width * 0.8),
+                child: ListView.builder(
+                  itemCount: userTags.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      title: Text(userTags[index].name),
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        completer.complete(userTags[index]);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('Cancel'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  completer.complete(null);
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    // Call the function with the current BuildContext
+    showTagDialog(context);
+
+    return completer.future;
+  }
+
+  Future<Tag?> showTagSelectionDialog(BuildContext context) async {
     TextEditingController nameController = TextEditingController();
     Color selectedColor = Colors.blue; // Default color
     Color pickerColor = Color(0xff443a49);
@@ -245,8 +320,8 @@ class TaskCardState extends State<TaskCard> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Tag Color:'),
-                    Container(
+                    const Text('Tag Color:'),
+                    SizedBox(
                       width: 200,
                       child: ColorPicker(
                         pickerColor: pickerColor,
@@ -267,12 +342,9 @@ class TaskCardState extends State<TaskCard> {
             ),
             TextButton(
               onPressed: () {
-                // Map<String, dynamic> selectedTag = {
-                //   'name': nameController.text,
-                //   'color': selectedColor,
-                // };
-                Tag selectedTag =
-                    Tag(name: nameController.text, color: selectedColor.toString());
+                Tag selectedTag = Tag(
+                    name: nameController.text, color: selectedColor.toString());
+                print(selectedColor.toString());
                 Navigator.pop(context, selectedTag);
               },
               child: const Text('Add'),
@@ -293,119 +365,154 @@ class TaskCardState extends State<TaskCard> {
     DateTime? startTime = DateTime.now();
     Completer<Task?> completer = Completer<Task?>();
 
-    // Create a variable to store the selected tag
-    Tag? selectedTag;
+    List<Tag> enteredTags = []; // Use a list to store multiple tags
 
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Edit Task'),
-          content: SingleChildScrollView(
-            child: SizedBox(
-              height: (MediaQuery.of(context).size.height * 0.7),
-              width: (MediaQuery.of(context).size.width * 0.8),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  TextField(
-                    controller: nameController,
-                    decoration: const InputDecoration(labelText: 'Task Name'),
-                  ),
-                  TextField(
-                    controller: descriptionController,
-                    decoration: const InputDecoration(labelText: 'Description'),
-                  ),
-                  TextField(
-                    controller: locationController,
-                    decoration: const InputDecoration(labelText: 'Location'),
-                  ),
-                  TextField(
-                    controller: tagController,
-                    decoration: const InputDecoration(labelText: 'Tag'),
-                    onTap: () async {
-                      Map<String, dynamic>? result =
-                          await showTagSelectionDialog(context);
-                      if (result != null) {
-                        Tag? tag = Tag.fromMap(result);
-                        setState(() {
-                          selectedTag = tag;
-                          tagController.text = selectedTag!.name;
-                        });
-                      }
-                    },
-                  ),
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.wallet),
-                        onPressed: () async {
-                          startTime = await datePicker();
-                          setState(() {});
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Edit Task'),
+              content: SingleChildScrollView(
+                child: SizedBox(
+                  height: (MediaQuery.of(context).size.height * 0.7),
+                  width: (MediaQuery.of(context).size.width * 0.8),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      TextField(
+                        controller: nameController,
+                        decoration:
+                            const InputDecoration(labelText: 'Task Name'),
+                      ),
+                      TextField(
+                        controller: descriptionController,
+                        decoration:
+                            const InputDecoration(labelText: 'Description'),
+                      ),
+                      TextField(
+                        controller: locationController,
+                        decoration:
+                            const InputDecoration(labelText: 'Location'),
+                      ),
+                      TextField(
+                        controller: tagController,
+                        decoration: const InputDecoration(
+                          labelText: 'Tag',
+                          suffixIcon: Icon(Icons.keyboard_arrow_down),
+                        ),
+                        onTap: () async {
+                          Tag? result = await showTagSelectionDialog(context);
+                          if (result != null) {
+                            setState(() {
+                              enteredTags.add(result);
+                            });
+                          }
                         },
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        startTime != null
-                            ? 'Start Time: ${DateFormat('yyyy-MM-dd').format(startTime!)}'
-                            : 'No start time selected',
-                        style: const TextStyle(fontSize: 16),
+                      SizedBox(
+                        height: 60,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: enteredTags.length,
+                          itemBuilder: (context, index) {
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  enteredTags.removeAt(index);
+                                });
+                              },
+                              child: Container(
+                                height: 50,
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 4, vertical: 10),
+                                padding: const EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey,
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      enteredTags[index].name,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.wallet),
+                            onPressed: () async {
+                              startTime = await datePicker();
+                              setState(() {});
+                            },
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            startTime != null
+                                ? 'Start Time: ${DateFormat('yyyy-MM-dd').format(startTime!)}'
+                                : 'No start time selected',
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.calendar_month_rounded),
+                            onPressed: () async {
+                              dueDate = await datePicker();
+                            },
+                          ),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Due Time',
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.calendar_month_rounded),
-                        onPressed: () async {
-                          dueDate = await datePicker();
-                        },
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'Due Time',
-                      ),
-                    ],
-                  ),
-                ],
+                ),
               ),
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                completer.complete(null);
-              },
-            ),
-            TextButton(
-              child: const Text('Submit'),
-              onPressed: () {
-                String name = nameController.text;
-                String description = descriptionController.text;
-                String location = locationController.text;
-                print('st: $selectedTag');
-                // Set the selected tag to the task
-                if (selectedTag != null) {
-                  widget.task.tags = [
-                    selectedTag!.name
-                  ]; // Wrap selectedTag in a List<Tag>
-                }
-                List<String> wtn = widget.task.tags;
-                print('wtn:: $wtn');
-                widget.task.name = name;
-                widget.task.description = description;
-                widget.task.location = location;
-                widget.task.timeDue = dueDate;
-                widget.task.timeStart = startTime ?? DateTime.now();
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Cancel'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    completer.complete(null);
+                  },
+                ),
+                TextButton(
+                  child: const Text('Submit'),
+                  onPressed: () {
+                    String name = nameController.text;
+                    String description = descriptionController.text;
+                    String location = locationController.text;
 
-                db.setTask(widget.task);
-                completer.complete(widget.task);
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
+                    List<String> tags =
+                        enteredTags.map((tag) => tag.name).toList();
+
+                    widget.task.tags = tags;
+                    widget.task.name = name;
+                    widget.task.description = description;
+                    widget.task.location = location;
+                    widget.task.timeDue = dueDate;
+                    widget.task.timeStart = startTime ?? DateTime.now();
+
+                    db.setTask(widget.task);
+                    completer.complete(widget.task);
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
         );
       },
     );
