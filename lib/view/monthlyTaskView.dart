@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
+import 'package:planner/common/view/topbar.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/view/weeklyTaskView.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:planner/common/time_management.dart';
-import 'package:planner/view/monthView.dart';
 import 'package:planner/view/taskCard.dart';
 
 class MonthlyTaskView extends StatefulWidget {
@@ -51,7 +51,6 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
 
   @override
   Widget build(BuildContext context) {
-    bool forEvents = false;
     return GestureDetector(
         onHorizontalDragEnd: (details) {
           if (details.primaryVelocity! > 0) {
@@ -61,70 +60,7 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
           }
         },
         child: Scaffold(
-          appBar: AppBar(
-            elevation: 1,
-            backgroundColor: Colors.white,
-            shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(20),
-              bottomRight: Radius.circular(20),
-            )),
-            title: Row(
-              children: <Widget>[
-                Expanded(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      const Text(
-                        'Tasks ',
-                        style: TextStyle(
-                          color: Colors.black,
-                        ),
-                      ),
-                      Switch(
-                        // thumb color (round icon)
-                        activeColor: Colors.white,
-                        activeTrackColor: Colors.cyan,
-                        inactiveThumbColor: Colors.blueGrey.shade600,
-                        inactiveTrackColor: Colors.grey.shade400,
-                        splashRadius: 50.0,
-                        value: forEvents,
-                        onChanged: (value) {
-                          setState(() {
-                            forEvents = value;
-                          });
-                          if (forEvents) {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => const MonthView(),
-                              ),
-                            );
-                          }
-                        },
-                      ),
-                      const Text(
-                        ' Events',
-                        style: TextStyle(
-                          color: Colors.black,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            actions: <Widget>[
-              IconButton(
-                icon: const Icon(
-                  Icons.search,
-                  color: Colors.black,
-                ),
-                onPressed: () {
-                  //showSearchBar(context);
-                },
-              ),
-            ],
-          ),
+          appBar: getTopBar(Task, "monthly", context, this),
           body: Column(
             children: [
               TableCalendar(
