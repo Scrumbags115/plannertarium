@@ -352,3 +352,144 @@ void showEventDetailPopup(BuildContext context, Event event, DateTime date) {
     },
   );
 }
+
+Future<Event?> _showEditPopup(
+    BuildContext context, Event event, DateTime? date) async {
+  DatabaseService db = DatabaseService();
+  TextEditingController nameController = TextEditingController();
+  nameController.text = event.name;
+  TextEditingController descriptionController = TextEditingController();
+  descriptionController.text = event.description;
+  TextEditingController locationController = TextEditingController();
+  locationController.text = event.location;
+  TextEditingController tagController = TextEditingController();
+  TextEditingController recRulesController = TextEditingController();
+  DateTime timeStart = event.timeStart;
+  DateTime timeEnd = event.timeEnd;
+
+  Completer<Event?> completer = Completer<Event?>();
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      return StatefulBuilder(builder: (context, setState) {
+        return SingleChildScrollView(
+          child: AlertDialog(
+            title: Row(
+              children: [
+                const Text('Edit Event on'),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
+                  child: ElevatedButton(
+                      onPressed: () async {
+                        DateTime? originalDate = date;
+                        date = (await showDatePicker(
+                            context: context,
+                            initialDate: date!,
+                            firstDate: DateTime(2000),
+                            lastDate: DateTime(2101)));
+                        setState(() {
+                          //in case user cancels date picker, show original date
+                          date ??= originalDate;
+                        });
+                      },
+                      child: Text('${date?.month}/${date?.day}/${date?.year}')),
+                )
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(labelText: 'Event Name'),
+                ),
+                TextField(
+                  controller: descriptionController,
+                  decoration: const InputDecoration(labelText: 'Description'),
+                ),
+                TextField(
+                  controller: locationController,
+                  decoration: const InputDecoration(labelText: 'Location'),
+                ),
+                // TextField(
+                //   controller: tagController,
+                //   decoration: InputDecoration(labelText: 'Tag'),
+                // ),
+                // TextField(
+                //   controller: recRulesController,
+                //   decoration: InputDecoration(labelText: 'Recurrence Rules'),
+                // ),
+                ElevatedButton(
+                  onPressed: () async {
+                    TimeOfDay? startTOD = await showTimePicker(
+                        context: context, initialTime: TimeOfDay.now());
+                    startTOD ??= TimeOfDay(
+                        hour: timeStart.hour, minute: timeStart.minute);
+                    timeStart = DateTime(date!.year, date!.month, date!.day,
+                        startTOD.hour, startTOD.minute);
+                    setState(() {});
+                  },
+                  child: Text(DateFormat("h:mma").format(timeStart)),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    TimeOfDay? endTOD = await showTimePicker(
+                        context: context, initialTime: TimeOfDay.now());
+                    endTOD ??=
+                        TimeOfDay(hour: timeEnd.hour, minute: timeEnd.minute);
+                    timeEnd = DateTime(date!.year, date!.month, date!.day,
+                        endTOD.hour, endTOD.minute);
+                    setState(() {});
+                  },
+                  child: Text(DateFormat("h:mma").format(timeEnd)),
+                ),
+              ],
+            ),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  db.deleteEvent(event);
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Delete'),
+              ),
+              TextButton(
+                child: const Text('Cancel'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  completer.complete(null);
+                },
+              ),
+              TextButton(
+                child: const Text('Submit'),
+                onPressed: () {
+                  String name = nameController.text;
+                  String description = descriptionController.text;
+                  String location = locationController.text;
+                  String tag = tagController.text;
+                  //String recRules = recRulesController.text;
+                  event.name = name;
+                  event.description = description;
+                  event.location = location;
+                  event.color = tag;
+                  event.timeStart = timeStart;
+                  event.timeEnd = timeEnd;
+                  //widget.task.recurrenceRules = recRules;
+
+                  db.setEvent(event);
+
+                  completer.complete(event);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        );
+      });
+    },
+  );
+
+  // Return the Future that completes with the edited task
+  return completer.future;
+}
