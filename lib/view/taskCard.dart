@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, use_build_context_synchronously
 
 import 'package:planner/common/database.dart';
 import 'package:flutter/material.dart';
@@ -236,13 +236,25 @@ class TaskCardState extends State<TaskCard> {
         });
   }
 
-  void showDetailPopup(BuildContext context) {
+  void showDetailPopup(BuildContext context) async {
     String formattedDate = widget.task.timeDue != null
         ? DateFormat('yyyy-MM-dd').format(widget.task.timeDue!)
         : ' ';
+
+    // create a string of the names of tags in imcrying. Make them comma separated
+    var tagsOfWidgetTask = await db.getTagsOfTask(widget.task.id);
+    String tagNames = "";
+    for (Tag tag in tagsOfWidgetTask) {
+      tagNames += tag.name + ", ";
+    } 
+    // remove the last comma
+    tagNames = tagNames.substring(0, tagNames.length - 2);
+        
     showDialog(
       context: context,
       builder: (context) {
+
+        //
         return AlertDialog(
           title: const Text('Task Details'),
           content: Column(
@@ -251,6 +263,7 @@ class TaskCardState extends State<TaskCard> {
             children: [
               Text('Title: ${widget.task.name}'),
               Text('Description: ${widget.task.description}'),
+              Text('Tag: $tagNames'),
               Text(
                 'Time: ${DateFormat('yyyy-MM-dd').format(widget.task.timeStart)}- $formattedDate',
               ),
@@ -308,11 +321,19 @@ class TaskCardState extends State<TaskCard> {
                   decoration: const InputDecoration(labelText: 'Tag Name'),
                 ),
                 const SizedBox(height: 16),
-                Row(
+                Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Tag Color:'),
-                    Container(
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Tag Color:',
+                        style: TextStyle(
+                          color: Colors.black,
+                        )
+                        ),
+                    ),
+                    SizedBox(
                       width: 200,
                       child: ColorPicker(
                         pickerColor: pickerColor,
