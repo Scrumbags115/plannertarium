@@ -34,8 +34,11 @@ class CustomButton extends StatelessWidget {
   }
 }
 
+Future<Event?> editEventFormForDay(BuildContext context, DateTime? date, {Event? event}) async {
+  return addEventFormForDay(context, date, event: event, edit: true);
+}
 Future<Event?> addEventFormForDay(BuildContext context, DateTime? date,
-    {Event? event}) async {
+    {Event? event, bool edit = false}) async {
   DatabaseService db = DatabaseService();
   TextEditingController nameController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
@@ -61,12 +64,17 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date,
     timeStart = event.timeStart;
     timeEnd = event.timeEnd;
     enableRecurrence = event.recurrenceRules.enabled;
-    if (event.recurrenceRules.enabled) {
+    final DateTime epoch = DateTime.fromMillisecondsSinceEpoch(0);
+    if (epoch.compareTo(event.recurrenceRules.timeEnd) != 0) {
       recurrenceEndTime = event.recurrenceRules.timeEnd;
-      recurrenceStartTime = event.recurrenceRules.timeStart;
-      selectedRecurrenceDays = event.recurrenceRules.dates;
     }
+    if (epoch.compareTo(event.recurrenceRules.timeStart) != 0) {
+      recurrenceStartTime = event.recurrenceRules.timeStart;
+    }
+    selectedRecurrenceDays = event.recurrenceRules.dates;
   }
+
+  bool editRelatedRecurringEvents = false;
   Completer<Event?> completer = Completer<Event?>();
   Event? oldEvent =
       event; // old event, so if editing an event, remove the old one
@@ -94,7 +102,7 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date,
           child: AlertDialog(
             title: Row(
               children: [
-                const Text('Add Event on'),
+                !edit ? const Text('Add Event on') : const Text("Edit Event on"),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
                   child: ElevatedButton(
@@ -169,29 +177,36 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date,
                       }))
                 ],
               ),
-              Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.wallet),
-                    onPressed: () async {
-                      final DateTime? pickedDate = await datePicker();
-                      if (pickedDate != null &&
-                          pickedDate != recurrenceStartTime) {
-                        setState(() {
-                          recurrenceStartTime = pickedDate;
-                        });
-                      }
-                    },
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    recurrenceStartTime != null
-                        ? 'Start Date: ${DateFormat('MM-dd-yyyy').format(recurrenceStartTime!)}'
-                        : 'No start date selected',
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                ],
+              Visibility(
+                visible: enableRecurrence,
+                child:
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.wallet),
+                      onPressed: () async {
+                        final DateTime? pickedDate = await datePicker();
+                        if (pickedDate != null &&
+                            pickedDate != recurrenceStartTime) {
+                          setState(() {
+                            recurrenceStartTime = pickedDate;
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      recurrenceStartTime != null
+                          ? 'Start Date: ${DateFormat('MM-dd-yyyy').format(recurrenceStartTime!)}'
+                          : 'No start date selected',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
               ),
+              Visibility(
+                visible: enableRecurrence,
+                child:
               Row(
                 children: [
                   IconButton(
@@ -215,46 +230,57 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date,
                   ),
                 ],
               ),
-              SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: ToggleButtons(
-                    isSelected: selectedRecurrenceDays,
-                    onPressed: (int index) {
-                      setState(() {
-                        // simply toggling buttons between true and false state
-                        selectedRecurrenceDays[index] =
-                            !selectedRecurrenceDays[index];
-                      });
-                    },
-
-                    // onPressed: (index) {
-                    //   setStateFunction(() {
-                    //     for (int i = 0; i < isSelected.length; i++) {
-                    //       if (i == index) {
-                    //         isSelected[i] = true;
-                    //       } else {
-                    //         isSelected[i] = false;
-                    //       }
-                    //     }
-                    //   });
-                    // },
-                    // renderBorder: false,
-
-                    fillColor: Colors.transparent,
-                    splashColor: Colors.orange,
-                    constraints:
-                        const BoxConstraints.expand(height: 30, width: 30),
-                    children: List<Widget>.generate(7, (index) {
-                      return CustomButton(
-                        index: index,
-                        selectedRecurringDay: selectedRecurrenceDays[index],
-                      );
-                    }),
-                  )
+              ),
+              Visibility(
+                visible: enableRecurrence,
+                child:
+                SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: ToggleButtons(
+                      isSelected: selectedRecurrenceDays,
+                      onPressed: (int index) {
+                        setState(() {
+                          // simply toggling buttons between true and false state
+                          selectedRecurrenceDays[index] =
+                          !selectedRecurrenceDays[index];
+                        });
+                      },
+                      constraints:
+                      const BoxConstraints.expand(height: 30, width: 30),
+                      children: List<Widget>.generate(7, (index) {
+                        return CustomButton(
+                          index: index,
+                          selectedRecurringDay: selectedRecurrenceDays[index],
+                        );
+                      }),
+                    )
                   // ],
-                  ),
+                ),
+              ),
             ]),
+            actionsAlignment: MainAxisAlignment.end,
+            actionsPadding: edit && enableRecurrence ? const EdgeInsets.symmetric(horizontal: 12, vertical: 24) : const EdgeInsets.only(left: 24.0, right: 24.0, bottom: 24.0),
             actions: <Widget>[
+              Visibility(
+                visible: edit && enableRecurrence,
+                child:
+                Wrap(
+
+                  direction: Axis.horizontal,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: -10,
+                  children: [
+                    const Text("Edit Recurring:"),
+                    Checkbox.adaptive(value: editRelatedRecurringEvents, onChanged: (newValue) {
+                      setState(() {
+                        editRelatedRecurringEvents = newValue!;
+                      });
+                    }),
+                  ]
+                    //  <-- leading Checkbox
+                )
+                ,
+              ),
               TextButton(
                 child: const Text('Cancel'),
                 onPressed: () {
@@ -289,13 +315,12 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date,
                   if (oldEvent != null) {
                     db.deleteEvent(oldEvent);
                   }
+                  if (editRelatedRecurringEvents && oldEvent != null) {
+                    // delete related recurring events if the option is explicitly set
+                    db.deleteRecurringEvents(oldEvent, excludeMyself: true);
+                  }
                   db.setEvent(currentEvent);
                   if (currentEvent.recurrenceRules.enabled) {
-                    if (oldEvent != null) {
-                      // delete related recurring events only if the recurrence rules are being overridden
-                      db.deleteRecurringEvents(oldEvent, excludeMyself: true);
-                    }
-
                     db.setRecurringEvents(currentEvent);
                   }
 
@@ -342,7 +367,7 @@ void showEventDetailPopup(BuildContext context, Event event, DateTime date) {
             onPressed: () async {
               // Wait for the _showEditPopup to complete and get the edited task
               Event? editedEvent =
-                  await addEventFormForDay(context, date, event: event);
+                  await editEventFormForDay(context, date, event: event);
               Navigator.of(context).pop();
             },
             child: const Text('Edit'),

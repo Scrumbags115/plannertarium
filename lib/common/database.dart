@@ -295,6 +295,7 @@ class DatabaseService {
       return;
     }
     List<DateTime> dts = e.getDatesOfRelatedRecurringEvents();
+    print(dts);
     final parentID = e.recurrenceRules.id;
     for (final dt in dts) {
       if (excludeMyself && dt == e.timeStart) {
