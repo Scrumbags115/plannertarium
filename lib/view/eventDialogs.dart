@@ -327,8 +327,8 @@ void showEventDetailPopup(BuildContext context, Event event, DateTime date) {
             Text('Title: ${event.name}'),
             Text('Description: ${event.description}'),
             Text('Location: ${event.location}'),
-            Text('Starts at: ${DateFormat("h:mma").format(event.timeStart)}'),
-            Text('Ends At: ${DateFormat("h:mma").format(event.timeEnd)}'),
+            Text('Starts at: ${DateFormat("h:mma MM/dd/yyyy").format(event.timeStart)}'),
+            Text('Ends At: ${DateFormat("h:mma MM/dd/yyyy").format(event.timeEnd)}'),
           ],
         ),
         actions: [
@@ -492,4 +492,39 @@ Future<Event?> _showEditPopup(
 
   // Return the Future that completes with the edited task
   return completer.future;
+}
+
+class AddEventButton extends StatelessWidget {
+  const AddEventButton({
+    super.key,
+    required this.startDate,
+  });
+
+  final DateTime startDate;
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.bottomRight,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+            0, 0, 20, 20), // Adjust the value as needed
+        child: ClipOval(
+          child: ElevatedButton(
+            onPressed: () async {
+              await addEventFormForDay(context, startDate);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.grey,
+              minimumSize: const Size(75, 75),
+            ),
+            child: const Icon(
+              Icons.add_outlined,
+              color: Colors.black,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

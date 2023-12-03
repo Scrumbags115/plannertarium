@@ -91,28 +91,7 @@ class _WeekViewState extends State<WeekView> {
                 return MultiDayCard(index, startDate);
               }),
             ),
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                    0, 0, 20, 20), // Adjust the value as needed
-                child: ClipOval(
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      await addEventFormForDay(context, startDate);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey,
-                      minimumSize: const Size(75, 75),
-                    ),
-                    child: const Icon(
-                      Icons.add_outlined,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-              ),
-            )
+            AddEventButton(startDate: startDate)
           ],
         ),
       ),

@@ -60,28 +60,7 @@ class _DayViewState extends State<DayView> {
           appBar: getTopBar(Event, "daily", context, this),
           body: Stack(children: [
             SingleDay(widget.date),
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                    0, 0, 20, 20), // Adjust the value as needed
-                child: ClipOval(
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      await addEventFormForDay(context, widget.date);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey,
-                      minimumSize: const Size(75, 75),
-                    ),
-                    child: const Icon(
-                      Icons.add_outlined,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            AddEventButton(startDate: widget.date)
           ])),
     );
   }
@@ -176,8 +155,8 @@ class _SingleDayState extends State<SingleDay> {
                 onTap: () {
                   showEventDetailPopup(context, event, widget.date);
                 },
-                child:
-                    SizedBox(width: space, child: const Card(color: Colors.black))),
+                child: SizedBox(
+                    width: space, child: const Card(color: Colors.black))),
           ),
         )
         .toList();
@@ -211,13 +190,15 @@ class MyPainter extends CustomPainter {
       rrectPaint,
     );
     canvas.drawPath(eventRRectBorder, myPaint2);
-    TextStyle eventNameStyle = const TextStyle(color: Colors.black, fontSize: 15);
+    TextStyle eventNameStyle =
+        const TextStyle(color: Colors.black, fontSize: 15);
     TextSpan eventNameSpan = TextSpan(text: event.name, style: eventNameStyle);
     TextPainter eventNamePainter =
         TextPainter(text: eventNameSpan, textDirection: (TextDirection.ltr));
     eventNamePainter.layout(minWidth: 0, maxWidth: size.width);
     eventNamePainter.paint(canvas, Offset.fromDirection(0, 6));
-    TextStyle eventTimeStyle = const TextStyle(color: Colors.black, fontSize: 10.5);
+    TextStyle eventTimeStyle =
+        const TextStyle(color: Colors.black, fontSize: 10.5);
     TextSpan eventTimeSpan = TextSpan(
         text:
             "${intl.DateFormat("h:mm").format(event.timeStart)} - ${intl.DateFormat("h:mma").format(event.timeEnd)}",
