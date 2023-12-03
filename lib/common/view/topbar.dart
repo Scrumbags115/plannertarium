@@ -17,7 +17,7 @@ RoundedRectangleBorder roundedRectangleBackground =
   bottomRight: Radius.circular(20),
 ));
 
-///A void function that shows a dialog with a search bar to search for tasks.
+/// A void function that shows a dialog with a search bar to search for tasks.
 void showSearchBar(BuildContext context) {
   TextEditingController searchController = TextEditingController();
   DatabaseService db = DatabaseService();
@@ -54,8 +54,8 @@ void showSearchBar(BuildContext context) {
   );
 }
 
-///A void function that searches in a query and a list of tasks to query from
-///Returns a list of tasks with informations of each tasks
+/// A void function that searches in a query and a list of tasks to query from
+/// Returns a list of tasks with informations of each tasks
 void showTaskDetailsDialog(
     String searchQuery, List<Task> tasks, List<Event> events, context) {
   showDialog(
