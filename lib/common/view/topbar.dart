@@ -143,7 +143,7 @@ AppBar _getTopBarWeekly(bool forEvents, BuildContext context, state) {
                     if (forEvents) {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => const WeekView(),
+                          builder: (context) => WeekView(),
                         ),
                       );
                     } else {

@@ -12,7 +12,10 @@ import 'package:planner/view/weeklyTaskView.dart';
 DatabaseService db = DatabaseService();
 
 class WeekView extends StatefulWidget {
-  const WeekView({super.key});
+  late DateTime monday;
+  WeekView({super.key, DateTime? date}) {
+    monday = mostRecentMonday(date ?? DateTime.now());
+  }
 
   @override
   State<WeekView> createState() => _WeekViewState();
@@ -20,11 +23,32 @@ class WeekView extends StatefulWidget {
 
 class _WeekViewState extends State<WeekView> {
   var scaffoldKey = GlobalKey<ScaffoldState>();
-  DateTime startDate = mostRecentMonday(
-      DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day));
+
+  ///A DatePicker function to prompt a calendar
+  ///Returns a selectedDate if chosen, defaulted to today if no selectedDate
+  Future<void> datePicker() async {
+    DateTime? selectedDate = await showDatePicker(
+      context: context,
+      initialDate: widget.monday,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+
+    if (selectedDate != null) {
+      setState(() {
+        widget.monday = selectedDate;
+      });
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => WeekView(date: widget.monday),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    DateTime startDate = mostRecentMonday(widget.monday);
     return Scaffold(
       appBar: getTopBar(Event, "weekly", context, this),
       drawer: Drawer(),
