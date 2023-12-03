@@ -18,7 +18,7 @@ class Tag {
       String? id,
       String? color,
       Map<String, List<String>>? includedIDs}) {
-    _name = name ?? "";
+    _name = name;
     _id = id ?? DateTime.now().millisecondsSinceEpoch.toString();
     _color = color ?? "#ff0000";
     _includedIDs = includedIDs ?? {};

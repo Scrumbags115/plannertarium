@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
-import 'package:planner/common/time_management.dart';
+import 'package:planner/common/view/addTaskButton.dart';
 import 'package:planner/common/view/topbar.dart';
-import 'package:planner/models/task.dart';
-import 'package:planner/view/monthlyTaskView.dart';
-import 'package:table_calendar/table_calendar.dart';
 import 'package:planner/models/event.dart';
+import 'package:planner/view/eventDialogs.dart';
 import 'package:planner/view/weekView.dart';
+import 'package:table_calendar/table_calendar.dart';
+import 'package:planner/common/time_management.dart';
 
 class MonthView extends StatefulWidget {
   const MonthView({super.key});
@@ -16,144 +16,149 @@ class MonthView extends StatefulWidget {
 }
 
 class _MonthViewState extends State<MonthView> {
-  CalendarFormat _calendarFormat = CalendarFormat.month;
+  final CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   DatabaseService db = DatabaseService();
   List<Event> todayEvents = [];
-
-  // Add a PageController for handling page navigation
   final PageController _pageController = PageController();
-
+  Map<DateTime, List<Event>> active = {};
+  DateTime today = getDateOnly(DateTime.now());
+  
   @override
+  /// Initializes the state of the widget
   void initState() {
     super.initState();
-    // Add a listener to the PageController to update the focusedDay
-    _pageController.addListener(() {
-      setState(() {
-        _focusedDay = _pageController.page == 0
-            ? _focusedDay.subtract(const Duration(days: 30))
-            : _focusedDay.add(const Duration(days: 30));
-      });
-    });
+    asyncInitState();
   }
 
-  @override
-  void dispose() {
-    // Dispose of the PageController to prevent memory leaks
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  void fetchTodayEvents(DateTime selectedDate) async {
-    DateTime dateStart =
-        DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
-    todayEvents = await db.getListOfEventsInDay(date: dateStart);
-
+  /// Performs asynchronous initialization for the widget
+  void asyncInitState() async {
+    final List<Event> newTodayEvents;
+    final Map<DateTime, List<Event>> newMonthlyEvents;
+    (newTodayEvents, newMonthlyEvents) =
+        await db.getListOfEventsInDateRange(dateStart: getMonthAsDateTime(DateTime.now()), dateEnd: getNextMonthAsDateTime(DateTime.now()));
+    todayEvents = newTodayEvents;
+    active = newMonthlyEvents;
     setState(() {});
   }
 
   @override
+  /// Disposes of the resources used by the widget
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: getTopBar(Event, "monthly", context, this),
-      body: GestureDetector(
+    return GestureDetector(
         onHorizontalDragEnd: (details) {
           if (details.primaryVelocity! > 0) {
-            Navigator.of(context)
-                .push(MaterialPageRoute(builder: (context) => WeekView()));
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => WeekView(),
+            ));
           }
         },
-        child: Column(
-          children: [
-            TableCalendar(
-              firstDay: DateTime(DateTime.now().year, DateTime.now().month, 1),
-              lastDay:
-                  DateTime(DateTime.now().year, DateTime.now().month + 1, 0),
-              focusedDay: _focusedDay,
-              calendarFormat: _calendarFormat,
-              selectedDayPredicate: (day) {
-                return isSameDay(_selectedDay, day);
-              },
-              onDaySelected: (selectedDay, focusedDay) {
-                if (!isSameDay(_selectedDay, selectedDay)) {
-                  setState(() {
-                    _selectedDay = selectedDay;
-                    _focusedDay = focusedDay;
-                  });
-
-                  fetchTodayEvents(selectedDay);
-                }
-              },
-              onFormatChanged: (format) {
-                if (_calendarFormat != format) {
-                  setState(() {
-                    _calendarFormat = format;
-                  });
-                }
-              },
-              onPageChanged: (focusedDay) {
-                // Update the focusedDay when navigating to previous/next months
-                setState(() {
-                  _focusedDay = focusedDay;
-                });
-              },
-              calendarBuilders: CalendarBuilders(
-                todayBuilder: (context, date, events) {
-                  return Container(
-                    margin: const EdgeInsets.all(4.0),
-                    alignment: Alignment.center,
-                    decoration: const BoxDecoration(
-                      color: Colors.transparent, // No color for today
-                      shape: BoxShape.circle,
-                    ),
-                    child: Text(
-                      '${date.day}',
-                      style: const TextStyle(color: Colors.black),
-                    ),
-                  );
+        child: Scaffold(
+          appBar: getTopBar(Event, "monthly", context, this),
+          body: Column(
+            children: [
+              TableCalendar(
+                firstDay: DateTime.utc(2020, 10, 16),
+                lastDay: DateTime.utc(2130, 3, 14),
+                focusedDay: _focusedDay,
+                calendarFormat: _calendarFormat,
+                selectedDayPredicate: (day) {
+                  return isSameDay(_selectedDay, day);
                 },
-              ),
-              headerStyle: HeaderStyle(
-                titleCentered: true, // Center the title
-                formatButtonVisible: false, // Hide the format button
-                leftChevronIcon: GestureDetector(
-                  onTap: () {
-                    _pageController.previousPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeOut,
-                    );
+                onDaySelected: (selectedDay, focusedDay) async {
+                  if (!isSameDay(_selectedDay, selectedDay)) {
+                    final newTodayEvents = await db.getListOfEventsInDay(date: selectedDay);
+                    setState(() {
+                      _selectedDay = selectedDay;
+                      _focusedDay = focusedDay;
+                      todayEvents = newTodayEvents;
+                    });
+                  }
+                },
+                onPageChanged: (focusedDay) {
+                  _focusedDay = focusedDay;
+                  today = getDateOnly(focusedDay);
+                },
+                eventLoader: (day) {
+                  var taskForDay = active[getDateOnly(day)] ?? [];
+                  return taskForDay;
+                },
+                calendarBuilders: CalendarBuilders(
+                  markerBuilder: (context, date, tasks) {
+                    if (tasks.isNotEmpty) {
+                      return Positioned(
+                        right: 1,
+                        bottom: 1,
+                        child: Container(
+                          width: 6,
+                          height: 6,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.red,
+                          ),
+                        ),
+                      );
+                    }
+                    return Container();
                   },
-                  child: const Icon(Icons.arrow_back),
-                ), // Set custom left chevron icon
-                rightChevronIcon: GestureDetector(
-                  onTap: () {
-                    _pageController.nextPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeOut,
-                    );
-                  },
-                  child: const Icon(Icons.arrow_forward),
-                ), // Set custom right chevron icon
+                ),
+                headerStyle: const HeaderStyle(
+                  titleCentered: true,
+                  formatButtonVisible: false,
+                ),
               ),
-            ),
-            const SizedBox(
-              height: 16,
-            ),
-            Expanded(
-              child: ListView.builder(
-                itemCount: todayEvents.length,
-                itemBuilder: (context, index) {
-                  return EventCard(
+              Expanded(
+                child: ListView.builder(
+                  itemCount: todayEvents.length,
+                  itemBuilder: (context, index) {
+                    Event event = todayEvents[index];
+                    return EventCard(
                       eventsToday: todayEvents,
                       index: index,
                       date: _selectedDay!);
-                },
+                  },
+                ),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
+              Align(
+                alignment: Alignment.bottomRight,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                      0, 0, 20, 20), // Adjust the value as needed
+                  child: ClipOval(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        Event? newEvent = await addEventFormForDay(context, today);
+                        if (newEvent != null) {
+                          setState(() {
+                            DateTime newEventDateStart = newEvent.timeStart;
+                            active[newEventDateStart] = [
+                              ...active[newEventDateStart] ?? [],
+                              newEvent
+                            ];
+                          });
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey,
+                        minimumSize: const Size(75, 75),
+                      ),
+                      child: const Icon(
+                        Icons.add_outlined,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            ],
+          ),
+        ));
   }
 }

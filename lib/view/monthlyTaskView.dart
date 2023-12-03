@@ -10,6 +10,7 @@ import 'package:planner/view/taskCard.dart';
 
 class MonthlyTaskView extends StatefulWidget {
   const MonthlyTaskView({super.key});
+
   @override
   MonthlyTaskViewState createState() => MonthlyTaskViewState();
 }
@@ -23,8 +24,8 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
   final PageController _pageController = PageController();
   Map<DateTime, List<Task>> active = {};
   DateTime today = getDateOnly(DateTime.now());
+  
   @override
-
   /// Initializes the state of the widget
   void initState() {
     super.initState();
@@ -43,7 +44,6 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
   }
 
   @override
-
   /// Disposes of the resources used by the widget
   void dispose() {
     _pageController.dispose();

@@ -3,7 +3,6 @@ import 'package:planner/common/database.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/models/task.dart';
-import 'package:planner/models/undertaking.dart';
 import 'package:planner/view/dayView.dart';
 import 'package:planner/view/monthView.dart';
 import 'package:planner/view/monthlyTaskView.dart';
@@ -18,7 +17,7 @@ RoundedRectangleBorder roundedRectangleBackground =
   bottomRight: Radius.circular(20),
 ));
 
-///A void function that shows a dialog with a search bar to search for tasks.
+/// A void function that shows a dialog with a search bar
 void showSearchBar(BuildContext context) {
   TextEditingController searchController = TextEditingController();
   DatabaseService db = DatabaseService();
@@ -54,8 +53,7 @@ void showSearchBar(BuildContext context) {
   );
 }
 
-///A void function that searches in a query and a list of tasks to query from
-///Returns a list of tasks with informations of each tasks
+/// A void function that displays the search result undertakings with information
 void showTaskDetailsDialog(String searchQuery, List<Task> tasks, List<Event> events, context) {
   showDialog(
     context: context,
