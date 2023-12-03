@@ -57,7 +57,7 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
         onHorizontalDragEnd: (details) {
           if (details.primaryVelocity! > 0) {
             Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => const WeeklyTaskView(),
+              builder: (context) =>  WeeklyTaskView(),
             ));
           }
         },

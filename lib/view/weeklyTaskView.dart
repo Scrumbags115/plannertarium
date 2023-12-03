@@ -5,12 +5,17 @@ import 'package:planner/common/time_management.dart';
 import 'package:planner/common/view/addTaskButton.dart';
 import 'package:planner/common/view/topbar.dart';
 import 'package:planner/models/task.dart';
-import 'package:planner/view/taskView.dart';
+import 'package:planner/view/dailyTaskView.dart';
 import 'package:planner/view/monthlyTaskView.dart';
 import 'package:planner/view/taskCard.dart';
 
 class WeeklyTaskView extends StatefulWidget {
-  const WeeklyTaskView({super.key});
+  late DateTime monday;
+  late DateTime currentDate;
+  WeeklyTaskView({super.key, DateTime? dateInWeek}) {
+    currentDate = getDateOnly(dateInWeek ?? DateTime.now());
+    monday = mostRecentMonday(dateInWeek ?? DateTime.now());
+  }
 
   @override
   WeeklyTaskViewState createState() => WeeklyTaskViewState();
@@ -18,51 +23,45 @@ class WeeklyTaskView extends StatefulWidget {
 
 class WeeklyTaskViewState extends State<WeeklyTaskView> {
   final DatabaseService _db = DatabaseService();
-  List<Task> _allTasks = [];
-  DateTime today = getDateOnly(DateTime.now());
+  Map<DateTime, List<Task>> _active = {};
+  Map<DateTime, List<Task>> _complete = {};
+  Map<DateTime, List<Task>> _delay = {};
 
   @override
 
   /// Initializes the state of the widget
   void initState() {
     super.initState();
-    fetchData();
+    setData();
   }
 
   /// Asynchronously fetches tasks for the current week
-  Future<void> fetchData({DateTime? weekStart}) async {
-    List<Task> tasks = await _db.fetchWeeklyTask(weekStart: weekStart);
+  Future<void> setData() async {
+    var taskMaps = await _db.getTaskMapsWeek(widget.monday);
     setState(() {
-      _allTasks = tasks;
+      _active = taskMaps.$1;
+      _complete = taskMaps.$2;
+      _delay = taskMaps.$3;
     });
-    print(_allTasks);
   }
 
-  /// Checks if a task is due on the current day
-  bool isTaskDueOnCurrentDay(Task task, DateTime currentDate) {
-    if (task.timeDue == null) {
-      return false;
-    }
-    return getDateOnly(task.timeDue ?? currentDate)
-        .isAtSameMomentAs(currentDate);
+  /// Asynchronously transition to new WeeklyTaskView screen
+  void loadWeek(DateTime newDateInWeek) async {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => WeeklyTaskView(dateInWeek: newDateInWeek),
+      ),
+    );
   }
 
   /// Asynchronously loads tasks for the previous week and generates the screen
   void loadPreviousWeek() async {
-    today = getDateOnly(today, offsetDays: -7);
-    await fetchData(weekStart: today);
-    setState(() {
-      generateScreen(today);
-    });
+    loadWeek(getDateOnly(widget.currentDate, offsetDays: -7));
   }
 
   /// Asynchronously loads tasks for the next week and generates the screen
   void loadNextWeek() async {
-    today = getDateOnly(today, offsetDays: 7);
-    await fetchData(weekStart: today);
-    setState(() {
-      generateScreen(today);
-    });
+    loadWeek(getDateOnly(widget.currentDate, offsetDays: 7));
   }
 
   /// A DatePicker function to prompt a calendar
@@ -70,32 +69,29 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
   Future<void> datePicker() async {
     DateTime? selectedDate = await showDatePicker(
       context: context,
-      initialDate: today,
+      initialDate: widget.monday,
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
     );
 
     if (selectedDate != null) {
-      setState(() {
-        today = selectedDate;
-      });
-      await fetchData(weekStart: selectedDate);
-      generateScreen(today);
+      // setState(() {
+      //   widget.monday = mostRecentMonday(selectedDate);
+      // });
+      // await setData();
+      loadWeek(getDateOnly(selectedDate));
     }
   }
 
   ///A function that generates the screen for the next 7 days
-  List<Widget> generateScreen(DateTime dateStart) {
+  List<Widget> generateScreen() {
     List<Widget> dayWidgets = [];
 
-    DateTime thisMostRecentMonday = mostRecentMonday(today);
-    var activeMap, completeMap, delayMap;
-    //(activeMap, completeMap, delayMap) = _db.getTaskMapsWeek(dateStart);
     for (int i = 0; i < 7; i++) {
-      DateTime currentDate = getDateOnly(thisMostRecentMonday, offsetDays: i);
-      List<Task> uniqueTasksForDay = activeMap[currentDate] + completeMap[currentDate] + delayMap[currentDate];
-
-      
+      DateTime currentDate = getDateOnly(widget.monday, offsetDays: i);
+      List<Task> tasksForDay = (_active[currentDate] ?? []) +
+          (_complete[currentDate] ?? []) +
+          (_delay[currentDate] ?? []);
 
       dayWidgets.add(
         Column(
@@ -108,9 +104,9 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
                     const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
-            if (uniqueTasksForDay.isNotEmpty)
+            if (tasksForDay.isNotEmpty)
               Column(
-                children: uniqueTasksForDay.map((task) {
+                children: tasksForDay.map((task) {
                   return Column(
                     children: [
                       TaskCard(task: task),
@@ -118,7 +114,7 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
                   );
                 }).toList(),
               ),
-            if (uniqueTasksForDay.isEmpty)
+            if (tasksForDay.isEmpty)
               const Padding(
                 padding: EdgeInsets.all(8.0),
                 child: Text('No tasks for this day'),
@@ -141,17 +137,17 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
             onHorizontalDragEnd: (details) {
               if (details.primaryVelocity! < 0) {
                 Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => const MonthlyTaskView(),
+                  builder: (context) => MonthlyTaskView(),
                 ));
               }
               if (details.primaryVelocity! > 0) {
                 Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => const TaskView(),
+                  builder: (context) => TaskView(),
                 ));
               }
             },
             child: ListView(
-              children: generateScreen(today),
+              children: generateScreen(),
             ),
           ),
           Positioned(
@@ -163,7 +159,7 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
                   Task? newTask = await addButtonForm(context, this);
                   if (newTask != null) {
                     setState(() {
-                      fetchData(weekStart: newTask.timeStart);
+                      setData();
                     });
                   }
                 },
