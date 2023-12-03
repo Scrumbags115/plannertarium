@@ -266,11 +266,11 @@ tags_AuxilliaryFunctions() {
 
   test("Test getTasksWithTag", () async {
     // check for existing tags
-    var res = await db.getTasksWithTag(tags[0].name);
+    var res = await db.getTasksWithTag(tags[0].name, 100);
     expect(res, [tasks[0]], reason: "Tag should exist");
 
     // check a random fake tag
-    res = await db.getTasksWithTag("fake tag name");
+    res = await db.getTasksWithTag("fake tag name", 100);
     expect(res, [], reason: "Tag should not exist");
   });
 
