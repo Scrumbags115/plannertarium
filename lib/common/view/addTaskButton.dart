@@ -14,7 +14,8 @@ getAddTaskButton(state, context) {
         child: ElevatedButton(
           onPressed: () async {
             Task? newTask = await addButtonForm(context, state);
-            final newTodayTasks = await state.db.fetchTodayTasks(state.selectedDay);
+            final newTodayTasks =
+                await state.db.fetchTodayTasks(state.selectedDay);
             if (newTask != null) {
               state.setState(() {
                 state.todayTasks.add(newTask);

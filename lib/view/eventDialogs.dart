@@ -1,8 +1,44 @@
 import "package:flutter/material.dart";
+import 'package:flutter/rendering.dart';
 import 'dart:async';
 import 'package:planner/common/database.dart';
 import 'package:planner/models/event.dart';
 import 'package:intl/intl.dart';
+
+import '../common/view/addTaskButton.dart';
+
+
+class CustomButton extends StatelessWidget {
+  int index;
+  List<String> listOfDayStrings = ["M", "T", "W", "TH", "F", "S", "SU"];
+  var selectedRecurringDay;
+  CustomButton({
+    Key? key,
+    this.selectedRecurringDay = false,
+    required this.index
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        AnimatedContainer(
+          width: 30,
+          height: 30,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          // margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+          decoration: BoxDecoration(
+            color: selectedRecurringDay ? Colors.orange : Colors.transparent,
+            // shape: BoxShape.circle,
+          ),
+          child: Center(child: Text(listOfDayStrings[index], textAlign: TextAlign.center)),
+        ),
+
+      ],
+    );
+  }
+}
 
 Future<Event?> addEventFormForDay(BuildContext context, DateTime? date) async {
   DatabaseService db = DatabaseService();
@@ -14,6 +50,38 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date) async {
   Completer<Event?> completer = Completer<Event?>();
   DateTime timeStart = DateTime.now();
   DateTime timeEnd = DateTime.now();
+
+  DateTime? recurrenceEndTime;
+  DateTime? recurrenceStartTime;
+
+  Event currentToAddEvent = Event();
+
+  bool enableRecurrence = false;
+
+  List<bool> selectedRecurrenceDays = [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ];
+
+  Future<DateTime?> datePicker() async {
+    DateTime todayDate = DateTime.now();
+    DateTime? selectedDate = await showDatePicker(
+      context: context,
+      initialDate: todayDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+
+    if (selectedDate != null) {
+      return selectedDate;
+    }
+    return selectedDate;
+  }
 
   showDialog(
     context: context,
@@ -34,7 +102,8 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date) async {
                             initialDate: date!,
                             firstDate: DateTime(2000),
                             lastDate: DateTime(2101)));
-                        date ??= originalDate; //in case user cancels date picker, show original date
+                        date ??=
+                            originalDate; //in case user cancels date picker, show original date
                         setState(() {});
                       },
                       child: Text('${date?.month}/${date?.day}/${date?.year}')),
@@ -63,6 +132,7 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date) async {
                     startTOD ??= TimeOfDay.now(); //in case of cancel
                     timeStart = DateTime(date!.year, date!.month, date!.day,
                         startTOD.hour, startTOD.minute);
+                    currentToAddEvent.timeStart = timeStart;
                     setState(() {});
                   },
                   child: Text(
@@ -75,6 +145,7 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date) async {
                     endTOD ??= TimeOfDay.now(); //in case of cancel
                     timeEnd = DateTime(date!.year, date!.month, date!.day,
                         endTOD.hour, endTOD.minute);
+                    currentToAddEvent.timeEnd = timeEnd;
                     setState(() {});
                   },
                   child:
@@ -88,8 +159,113 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date) async {
                 //   controller: recRulesController,
                 //   decoration: InputDecoration(labelText: 'Recurrence Rules'),
                 // ),
-              ],
-            ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text("Enable Recurrence:",
+                        style: TextStyle(fontSize: 16)),
+                    Switch.adaptive(
+                        value: enableRecurrence,
+                        onChanged: ((value) {
+                        currentToAddEvent.recurrenceRules.enabled = enableRecurrence;
+                        setState(() => enableRecurrence = value);
+                        })
+                    )
+                  ],
+                ),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.wallet),
+                      onPressed: () async {
+                        final DateTime? pickedDate = await datePicker();
+                        if (pickedDate != null && pickedDate != recurrenceStartTime) {
+                          setState(() {
+                            recurrenceStartTime = pickedDate;
+                            if (recurrenceStartTime != null) {
+                              currentToAddEvent.recurrenceRules.timeStart =
+                                  recurrenceStartTime!;
+                            }
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      recurrenceStartTime != null
+                          ? 'Start Date: ${DateFormat('MM-dd-yyyy').format(recurrenceStartTime!)}'
+                          : 'No start date selected',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.calendar_month_rounded),
+                      onPressed: () async {
+                        final DateTime? pickedDueDate = await datePicker();
+                        if (pickedDueDate != null && pickedDueDate != recurrenceEndTime) {
+                          setState(() {
+                            recurrenceEndTime = pickedDueDate;
+                            if (recurrenceStartTime != null) {
+                              currentToAddEvent.recurrenceRules.timeEnd =
+                                  recurrenceStartTime!;
+                            }
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      recurrenceEndTime != null
+                          ? 'Due Date: ${DateFormat('MM-dd-yyyy').format(recurrenceEndTime!)}'
+                          : 'No due date selected',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
+                SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: ToggleButtons(
+                        isSelected: selectedRecurrenceDays,
+                        onPressed: (int index) {
+                          setState(() {
+                            // simply toggling buttons between true and false state
+                            selectedRecurrenceDays[index] =
+                            !selectedRecurrenceDays[index];
+                            currentToAddEvent.recurrenceRules.dates = selectedRecurrenceDays;
+                          }
+                          );
+                        },
+
+                        // onPressed: (index) {
+                        //   setStateFunction(() {
+                        //     for (int i = 0; i < isSelected.length; i++) {
+                        //       if (i == index) {
+                        //         isSelected[i] = true;
+                        //       } else {
+                        //         isSelected[i] = false;
+                        //       }
+                        //     }
+                        //   });
+                        // },
+                        // renderBorder: false,
+
+                        fillColor: Colors.transparent,
+                        splashColor: Colors.orange,
+                        constraints:
+                            const BoxConstraints.expand(height: 30, width: 30),
+                        children: List<Widget>.generate(7, (index) {
+                          return CustomButton(
+                            index: index,
+                            selectedRecurringDay: selectedRecurrenceDays[index],
+                          );
+                        }),
+                        )
+              // ],
+                ),
+            ]),
             actions: <Widget>[
               TextButton(
                 child: const Text('Cancel'),
@@ -104,17 +280,13 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date) async {
                   String name = nameController.text;
                   String description = descriptionController.text;
                   String location = locationController.text;
+                  currentToAddEvent.name = name;
+                  currentToAddEvent.description = description;
+                  currentToAddEvent.location = location;
 
-                  Event newEvent = Event(
-                      name: name,
-                      description: description,
-                      location: location,
-                      timeStart: timeStart,
-                      timeEnd: timeEnd);
+                  db.addEvent(currentToAddEvent);
 
-                  db.addEvent(newEvent);
-
-                  completer.complete(newEvent);
+                  completer.complete(currentToAddEvent);
 
                   Navigator.of(context).pop();
                 },
@@ -177,7 +349,7 @@ Future<Event?> _showEditPopup(
   TextEditingController locationController = TextEditingController();
   locationController.text = event.location;
   TextEditingController tagController = TextEditingController();
-  TextEditingController recRulesController = TextEditingController();
+  // TextEditingController recRulesController = TextEditingController();
   DateTime timeStart = event.timeStart;
   DateTime timeEnd = event.timeEnd;
 
@@ -282,10 +454,12 @@ Future<Event?> _showEditPopup(
                   event.color = tag;
                   event.timeStart = timeStart;
                   event.timeEnd = timeEnd;
-                  //widget.task.recurrenceRules = recRules;
+                  // widget.task.recurrenceRules = recRules;
 
                   db.setEvent(event);
-
+                  if (event.recurrenceRules.enabled) {
+                    db.setRecurringEvents(event);
+                  }
                   completer.complete(event);
                   Navigator.of(context).pop();
                 },
