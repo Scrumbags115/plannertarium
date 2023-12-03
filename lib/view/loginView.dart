@@ -1,7 +1,7 @@
 import 'package:planner/common/database.dart';
 import 'package:flutter/material.dart';
 import 'package:planner/common/login.dart';
-import 'package:planner/view/taskView.dart';
+import 'package:planner/view/dailyTaskView.dart';
 import 'package:slider_button/slider_button.dart';
 
 class LoginView extends StatefulWidget {

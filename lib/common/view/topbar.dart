@@ -3,11 +3,11 @@ import 'package:planner/common/database.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/models/task.dart';
-import 'package:planner/view/dayView.dart';
-import 'package:planner/view/monthView.dart';
+import 'package:planner/view/dailyEventView.dart';
+import 'package:planner/view/monthlyEventView.dart';
 import 'package:planner/view/monthlyTaskView.dart';
-import 'package:planner/view/taskView.dart';
-import 'package:planner/view/weekView.dart';
+import 'package:planner/view/dailyTaskView.dart';
+import 'package:planner/view/weeklyEventView.dart';
 import 'package:planner/view/weeklyTaskView.dart';
 
 RoundedRectangleBorder roundedRectangleBackground =
@@ -249,7 +249,7 @@ AppBar _getTopBarWeekly(bool forEvents, BuildContext context, state) {
                     } else {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => const WeeklyTaskView(),
+                          builder: (context) => WeeklyTaskView(),
                         ),
                       );
                     }
