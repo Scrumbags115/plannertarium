@@ -43,3 +43,7 @@ DateTime getNextMonthAsDateTime(DateTime day) {
 String getDateAsString(DateTime day) {
   return "${day.month}/${day.day}/${day.year}";
 }
+
+String getTimeAsString(DateTime time) {
+  return "${time.hour%12}:${time.minute} ${time.hour<12 ? 'AM' : 'PM'} ${time.month}/${time.day}/${time.year}";
+}
