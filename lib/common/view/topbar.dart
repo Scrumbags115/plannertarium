@@ -3,7 +3,6 @@ import 'package:planner/common/database.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/models/task.dart';
-import 'package:planner/models/undertaking.dart';
 import 'package:planner/view/dayView.dart';
 import 'package:planner/view/monthView.dart';
 import 'package:planner/view/monthlyTaskView.dart';
@@ -22,7 +21,7 @@ RoundedRectangleBorder roundedRectangleBackground =
 void showSearchBar(BuildContext context) {
   TextEditingController searchController = TextEditingController();
   DatabaseService db = DatabaseService();
-  
+
   showDialog(
     context: context,
     builder: (context) {
@@ -45,7 +44,8 @@ void showSearchBar(BuildContext context) {
               String searchQuery = searchController.text;
               List<Task> searchTask = await db.searchAllTask(searchQuery);
               List<Event> searchEvent = await db.searchAllEvent(searchQuery);
-              showTaskDetailsDialog(searchQuery, searchTask, searchEvent, context);
+              showTaskDetailsDialog(
+                  searchQuery, searchTask, searchEvent, context);
             },
           ),
         ],
@@ -56,7 +56,8 @@ void showSearchBar(BuildContext context) {
 
 ///A void function that searches in a query and a list of tasks to query from
 ///Returns a list of tasks with informations of each tasks
-void showTaskDetailsDialog(String searchQuery, List<Task> tasks, List<Event> events, context) {
+void showTaskDetailsDialog(
+    String searchQuery, List<Task> tasks, List<Event> events, context) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -66,38 +67,38 @@ void showTaskDetailsDialog(String searchQuery, List<Task> tasks, List<Event> eve
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: tasks.map((task) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${task.completed ? "✅" : "❌"} ${task.name}',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text('  ${task.description}'),
-                  Text(
-                      '  Currently on: ${getDateAsString(task.timeCurrent)}'),
-                  Text(
-                      '  Date created: ${getDateAsString(task.timeCreated)}'),
-                  const Divider(),
-                ],
-              );
-            }).toList() + events.map((event) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '🕒 ${event.name}',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text('  ${event.description}'),
-                  Text(
-                      '  Starts at: ${getTimeAsString(event.timeStart)}'),
-                  Text(
-                      '  Date created: ${getDateAsString(event.timeCreated)}'),
-                  const Divider(),
-                ],
-              );
-            }).toList(),
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${task.completed ? "✅" : "❌"} ${task.name}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text('  ${task.description}'),
+                      Text(
+                          '  Currently on: ${getDateAsString(task.timeCurrent)}'),
+                      Text(
+                          '  Date created: ${getDateAsString(task.timeCreated)}'),
+                      const Divider(),
+                    ],
+                  );
+                }).toList() +
+                events.map((event) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '🕒 ${event.name}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text('  ${event.description}'),
+                      Text('  Starts at: ${getTimeAsString(event.timeStart)}'),
+                      Text(
+                          '  Date created: ${getDateAsString(event.timeCreated)}'),
+                      const Divider(),
+                    ],
+                  );
+                }).toList(),
           ),
         ),
         actions: [

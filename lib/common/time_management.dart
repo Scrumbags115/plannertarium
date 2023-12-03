@@ -45,5 +45,5 @@ String getDateAsString(DateTime day) {
 }
 
 String getTimeAsString(DateTime time) {
-  return "${time.hour%12}:${time.minute} ${time.hour<12 ? 'AM' : 'PM'} ${time.month}/${time.day}/${time.year}";
+  return "${time.hour % 12}:${time.minute} ${time.hour < 12 ? 'AM' : 'PM'} ${time.month}/${time.day}/${time.year}";
 }

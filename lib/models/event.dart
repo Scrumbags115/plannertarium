@@ -98,7 +98,8 @@ class Event extends Undertaking {
   /// to exclude generated the current event, set excludeMyself to true
   /// If the event day is not included recurring days then the event day will be ignored
   /// ex wednesday for event but recurrence is every thursday
-  List<Event> generateRecurringEvents({excludeMyself = false}) {
+  /// Range in recurrence is inclusive
+  List<Event> generateRecurringEvents({excludeMyself = true}) {
     List<Event> eventList = [];
 
     // if recurrence is not enabled, there are no events to return
@@ -109,8 +110,8 @@ class Event extends Undertaking {
     Recurrence recurrence = recurrenceRules;
 
     DateTime recurrenceDateStart = recurrence.timeStart;
-    DateTime recurrenceDateEnd = recurrence.timeEnd;
-
+    DateTime recurrenceDateEnd = recurrence.timeEnd
+        .add(const Duration(days: 1)); // + 1 so that the range is inclusive
     DateTime eventDateStart = timeStart;
     DateTime eventDateEnd = timeEnd;
 
@@ -174,7 +175,8 @@ class Event extends Undertaking {
     Recurrence recurrence = recurrenceRules;
 
     DateTime recurrenceDateStart = recurrence.timeStart;
-    DateTime recurrenceDateEnd = recurrence.timeEnd;
+    DateTime recurrenceDateEnd = recurrence.timeEnd
+        .add(const Duration(days: 1)); // + 1 so that the range is inclusive
 
     DateTime eventDateStart = timeStart;
 

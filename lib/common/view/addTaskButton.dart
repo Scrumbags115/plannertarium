@@ -236,7 +236,7 @@ Future<List<Tag>> showTagSelectionDialog(BuildContext context) async {
 
   TextEditingController nameController = TextEditingController();
   Color selectedColor = Colors.blue;
-  Color pickerColor = Color(0xff443a49);
+  Color pickerColor = const Color(0xff443a49);
 
   void changeColor(Color color) {
     pickerColor = color;

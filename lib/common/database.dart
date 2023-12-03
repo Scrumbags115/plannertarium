@@ -81,7 +81,6 @@ class DatabaseService {
     pfp = "";
 
     await GoogleSignIn().signOut();
-
   }
 
 ////////////////////////////////////////////////////
@@ -115,7 +114,7 @@ class DatabaseService {
   Future<void> addEvent(Event event) async {
     var doc = await users.doc(userid).collection("events").doc(event.id).get();
     if (doc.exists) {
-      throw Future.error("Event ID already exists!");
+      throw Future.error("Event ID already exists: ${event.id}");
     }
     return await users
         .doc(userid)
@@ -283,13 +282,14 @@ class DatabaseService {
   /// given an event with recurrence enabled, create/set all recurring events in the DB
   Future<void> setRecurringEvents(Event e) async {
     List<Event> recurringEvents = e.generateRecurringEvents();
+    print(recurringEvents);
     for (final e in recurringEvents) {
       await addEvent(e);
     }
   }
 
   /// delete all recurring events in the database given a base event
-  Future<void> deleteRecurringEvents(Event e) async {
+  Future<void> deleteRecurringEvents(Event e, {excludeMyself = false}) async {
     // guard case, no recurrence then don't do anything
     if (e.recurrenceRules.enabled == false) {
       return;
@@ -297,6 +297,9 @@ class DatabaseService {
     List<DateTime> dts = e.getDatesOfRelatedRecurringEvents();
     final parentID = e.recurrenceRules.id;
     for (final dt in dts) {
+      if (excludeMyself && dt == e.timeStart) {
+        continue;
+      }
       // search the database for event on this date
       final Map<String, Event> eventList = await getEventsInDay(date: dt);
       // search the corresponding events on that day for the right recurrence ID

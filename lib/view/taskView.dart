@@ -2,14 +2,12 @@ import 'package:planner/common/database.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:planner/common/time_management.dart';
 import 'package:planner/common/view/addTaskButton.dart';
 import 'package:planner/common/view/topbar.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/view/loginView.dart';
 import 'dart:async';
 import 'package:planner/view/weeklyTaskView.dart';
-import 'package:intl/intl.dart';
 import 'package:planner/view/taskCard.dart';
 
 class TaskView extends StatefulWidget {
@@ -84,17 +82,17 @@ class TaskViewState extends State<TaskView> {
           padding: const EdgeInsets.all(0),
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.blue,
               ),
               child: UserAccountsDrawerHeader(
-                  decoration: BoxDecoration(color: Colors.blue),
+                  decoration: const BoxDecoration(color: Colors.blue),
                   accountName: Text(
                     db.getUsername(),
-                    style: TextStyle(fontSize: 18),
+                    style: const TextStyle(fontSize: 18),
                   ),
                   accountEmail: Text(db.getEmail()),
-                  currentAccountPictureSize: Size.square(50),
+                  currentAccountPictureSize: const Size.square(50),
                   currentAccountPicture: CircleAvatar(
                       backgroundImage: NetworkImage(db.getPFPURL()))),
             ),

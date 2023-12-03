@@ -141,7 +141,7 @@ class _SingleDayState extends State<SingleDay> {
                 Expanded(
                   child: Column(
                     children: [
-                      Divider(
+                      const Divider(
                         height: 1,
                         thickness: 2,
                       ),
@@ -177,7 +177,7 @@ class _SingleDayState extends State<SingleDay> {
                   showEventDetailPopup(context, event, widget.date);
                 },
                 child:
-                    SizedBox(width: space, child: Card(color: Colors.black))),
+                    SizedBox(width: space, child: const Card(color: Colors.black))),
           ),
         )
         .toList();
@@ -203,7 +203,7 @@ class MyPainter extends CustomPainter {
     RRect eventRRect = RRect.fromRectAndRadius(
         Rect.fromLTWH(0, 0, eventSpace,
             40 * (event.timeEnd.hour - event.timeStart.hour).toDouble()),
-        Radius.circular(7.5));
+        const Radius.circular(7.5));
     Path eventRRectBorder = Path();
     eventRRectBorder.addRRect(eventRRect);
     canvas.drawRRect(
@@ -211,13 +211,13 @@ class MyPainter extends CustomPainter {
       rrectPaint,
     );
     canvas.drawPath(eventRRectBorder, myPaint2);
-    TextStyle eventNameStyle = TextStyle(color: Colors.black, fontSize: 15);
+    TextStyle eventNameStyle = const TextStyle(color: Colors.black, fontSize: 15);
     TextSpan eventNameSpan = TextSpan(text: event.name, style: eventNameStyle);
     TextPainter eventNamePainter =
         TextPainter(text: eventNameSpan, textDirection: (TextDirection.ltr));
     eventNamePainter.layout(minWidth: 0, maxWidth: size.width);
     eventNamePainter.paint(canvas, Offset.fromDirection(0, 6));
-    TextStyle eventTimeStyle = TextStyle(color: Colors.black, fontSize: 10.5);
+    TextStyle eventTimeStyle = const TextStyle(color: Colors.black, fontSize: 10.5);
     TextSpan eventTimeSpan = TextSpan(
         text:
             "${intl.DateFormat("h:mm").format(event.timeStart)} - ${intl.DateFormat("h:mma").format(event.timeEnd)}",
