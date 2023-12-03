@@ -4,7 +4,6 @@ import 'package:planner/common/database.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/view/eventDialogs.dart';
-import 'package:planner/view/taskView.dart';
 import 'package:planner/view/weekView.dart';
 import 'package:planner/common/view/topbar.dart';
 
@@ -20,6 +19,33 @@ class DayView extends StatefulWidget {
 
 class _DayViewState extends State<DayView> {
   var scaffoldKey = GlobalKey<ScaffoldState>();
+
+  ///A DatePicker function to prompt a calendar
+  ///Returns a selectedDate if chosen, defaulted to today if no selectedDate
+  Future<DateTime?> datePicker() async {
+    DateTime? selectedDate = await showDatePicker(
+      context: context,
+      initialDate: widget.date,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+
+    if (selectedDate != null) {
+      return selectedDate;
+    }
+    return widget.date;
+  }
+
+  /// A void function that asynchronously selects a date and fetches tasks for that date.
+  Future<void> selectDate() async {
+    DateTime selectedDate = await datePicker() ?? widget.date;
+    List<Event> newEvents = await db.getListOfEventsInDay(date: selectedDate);
+
+    setState(() {
+      widget.date = selectedDate;
+      SingleDay(widget.date);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
