@@ -34,7 +34,8 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date) async {
                             initialDate: date!,
                             firstDate: DateTime(2000),
                             lastDate: DateTime(2101)));
-                        date ??= originalDate; //in case user cancels date picker, show original date
+                        date ??=
+                            originalDate; //in case user cancels date picker, show original date
                         setState(() {});
                       },
                       child: Text('${date?.month}/${date?.day}/${date?.year}')),
@@ -261,6 +262,13 @@ Future<Event?> _showEditPopup(
               ],
             ),
             actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  db.deleteEvent(event);
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Delete'),
+              ),
               TextButton(
                 child: const Text('Cancel'),
                 onPressed: () {
