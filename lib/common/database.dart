@@ -198,15 +198,13 @@ class DatabaseService {
   ///
   /// returns a Map
   Future<Map<String, Event>> getEventsInDay({required DateTime date}) async {
-    DateTime tomorrow = date;
-    tomorrow = tomorrow.add(const Duration(days: 1));
+    DateTime tomorrow = getDateOnly(date, offsetDays: 1);
     return getEventsInDateRange(dateStart: date, dateEnd: tomorrow);
   }
 
   /// Get list of events in a day
   Future<List<Event>> getListOfEventsInDay({required DateTime date}) async {
-    DateTime tomorrow = date;
-    tomorrow = tomorrow.add(const Duration(days: 1));
+    DateTime tomorrow = getDateOnly(date, offsetDays: 1);
     return getListOfEventsInDateRange(dateStart: date, dateEnd: tomorrow);
   }
 
@@ -590,7 +588,7 @@ class DatabaseService {
   /// Get List of all Tasks with the given tag
   /// Returns a List of Tasks
   /// Returns empty List if tag doesn't exist
-  Future<List<Task>> getTasksWithTag(String tagName, {int limit = 100}) async {
+  Future<List<Task>> getTasksWithTag(String tagName, int limit) async {
     List<Task> out = [];
     Tag tag;
 
@@ -610,8 +608,7 @@ class DatabaseService {
   /// Get ID of all Events with the given tag
   /// Returns a list of IDs
   /// Returns empty list if tag doesn't exist
-  Future<List<Event>> getEventsWithTag(String tagName,
-      {int limit = 100}) async {
+  Future<List<Event>> getEventsWithTag(String tagName, int limit) async {
     List<Event> out = [];
     Tag tag;
 

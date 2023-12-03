@@ -72,83 +72,6 @@ class TaskViewState extends State<TaskView> {
     });
   }
 
-  ///A void function that shows a dialog with a search bar to search for tasks.
-  void showSearchBar(BuildContext context) {
-    TextEditingController searchController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Search Tasks'),
-          content: TextField(
-            controller: searchController,
-            decoration: const InputDecoration(),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: const Text('Search'),
-              onPressed: () async {
-                String searchQuery = searchController.text;
-                List<Task> searchTask = await db.searchAllTask(searchQuery);
-                showTaskDetailsDialog(searchQuery, searchTask);
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  ///A void function that searches in a query and a list of tasks to query from
-  ///Returns a list of tasks with informations of each tasks
-  void showTaskDetailsDialog(String searchQuery, List<Task> tasks) {
-    showDialog(
-      context: scaffoldKey.currentState!.context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Results for "$searchQuery"'),
-          content: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: tasks.map((task) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${task.completed ? "✅" : "❌"} ${task.name}',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Text('  ${task.description}'),
-                    Text(
-                        '  Currently on: ${getDateAsString(task.timeCurrent)}'),
-                    Text(
-                        '  Date created: ${getDateAsString(task.timeCreated)}'),
-                    const Divider(),
-                  ],
-                );
-              }).toList(),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Close'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   var scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -232,7 +155,34 @@ class TaskViewState extends State<TaskView> {
                 },
               ),
             ),
-            getAddTaskButton(this, context),
+            //getAddTaskButton(this, context),
+           Align(
+              alignment: Alignment.bottomRight,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                    0, 0, 20, 20), // Adjust the value as needed
+                child: ClipOval(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      Task? newTask = await addButtonForm(context,this);
+                      if (newTask != null) {
+                        setState(() {
+                          todayTasks.add(newTask);
+                        });
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey,
+                      minimumSize: const Size(75, 75),
+                    ),
+                    child: const Icon(
+                      Icons.add_outlined,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+            )
           ],
         ),
       ),
