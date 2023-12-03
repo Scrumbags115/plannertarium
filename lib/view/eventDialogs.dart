@@ -4,13 +4,12 @@ import 'package:planner/common/database.dart';
 import 'package:planner/models/event.dart';
 import 'package:intl/intl.dart';
 
-
 class CustomButton extends StatelessWidget {
-  int index;
-  List<String> listOfDayStrings = ["M", "T", "W", "TH", "F", "S", "SU"];
-  var selectedRecurringDay;
+  final int index;
+  final List<String> listOfDayStrings = ["M", "T", "W", "TH", "F", "S", "SU"];
+  final bool selectedRecurringDay;
   CustomButton(
-      {super.key, Key? key, this.selectedRecurringDay = false, required this.index});
+      {super.key, this.selectedRecurringDay = false, required this.index});
 
   @override
   Widget build(BuildContext context) {
