@@ -29,7 +29,7 @@ class TaskCardState extends State<TaskCard> {
     // widget.task = await db.getTask(widget.task.id);
     db.setTask(widget.task);
     allTagsofTask = await db.getTagsOfTask(widget.task.id);
-    print("initializing tag list ${allTagsofTask}");
+    print("initializing tag list $allTagsofTask");
     setState(() {});
   }
 
@@ -312,7 +312,7 @@ class TaskCardState extends State<TaskCard> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('Tag Color:'),
-                    Container(
+                    SizedBox(
                       width: 200,
                       child: ColorPicker(
                         pickerColor: pickerColor,

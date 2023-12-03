@@ -2,13 +2,11 @@ import 'package:planner/common/database.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:planner/common/time_management.dart';
 import 'package:planner/common/view/addTaskButton.dart';
 import 'package:planner/common/view/topbar.dart';
 import 'package:planner/models/task.dart';
 import 'dart:async';
 import 'package:planner/view/weeklyTaskView.dart';
-import 'package:intl/intl.dart';
 import 'package:planner/view/taskCard.dart';
 
 class TaskView extends StatefulWidget {
@@ -156,7 +154,7 @@ class TaskViewState extends State<TaskView> {
               ),
             ),
             //getAddTaskButton(this, context),
-           Align(
+            Align(
               alignment: Alignment.bottomRight,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(
@@ -164,7 +162,7 @@ class TaskViewState extends State<TaskView> {
                 child: ClipOval(
                   child: ElevatedButton(
                     onPressed: () async {
-                      Task? newTask = await addButtonForm(context,this);
+                      Task? newTask = await addButtonForm(context, this);
                       if (newTask != null) {
                         setState(() {
                           todayTasks.add(newTask);

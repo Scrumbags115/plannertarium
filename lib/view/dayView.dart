@@ -117,6 +117,7 @@ class _SingleDayState extends State<SingleDay> {
     setState(() {});
   }
 
+  @override
   Widget build(BuildContext context) {
     return Stack(children: [
       Column(
@@ -160,7 +161,7 @@ class _SingleDayState extends State<SingleDay> {
                         Expanded(
                           child: Stack(
                             children: [
-                              Divider(
+                              const Divider(
                                 height: 1,
                                 thickness: 2,
                               ),
@@ -186,7 +187,7 @@ class _SingleDayState extends State<SingleDay> {
   Map<int, Row> generateHours() {
     Map<int, Row> hours = {};
     for (int i = 0; i < 24; i++) {
-      hours.addEntries([MapEntry(i, Row())]);
+      hours.addEntries([MapEntry(i, const Row())]);
     }
     for (int i = 0; i < 24; i++) {
       List<Event> eventsInHour = [];
@@ -195,12 +196,12 @@ class _SingleDayState extends State<SingleDay> {
           eventsInHour.add(event);
         }
       }
-      if (eventsInHour.length != 0) {
-        hours[i] = Row(
+      if (eventsInHour.isNotEmpty) {
+        hours[i] = const Row(
           children: [SizedBox(height: 50, child: Text("hi"))],
         );
       } else {
-        hours[i] = Row(
+        hours[i] = const Row(
           children: [
             SizedBox(
               height: 40,
@@ -376,13 +377,13 @@ class MyPainter extends CustomPainter {
         Rect.fromLTWH(5, 0, eventSpace,
             40 * (event.timeEnd.hour - event.timeStart.hour).toDouble()),
         myPaint);
-    TextStyle textStyle = TextStyle(color: Colors.black, fontSize: 15);
+    TextStyle textStyle = const TextStyle(color: Colors.black, fontSize: 15);
     TextSpan textSpan = TextSpan(text: event.name, style: textStyle);
     TextPainter textPainter =
         TextPainter(text: textSpan, textDirection: (TextDirection.rtl));
     textPainter.layout(minWidth: 0, maxWidth: size.width);
     textPainter.paint(canvas, Offset.fromDirection(0, 6));
-    textStyle = TextStyle(color: Colors.black, fontSize: 10.5);
+    textStyle = const TextStyle(color: Colors.black, fontSize: 10.5);
     textSpan = TextSpan(
         text:
             "${intl.DateFormat("h:mm").format(event.timeStart)} - ${intl.DateFormat("h:mma").format(event.timeEnd)}",

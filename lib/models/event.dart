@@ -110,7 +110,8 @@ class Event extends Undertaking {
     Recurrence recurrence = recurrenceRules;
 
     DateTime recurrenceDateStart = recurrence.timeStart;
-    DateTime recurrenceDateEnd = recurrence.timeEnd.add(const Duration(days: 1)); // + 1 so that the range is inclusive
+    DateTime recurrenceDateEnd = recurrence.timeEnd
+        .add(const Duration(days: 1)); // + 1 so that the range is inclusive
     DateTime eventDateStart = timeStart;
     DateTime eventDateEnd = timeEnd;
 
@@ -174,8 +175,8 @@ class Event extends Undertaking {
     Recurrence recurrence = recurrenceRules;
 
     DateTime recurrenceDateStart = recurrence.timeStart;
-    DateTime recurrenceDateEnd = recurrence.timeEnd.add(const Duration(days: 1)); // + 1 so that the range is inclusive
-
+    DateTime recurrenceDateEnd = recurrence.timeEnd
+        .add(const Duration(days: 1)); // + 1 so that the range is inclusive
 
     DateTime eventDateStart = timeStart;
 
