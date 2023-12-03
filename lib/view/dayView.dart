@@ -42,7 +42,7 @@ class _DayViewState extends State<DayView> {
 
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => DayView(selectedDate),
+        builder: (context) => DayView(date: selectedDate),
       ),
     );
   }
