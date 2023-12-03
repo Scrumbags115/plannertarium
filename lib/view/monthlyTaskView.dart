@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
+import 'package:planner/common/view/addTaskButton.dart';
 import 'package:planner/common/view/topbar.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/view/weeklyTaskView.dart';
@@ -121,6 +122,7 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
                   },
                 ),
               ),
+              getAddTaskButton(this, context)
             ],
           ),
         ));
