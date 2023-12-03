@@ -900,18 +900,21 @@ class DatabaseService {
   /// Get weekly tasks as a single list
   Future<List<Task>> fetchWeeklyTask({DateTime? weekStart}) async {
     DateTime today = getDateOnly(weekStart ?? DateTime.now());
+    today = mostRecentMonday(today);
     Map<DateTime, List<Task>> activeMap, delayedMap, completedMap;
 
     // Fetch task maps for the specified week
     (activeMap, delayedMap, completedMap) = await getTaskMapsWeek(today);
     Map<DateTime, List<Task>> dueTasksMap = await getTasksDueWeek(today);
 
-    List<Task> allTasks = [
-      ...?activeMap[today],
-      ...?delayedMap[today],
-      ...?completedMap[today],
-      ...?dueTasksMap[today],
-    ];
+    List<Task> allTasks = [];
+    for (int i = 0; i < 7; i++) {
+      DateTime newDay = getDateOnly(today, offsetDays: i);
+      allTasks += activeMap[newDay]!;
+      allTasks += delayedMap[newDay]!;
+      allTasks += completedMap[newDay]!;
+      allTasks += dueTasksMap[newDay]!;
+    }
     // print('All tasks for the week: $allTasks');
 
     return allTasks;

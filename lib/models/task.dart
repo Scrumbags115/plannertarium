@@ -100,6 +100,10 @@ class Task extends Undertaking {
 
   DateTime? get timeDue => _timeDue;
 
+  bool isDelayedOn(DateTime day) {
+    return (day.isAtSameMomentAs(timeStart) || day.isAfter(timeStart)) && day.isBefore(timeCurrent);
+  }
+
   @override
   String toString() {
     return "Task($name, $id)";

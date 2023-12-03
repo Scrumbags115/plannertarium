@@ -97,6 +97,7 @@ class TaskCardState extends State<TaskCard> {
           setState(() {
             widget.task.moveToNextDay();
             db.setTask(widget.task);
+            
           });
         } else if (direction == DismissDirection.endToStart) {
           showDialog(
@@ -251,7 +252,7 @@ class TaskCardState extends State<TaskCard> {
     if (tagsOfWidgetTask.isNotEmpty) {
       tagNames = tagNames.substring(0, tagNames.length - 2);
     }
-    
+
     showDialog(
       context: context,
       builder: (context) {

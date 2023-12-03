@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/common/view/addTaskButton.dart';
@@ -48,20 +49,20 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
 
   /// Asynchronously loads tasks for the previous week and generates the screen
   void loadPreviousWeek() async {
-    await fetchData();
+    today = getDateOnly(today, offsetDays: -7);
+    await fetchData(weekStart: today);
     setState(() {
-      today = getDateOnly(today, offsetDays: -7);
       generateScreen(today);
     });
   }
 
   /// Asynchronously loads tasks for the next week and generates the screen
   void loadNextWeek() async {
+    today = getDateOnly(today, offsetDays: 7);
+    await fetchData(weekStart: today);
     setState(() {
-      today = getDateOnly(today, offsetDays: 7);
+      generateScreen(today);
     });
-    await fetchData();
-    generateScreen(today);
   }
 
   /// A DatePicker function to prompt a calendar
@@ -87,19 +88,14 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
   List<Widget> generateScreen(DateTime dateStart) {
     List<Widget> dayWidgets = [];
 
+    DateTime thisMostRecentMonday = mostRecentMonday(today);
+    var activeMap, completeMap, delayMap;
+    //(activeMap, completeMap, delayMap) = _db.getTaskMapsWeek(dateStart);
     for (int i = 0; i < 7; i++) {
-      DateTime thisMostRecentMonday = mostRecentMonday(today);
       DateTime currentDate = getDateOnly(thisMostRecentMonday, offsetDays: i);
-      Set<Task> uniqueTasksForDay = <Task>{};
+      List<Task> uniqueTasksForDay = activeMap[currentDate] + completeMap[currentDate] + delayMap[currentDate];
 
-      // Filter tasks for the current day and add them to the Set
-      _allTasks.where((task) {
-        DateTime taskDay = DateTime(task.timeCurrent.year,
-            task.timeCurrent.month, task.timeCurrent.day);
-        return !taskDay.isBefore(currentDate) && !taskDay.isAfter(currentDate);
-      }).forEach((task) {
-        uniqueTasksForDay.add(task);
-      });
+      
 
       dayWidgets.add(
         Column(
@@ -131,6 +127,7 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
         ),
       );
     }
+
     return dayWidgets;
   }
 
