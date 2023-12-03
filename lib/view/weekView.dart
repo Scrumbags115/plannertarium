@@ -46,6 +46,24 @@ class _WeekViewState extends State<WeekView> {
     }
   }
 
+  /// Asynchronously loads tasks for the previous week and generates the screen
+  void loadPreviousWeek() async {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => WeekView(date: getDateOnly(widget.monday, offsetDays: -7)),
+      ),
+    );
+  }
+
+  /// Asynchronously loads tasks for the next week and generates the screen
+  void loadNextWeek() async {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => WeekView(date: getDateOnly(widget.monday, offsetDays: 7)),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     DateTime startDate = mostRecentMonday(widget.monday);

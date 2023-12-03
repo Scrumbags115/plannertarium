@@ -67,7 +67,7 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
   void loadPreviousWeek() async {
     await fetchData();
     setState(() {
-      today = today.subtract(const Duration(days: 7));
+      today = getDateOnly(today, offsetDays: -7);
       generateScreen(today);
     });
   }
@@ -75,7 +75,7 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
   /// Asynchronously loads tasks for the next week and generates the screen
   void loadNextWeek() async {
     setState(() {
-      today = today.add(const Duration(days: 7));
+      today = getDateOnly(today, offsetDays: 7);
     });
     await fetchData();
     generateScreen(today);
