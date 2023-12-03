@@ -7,6 +7,7 @@ import 'package:planner/common/time_management.dart';
 import 'package:planner/view/eventDialogs.dart';
 import 'package:planner/view/monthView.dart';
 import 'package:intl/intl.dart';
+import 'package:planner/view/weeklyTaskView.dart';
 
 DatabaseService db = DatabaseService();
 
@@ -18,35 +19,63 @@ class WeekView extends StatefulWidget {
 }
 
 class _WeekViewState extends State<WeekView> {
-  bool forEvents = true;
   var scaffoldKey = GlobalKey<ScaffoldState>();
   DateTime startDate = mostRecentMonday(
       DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day));
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onHorizontalDragEnd: (details) {
-        if (details.primaryVelocity! > 0) {
-          Navigator.of(context)
-              .push(MaterialPageRoute(builder: (context) => const MonthView()));
-        }
-      },
-      child: Scaffold(
-        appBar: getTopBar(Event, "weekly", context, this),
-        drawer: const Drawer(),
-        body: ListView(
-          children: List.generate(DateTime.daysPerWeek, (index) {
-            //This generates 7 MultiDayCard in a vertical list
-            return MultiDayCard(index, startDate);
-          }),
+    return Scaffold(
+      appBar: getTopBar(Event, "weekly", context, this),
+      drawer: Drawer(),
+      body: GestureDetector(
+        onHorizontalDragEnd: (details) {
+          if (details.primaryVelocity! < 0) {
+            Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => MonthView()));
+          }
+          if (details.primaryVelocity! > 0) {
+            Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => DayView(getDateOnly(DateTime.now()))));
+          }
+        },
+        child: Stack(
+          children: [
+            ListView(
+              children: List.generate(DateTime.daysPerWeek, (index) {
+                //This generates 7 MultiDayCard in a vertical list
+                return MultiDayCard(index, startDate);
+              }),
+            ),
+            Align(
+              alignment: Alignment.bottomRight,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                    0, 0, 20, 20), // Adjust the value as needed
+                child: ClipOval(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      await addEventFormForDay(context, startDate);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey,
+                      minimumSize: const Size(75, 75),
+                    ),
+                    child: const Icon(
+                      Icons.add_outlined,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+            )
+          ],
         ),
       ),
     );
   }
 }
 
-//Each of these navigates to dayView when tapped
 class MultiDayCard extends StatefulWidget {
   const MultiDayCard(this.index, this.startDate, {super.key});
   final int index;
@@ -64,10 +93,14 @@ class _MultiDayCardState extends State<MultiDayCard> {
   _MultiDayCardState(this.index, this.startDate) {
     db
         .getListOfEventsInDay(date: getDateOnly(startDate, offsetDays: index))
-        .then((value) => setState(() {
-              eventCount = value.length;
-              eventsToday = value;
-            }));
+        .then((value) {
+      if (mounted) {
+        setState(() {
+          eventCount = value.length;
+          eventsToday = value;
+        });
+      }
+    });
   }
 
   @override
@@ -97,7 +130,7 @@ class _MultiDayCardState extends State<MultiDayCard> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => SingleDay(dateToDisplay)));
+                        builder: (context) => DayView(dateToDisplay)));
               },
               child: Center(
                 child: Column(
@@ -130,7 +163,7 @@ class _MultiDayCardState extends State<MultiDayCard> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => SingleDay(dateToDisplay)));
+                          builder: (context) => DayView(dateToDisplay)));
                 },
                 child: Column(
                   children: [
@@ -140,7 +173,7 @@ class _MultiDayCardState extends State<MultiDayCard> {
                           Expanded(
                             child: generateEventCardListView(dateToDisplay),
                           ),
-                          Flexible(
+                          /*Flexible(
                               flex: 0,
                               child: SizedBox(
                                   width: 40,
@@ -154,7 +187,7 @@ class _MultiDayCardState extends State<MultiDayCard> {
                                           child: const Column(
                                               mainAxisAlignment:
                                                   MainAxisAlignment.center,
-                                              children: [Icon(Icons.add)])))))
+                                              children: [Icon(Icons.add)])))))*/
                         ],
                       ),
                     )
