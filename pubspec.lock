@@ -262,6 +262,22 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_circle_color_picker:
+    dependency: "direct main"
+    description:
+      name: flutter_circle_color_picker
+      sha256: cf3e3fd295c9db89f8650dc72ee7bd1d7f33fcb22e3822c3c1c270877038af7f
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.0"
+  flutter_colorpicker:
+    dependency: "direct main"
+    description:
+      name: flutter_colorpicker
+      sha256: "458a6ed8ea480eb16ff892aedb4b7092b2804affd7e046591fb03127e8d8ef8b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.3"
   flutter_lints:
     dependency: "direct dev"
     description:

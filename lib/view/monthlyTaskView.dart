@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
+import 'package:planner/common/view/addTaskButton.dart';
 import 'package:planner/common/view/topbar.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/view/weeklyTaskView.dart';
@@ -21,7 +22,7 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
   List<Task> todayTasks = [];
   final PageController _pageController = PageController();
   Map<DateTime, List<Task>> active = {};
-
+  DateTime today = getDateOnly(DateTime.now());
   @override
 
   /// Initializes the state of the widget
@@ -83,6 +84,7 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
                 },
                 onPageChanged: (focusedDay) {
                   _focusedDay = focusedDay;
+                  today = getDateOnly(focusedDay);
                 },
                 eventLoader: (day) {
                   var taskForDay = active[getDateOnly(day)] ?? [];
@@ -121,6 +123,37 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
                   },
                 ),
               ),
+              Align(
+                alignment: Alignment.bottomRight,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                      0, 0, 20, 20), // Adjust the value as needed
+                  child: ClipOval(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        Task? newTask = await addButtonForm(context, this);
+                        if (newTask != null) {
+                          setState(() {
+                            DateTime newTaskDateStart = newTask.timeStart;
+                            active[newTaskDateStart] = [
+                              ...active[newTaskDateStart] ?? [],
+                              newTask
+                            ];
+                          });
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey,
+                        minimumSize: const Size(75, 75),
+                      ),
+                      child: const Icon(
+                        Icons.add_outlined,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ),
+              )
             ],
           ),
         ));
