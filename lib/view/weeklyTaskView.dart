@@ -34,34 +34,7 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
     setState(() {
       _allTasks = tasks;
     });
-  }
-
-  /// Asynchronously fetches tasks for the current week
-  Future<List<Task>> fetchWeeklyTask() async {
-    DateTime today = getDateOnly(DateTime.now());
-    Map<DateTime, List<Task>> activeMap, delayedMap, completedMap;
-
-    // Fetch task maps for the specified week
-    (activeMap, delayedMap, completedMap) = await _db.getTaskMapsWeek(today);
-    Map<DateTime, List<Task>> dueTasksMap = await _db.getTasksDueWeek(today);
-
-    List<Task> allTasks = [
-      ...?activeMap[today],
-      ...?delayedMap[today],
-      ...?completedMap[today],
-      ...?dueTasksMap[today],
-    ];
-
-    return allTasks;
-  }
-
-  /// Checks if a task is due on the current day
-  bool isTaskDueOnCurrentDay(Task task, DateTime currentDate) {
-    if (task.timeDue == null) {
-      return false;
-    }
-    return getDateOnly(task.timeDue ?? currentDate)
-        .isAtSameMomentAs(currentDate);
+    print(_allTasks);
   }
 
   /// Asynchronously loads tasks for the previous week and generates the screen
@@ -133,19 +106,9 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
             if (uniqueTasksForDay.isNotEmpty)
               Column(
                 children: uniqueTasksForDay.map((task) {
-                  bool isDueOnCurrentDay =
-                      isTaskDueOnCurrentDay(task, currentDate);
                   return Column(
                     children: [
                       TaskCard(task: task),
-                      if (isDueOnCurrentDay)
-                        const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text(
-                            'Due today!',
-                            style: TextStyle(color: Colors.red),
-                          ),
-                        ),
                     ],
                   );
                 }).toList(),
@@ -194,8 +157,10 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
                 onPressed: () async {
                   Task? newTask = await addButtonForm(context, this);
                   if (newTask != null) {
+                    _db.setTask(newTask);
                     setState(() {
-                      _allTasks.add(newTask);
+                      fetchData();
+                      generateScreen(today);
                     });
                   }
                 },

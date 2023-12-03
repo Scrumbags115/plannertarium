@@ -218,7 +218,7 @@ Future<Task?> addButtonForm(BuildContext context, state) async {
                   db.addTagToTask(newTask, tag);
                   // state.allTagsofTask.add(tag);
                 }
-
+                
                 completer.complete(newTask);
                 Navigator.of(context).pop();
               },

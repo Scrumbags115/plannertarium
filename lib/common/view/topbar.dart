@@ -209,7 +209,7 @@ AppBar _getTopBarWeekly(bool forEvents, BuildContext context, state) {
           child: IconButton(
             icon: const Icon(Icons.calendar_month_rounded, color: Colors.black),
             onPressed: () {
-              state.datePicker();
+              state.calendarIconDatePicker();
             },
           ),
         ),
