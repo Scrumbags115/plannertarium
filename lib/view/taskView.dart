@@ -6,6 +6,7 @@ import 'package:planner/common/time_management.dart';
 import 'package:planner/common/view/addTaskButton.dart';
 import 'package:planner/common/view/topbar.dart';
 import 'package:planner/models/task.dart';
+import 'package:planner/view/loginView.dart';
 import 'dart:async';
 import 'package:planner/view/weeklyTaskView.dart';
 import 'package:intl/intl.dart';
@@ -13,7 +14,6 @@ import 'package:planner/view/taskCard.dart';
 
 class TaskView extends StatefulWidget {
   const TaskView({super.key});
-
   @override
   TaskViewState createState() => TaskViewState();
 }
@@ -83,52 +83,32 @@ class TaskViewState extends State<TaskView> {
         child: ListView(
           padding: const EdgeInsets.all(0),
           children: [
-            const DrawerHeader(
+            DrawerHeader(
               decoration: BoxDecoration(
                 color: Colors.blue,
               ),
               child: UserAccountsDrawerHeader(
-                decoration: BoxDecoration(color: Colors.blue),
-                accountName: Text(
-                  "Cheng Wai",
-                  style: TextStyle(fontSize: 18),
-                ),
-                accountEmail: Text("cchong10@ucsc.edu"),
-                currentAccountPictureSize: Size.square(50),
-                currentAccountPicture: CircleAvatar(
-                  backgroundColor: Color.fromARGB(255, 137, 192, 255),
-                  child: Text(
-                    "A",
-                    style: TextStyle(fontSize: 30.0, color: Colors.blue),
+                  decoration: BoxDecoration(color: Colors.blue),
+                  accountName: Text(
+                    db.getUsername(),
+                    style: TextStyle(fontSize: 18),
                   ),
-                ),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.person),
-              title: const Text(' My Profile '),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.workspace_premium),
-              title: const Text(' Go Premium '),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.edit),
-              title: const Text(' Settings '),
-              onTap: () {
-                Navigator.pop(context);
-              },
+                  accountEmail: Text(db.getEmail()),
+                  currentAccountPictureSize: Size.square(50),
+                  currentAccountPicture: CircleAvatar(
+                      backgroundImage: NetworkImage(db.getPFPURL()))),
             ),
             ListTile(
               leading: const Icon(Icons.logout),
               title: const Text('LogOut'),
-              onTap: () {},
+              onTap: () {
+                db.signOut();
+                setState(() {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => const LoginView(),
+                  ));
+                });
+              },
             ),
           ],
         ),
@@ -156,7 +136,7 @@ class TaskViewState extends State<TaskView> {
               ),
             ),
             //getAddTaskButton(this, context),
-           Align(
+            Align(
               alignment: Alignment.bottomRight,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(
@@ -164,7 +144,7 @@ class TaskViewState extends State<TaskView> {
                 child: ClipOval(
                   child: ElevatedButton(
                     onPressed: () async {
-                      Task? newTask = await addButtonForm(context,this);
+                      Task? newTask = await addButtonForm(context, this);
                       if (newTask != null) {
                         setState(() {
                           todayTasks.add(newTask);

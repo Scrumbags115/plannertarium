@@ -190,11 +190,6 @@ Future<Task?> addButtonForm(BuildContext context, state) async {
             TextButton(
               child: const Text('Submit'),
               onPressed: () {
-                if (enteredTags.isNotEmpty) {
-                      state.widget.task.tags =
-                          enteredTags.map((tag) => tag.id).toList();
-                    }
-
                 String name = nameController.text;
                 String description = descriptionController.text;
                 String location = locationController.text;
@@ -206,14 +201,24 @@ Future<Task?> addButtonForm(BuildContext context, state) async {
                   timeStart: startTime,
                 );
 
-                state.widget.task.tags = [];
+                // if (enteredTags.isNotEmpty) {
+                //   //error is here, saying
+                //   // Class 'TaskView' has no instance getter 'task'.
+                //   // Receiver: Instance of 'TaskView'
+                //   // Tried calling: task
+                //   //198 state.wwidget.(ERROR)task.tags
+                //       newTask.tags =
+                //           enteredTags.map((tag) => tag.id).toList();
+                // }
 
-                    db.setTask(state.idget.task);
+                db.setTask(newTask);
 
-                    for (Tag tag in enteredTags) {
-                      db.addTagToTask(state.widget.task, tag);
-                      state.allTagsofTask.add(tag);
-                    }
+                for (Tag tag in enteredTags) {
+                  db.setTag(tag);
+                  db.addTagToTask(newTask, tag);
+                  // state.allTagsofTask.add(tag);
+                }
+
                 completer.complete(newTask);
                 Navigator.of(context).pop();
               },
