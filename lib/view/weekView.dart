@@ -74,12 +74,13 @@ class _WeekViewState extends State<WeekView> {
       body: GestureDetector(
         onHorizontalDragEnd: (details) {
           if (details.primaryVelocity! < 0) {
-            Navigator.of(context)
-                .push(MaterialPageRoute(builder: (context) => const MonthView()));
+            Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const MonthView()));
           }
           if (details.primaryVelocity! > 0) {
-            Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => DayView(date: getDateOnly(DateTime.now()))));
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) =>
+                    DayView(date: getDateOnly(DateTime.now()))));
           }
         },
         child: Stack(

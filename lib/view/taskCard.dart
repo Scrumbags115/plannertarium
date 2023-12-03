@@ -245,15 +245,14 @@ class TaskCardState extends State<TaskCard> {
     var tagsOfWidgetTask = await db.getTagsOfTask(widget.task.id);
     String tagNames = "";
     for (Tag tag in tagsOfWidgetTask) {
-      tagNames += tag.name + ", ";
-    } 
+      tagNames += "${tag.name}, ";
+    }
     // remove the last comma
     tagNames = tagNames.substring(0, tagNames.length - 2);
-        
+
     showDialog(
       context: context,
       builder: (context) {
-
         //
         return AlertDialog(
           title: const Text('Task Details'),
@@ -326,12 +325,10 @@ class TaskCardState extends State<TaskCard> {
                   children: [
                     Align(
                       alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Tag Color:',
-                        style: TextStyle(
-                          color: Colors.black,
-                        )
-                        ),
+                      child: Text('Tag Color:',
+                          style: TextStyle(
+                            color: Colors.black,
+                          )),
                     ),
                     SizedBox(
                       width: 200,

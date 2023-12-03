@@ -197,11 +197,11 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date,
                   IconButton(
                     icon: const Icon(Icons.calendar_month_rounded),
                     onPressed: () async {
-                      final DateTime? pickedDueDate = await datePicker();
-                      if (pickedDueDate != null &&
-                          pickedDueDate != recurrenceEndTime) {
+                      final DateTime? pickedEndDate = await datePicker();
+                      if (pickedEndDate != null &&
+                          pickedEndDate != recurrenceEndTime) {
                         setState(() {
-                          recurrenceEndTime = pickedDueDate;
+                          recurrenceEndTime = pickedEndDate;
                         });
                       }
                     },
@@ -209,8 +209,8 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date,
                   const SizedBox(width: 8),
                   Text(
                     recurrenceEndTime != null
-                        ? 'Due Date: ${DateFormat('MM-dd-yyyy').format(recurrenceEndTime!)}'
-                        : 'No due date selected',
+                        ? 'End Date: ${DateFormat('MM-dd-yyyy').format(recurrenceEndTime!)}'
+                        : 'No end date selected',
                     style: const TextStyle(fontSize: 16),
                   ),
                 ],

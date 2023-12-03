@@ -82,17 +82,17 @@ class TaskViewState extends State<TaskView> {
           padding: const EdgeInsets.all(0),
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.blue,
               ),
               child: UserAccountsDrawerHeader(
-                  decoration: BoxDecoration(color: Colors.blue),
+                  decoration: const BoxDecoration(color: Colors.blue),
                   accountName: Text(
                     db.getUsername(),
-                    style: TextStyle(fontSize: 18),
+                    style: const TextStyle(fontSize: 18),
                   ),
                   accountEmail: Text(db.getEmail()),
-                  currentAccountPictureSize: Size.square(50),
+                  currentAccountPictureSize: const Size.square(50),
                   currentAccountPicture: CircleAvatar(
                       backgroundImage: NetworkImage(db.getPFPURL()))),
             ),

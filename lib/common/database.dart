@@ -81,7 +81,6 @@ class DatabaseService {
     pfp = "";
 
     await GoogleSignIn().signOut();
-
   }
 
 ////////////////////////////////////////////////////
