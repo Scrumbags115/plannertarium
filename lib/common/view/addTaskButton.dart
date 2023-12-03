@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/models/task.dart';
+import 'package:planner/models/tag.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 getAddTaskButton(state, context) {
   return Align(
@@ -14,11 +16,12 @@ getAddTaskButton(state, context) {
         child: ElevatedButton(
           onPressed: () async {
             Task? newTask = await addButtonForm(context, state);
-            final newTodayTasks = await state.db.fetchTodayTasks(state.selectedDay);
+            final newTodayTasks =
+                await state.db.fetchTodayTasks(state.selectedDay);
             if (newTask != null) {
               state.setState(() {
                 state.todayTasks.add(newTask);
-                //state.fetchWeeklyTasks();
+                state.fetchWeeklyTasks();
               });
               state.setState(() {
                 state._selectedDay = state.selectedDay;
@@ -26,6 +29,7 @@ getAddTaskButton(state, context) {
                 state.todayTasks = newTodayTasks;
               });
             }
+            state.setState(() {});
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.grey,
@@ -51,7 +55,7 @@ Future<Task?> addButtonForm(BuildContext context, state) async {
   DateTime? dueDate;
   DateTime? startTime = DateTime.now();
   Completer<Task?> completer = Completer<Task?>();
-
+  List<Tag> enteredTags = [];
   showDialog(
     context: context,
     builder: (context) {
@@ -81,6 +85,48 @@ Future<Task?> addButtonForm(BuildContext context, state) async {
                   TextField(
                     controller: tagController,
                     decoration: const InputDecoration(labelText: 'Tag'),
+                    onTap: () async {
+                      List<Tag> result = await showTagSelectionDialog(context);
+                      if (result.isNotEmpty) {
+                        setState(() {
+                          enteredTags.addAll(result);
+                        });
+                      }
+                    },
+                  ),
+                  SizedBox(
+                    height: 60,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: enteredTags.length,
+                      itemBuilder: (context, index) {
+                        return Container(
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 4, vertical: 10),
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.grey,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    enteredTags.removeAt(index);
+                                  });
+                                },
+                                child: Row(
+                                  children: [
+                                    Text(enteredTags[index].name),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
                   ),
                   Row(
                     children: [
@@ -144,6 +190,11 @@ Future<Task?> addButtonForm(BuildContext context, state) async {
             TextButton(
               child: const Text('Submit'),
               onPressed: () {
+                if (enteredTags.isNotEmpty) {
+                      state.widget.task.tags =
+                          enteredTags.map((tag) => tag.id).toList();
+                    }
+
                 String name = nameController.text;
                 String description = descriptionController.text;
                 String location = locationController.text;
@@ -154,7 +205,15 @@ Future<Task?> addButtonForm(BuildContext context, state) async {
                   timeDue: dueDate,
                   timeStart: startTime,
                 );
-                db.setTask(newTask);
+
+                state.widget.task.tags = [];
+
+                    db.setTask(state.idget.task);
+
+                    for (Tag tag in enteredTags) {
+                      db.addTagToTask(state.widget.task, tag);
+                      state.allTagsofTask.add(tag);
+                    }
                 completer.complete(newTask);
                 Navigator.of(context).pop();
               },
@@ -165,6 +224,80 @@ Future<Task?> addButtonForm(BuildContext context, state) async {
     },
   );
   return completer.future;
+}
+
+Future<List<Tag>> showTagSelectionDialog(BuildContext context) async {
+  List<Tag> selectedTags = [];
+
+  TextEditingController nameController = TextEditingController();
+  Color selectedColor = Colors.blue;
+  Color pickerColor = Color(0xff443a49);
+
+  void changeColor(Color color) {
+    pickerColor = color;
+    selectedColor = color;
+  }
+
+  await showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('Add Tag'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: 'Tag Name'),
+              ),
+              const SizedBox(height: 16),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Tag Color:',
+                        style: TextStyle(
+                          color: Colors.black,
+                        )),
+                  ),
+                  SizedBox(
+                    width: 200,
+                    child: ColorPicker(
+                      pickerColor: pickerColor,
+                      onColorChanged: changeColor,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context, selectedTags);
+            },
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Tag selectedTag = Tag(
+                name: nameController.text,
+                color: selectedColor.value.toString(), // turn color into int
+              );
+              selectedTags.add(selectedTag);
+              nameController.clear();
+            },
+            child: const Text('Add'),
+          ),
+        ],
+      );
+    },
+  );
+
+  return selectedTags;
 }
 
 ///A DatePicker function to prompt a calendar

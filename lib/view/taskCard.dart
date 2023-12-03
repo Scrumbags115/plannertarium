@@ -308,11 +308,19 @@ class TaskCardState extends State<TaskCard> {
                   decoration: const InputDecoration(labelText: 'Tag Name'),
                 ),
                 const SizedBox(height: 16),
-                Row(
+                Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Tag Color:'),
-                    Container(
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Tag Color:',
+                        style: TextStyle(
+                          color: Colors.black,
+                        )
+                        ),
+                    ),
+                    SizedBox(
                       width: 200,
                       child: ColorPicker(
                         pickerColor: pickerColor,
