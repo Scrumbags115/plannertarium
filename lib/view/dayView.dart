@@ -4,15 +4,14 @@ import 'package:planner/common/database.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/view/eventDialogs.dart';
-import 'package:planner/view/taskView.dart';
 import 'package:planner/view/weekView.dart';
 import 'package:planner/common/view/topbar.dart';
 
 DatabaseService db = DatabaseService();
 
 class DayView extends StatefulWidget {
-  DayView(this.date, {super.key});
   DateTime date;
+  DayView({super.key, required this.date});
 
   @override
   State<DayView> createState() => _DayViewState();
@@ -55,7 +54,7 @@ class _DayViewState extends State<DayView> {
                   ),
                 ),
               ),
-            )
+            ),
           ])),
     );
   }
@@ -91,280 +90,115 @@ class _SingleDayState extends State<SingleDay> {
     setState(() {});
   }
 
+  @override
   Widget build(BuildContext context) {
-    return Stack(children: [
-      Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: 24,
-              itemBuilder: (context, index) {
-                return Column(
-                  children: [
-                    Row(
-                      children: [
-                        /*Flexible(
-                          flex: 0,
-                          child: SizedBox(
-                            width: 50,
-                            child: Center(
-                              child: Text(DateFormat('j').format(
-                                  getDateOnly(DateTime.now())
-                                      .add(Duration(hours: index)))),
-                            ),
-                          ),
-                        ),
-                        const Expanded(
-                          child: Divider(
-                            height: 1,
-                            thickness: 2,
-                            color: Colors.lightBlueAccent,
-                          ),
-                        ),*/
-                        Column(children: [
-                          SizedBox(
-                              width: 50,
-                              height: 40,
-                              child: Center(
-                                child: Text(intl.DateFormat('j').format(
-                                    getDateOnly(DateTime.now())
-                                        .add(Duration(hours: index)))),
-                              )),
-                        ]),
-                        Expanded(
-                          child: Stack(
-                            children: [
-                              Divider(
-                                height: 1,
-                                thickness: 2,
-                              ),
-                              generateEventsInHour(index),
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                    /*SizedBox(
-                        height: 40,
-                        child: Card(color: Colors.black, child: Text("hi")))*/
-                  ],
-                );
-              },
-            ),
-          )
-        ],
-      ),
-    ]);
-  }
-
-  Map<int, Row> generateHours() {
-    Map<int, Row> hours = {};
-    for (int i = 0; i < 24; i++) {
-      hours.addEntries([MapEntry(i, Row())]);
-    }
-    for (int i = 0; i < 24; i++) {
-      List<Event> eventsInHour = [];
-      for (var event in eventsToday) {
-        if (event.timeStart.hour <= i && event.timeEnd.hour >= i + 1) {
-          eventsInHour.add(event);
-        }
-      }
-      if (eventsInHour.length != 0) {
-        hours[i] = Row(
-          children: [SizedBox(height: 50, child: Text("hi"))],
-        );
-      } else {
-        hours[i] = Row(
-          children: [
-            SizedBox(
-              height: 40,
-            )
-          ],
-        );
-      }
-    }
-    return hours;
-  }
-
-  Row generateEventsInHour(hour) {
-    Set<int> h = {};
-    List<Event> eventsInHour = [];
-    /*for (var event in eventsToday) {
-      if (event.timeStart.hour <= hour && event.timeEnd.hour >= hour + 1) {
-        eventsInHour.add(event);
-      }
-    }*/
-    for (var hr in eventStartHours) {
-      if (hr == hour) {
-        h.add(hr);
-      }
-    }
-    for (var i in h) {
-      for (var event in eventsToday) {
-        if (event.timeStart.hour == i) {
-          eventsInHour.add(event);
-        }
-      }
-    }
     double width = MediaQuery.of(context).size.width - 50;
-    double space = width / eventCount;
-    return Row(
-        children: /*eventsInHour
-              .map((item) => Expanded(
-                    child: SizedBox(
-                        height: 40,
-                        child: Card(
-                            color: Colors.amber,
-                            child: InkWell(
-                                onTap: () {
-                                  showEventDetailPopup(
-                                      context, item, widget.date);
-                                },
-                                child: Center(child: Text(item.name))))),
-                  ))
-              .toList());*/
-            eventsInHour
-                .map((item) => CustomPaint(
-                    painter: MyPainter(eventSpace: space, event: item),
-                    child: SizedBox(width: space + 10)))
-                .toList());
-  } /*Column(
+    return Column(
       children: [
         Expanded(
-          child: ListView(
-            children: List.generate(24, (index) {
-              int displaynum;
-              String ampm;
-              if (index % 12 == 0) {
-                displaynum = 12;
-              } else if (index > 12) {
-                displaynum = index - 12;
-              } else {
-                displaynum = index;
-              }
-              if (index > 11) {
-                ampm = "PM";
-              } else {
-                ampm = "AM";
-              }
-              return Column(
-                children: [
-                  Row(
+            child: ListView.builder(
+          itemCount: 24,
+          itemBuilder: (context, index) {
+            return Row(
+              children: [
+                Column(children: [
+                  SizedBox(
+                      width: 50,
+                      height: 40,
+                      child: Center(
+                        child: Text(intl.DateFormat('j').format(
+                            getDateOnly(DateTime.now())
+                                .add(Duration(hours: index)))),
+                      )),
+                ]),
+                Expanded(
+                  child: Column(
                     children: [
-                      Flexible(
-                        flex: 0,
-                        child: SizedBox(
-                          width: 50,
-                          child: Center(
-                            child: Text("$displaynum $ampm"),
-                          ),
-                        ),
+                      Divider(
+                        height: 1,
+                        thickness: 2,
                       ),
-                      const Expanded(
-                        child: Divider(
-                          height: 1,
-                          thickness: 2,
-                          color: Colors.lightBlueAccent,
-                        ),
-                      ),
+                      paintEvents(index, width),
                     ],
                   ),
-                  generateHourBox(index),
-                ],
-              );
-            }),
-          ),
-        ),
+                )
+              ],
+            );
+          },
+        )),
       ],
     );
   }
 
-  Row generateHourBox(int counter) {
-    if (counter < 24) {
-      return Row(
-        children: [
-          const Flexible(
-            flex: 0,
-            child: SizedBox(
-              width: 45,
-              child: Center(),
-            ),
-          ),
-          Expanded(
-            child: Stack(children: [
-              Container(
-                decoration: const BoxDecoration(),
-                child: SizedBox(
-                    height: 50,
-                    child: InkWell(
-                      onTap: () async {
-                        await addEventFormForDay(context, date);
-                      },
-                    )),
-              ),
-              generateEventsInHour(counter),
-            ]),
-          ),
-        ],
-      );
-    } else {
-      return const Row();
-    }
-  }
-
-  Row generateEventsInHour(hour) {
+  Row paintEvents(hour, width) {
     List<Event> eventsInHour = [];
     for (var event in eventsToday) {
-      if (event.timeStart.hour <= hour && event.timeEnd.hour >= hour + 1) {
+      if (event.timeStart.hour == hour) {
         eventsInHour.add(event);
       }
     }
-    return Row(
-        children: eventsInHour
-            .map((item) => Expanded(
-                  child: SizedBox(
-                      height: 50,
-                      child: Card(
-                          color: Colors.amber,
-                          child: InkWell(
-                              onTap: () {
-                                showEventDetailPopup(context, item, date);
-                              },
-                              child: Center(child: Text(item.name))))),
-                ))
-            .toList());
-  }*/
+    double space = width / eventsInHour.length;
+    //print("hour is $hour");
+    //print("events starting in hour: $eventsInHour");
+    List<CustomPaint> eventsToPaint = eventsInHour
+        .map(
+          (event) => CustomPaint(
+            painter: MyPainter(context, eventSpace: space, event: event),
+            child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () {
+                  showEventDetailPopup(context, event, widget.date);
+                },
+                child:
+                    SizedBox(width: space, child: Card(color: Colors.black))),
+          ),
+        )
+        .toList();
+    return Row(children: eventsToPaint);
+  }
 }
 
 class MyPainter extends CustomPainter {
   double eventSpace;
   Event event;
-  MyPainter({required this.eventSpace, required this.event});
+  final BuildContext context;
+  MyPainter(this.context, {required this.eventSpace, required this.event});
   @override
   void paint(canvas, size) {
-    final myPaint = Paint()
+    final rrectPaint = Paint()
       ..strokeWidth = 10
       ..color = Colors.amber
       ..style = PaintingStyle.fill;
-    canvas.drawRect(
-        Rect.fromLTWH(5, 0, eventSpace,
+    final myPaint2 = Paint()
+      ..strokeWidth = 2
+      ..color = Colors.black
+      ..style = PaintingStyle.stroke;
+    RRect eventRRect = RRect.fromRectAndRadius(
+        Rect.fromLTWH(0, 0, eventSpace,
             40 * (event.timeEnd.hour - event.timeStart.hour).toDouble()),
-        myPaint);
-    TextStyle textStyle = TextStyle(color: Colors.black, fontSize: 15);
-    TextSpan textSpan = TextSpan(text: event.name, style: textStyle);
-    TextPainter textPainter =
-        TextPainter(text: textSpan, textDirection: (TextDirection.rtl));
-    textPainter.layout(minWidth: 0, maxWidth: size.width);
-    textPainter.paint(canvas, Offset.fromDirection(0, 6));
-    textStyle = TextStyle(color: Colors.black, fontSize: 10.5);
-    textSpan = TextSpan(
+        Radius.circular(7.5));
+    Path eventRRectBorder = Path();
+    eventRRectBorder.addRRect(eventRRect);
+    canvas.drawRRect(
+      eventRRect,
+      rrectPaint,
+    );
+    canvas.drawPath(eventRRectBorder, myPaint2);
+    TextStyle eventNameStyle = TextStyle(color: Colors.black, fontSize: 15);
+    TextSpan eventNameSpan = TextSpan(text: event.name, style: eventNameStyle);
+    TextPainter eventNamePainter =
+        TextPainter(text: eventNameSpan, textDirection: (TextDirection.ltr));
+    eventNamePainter.layout(minWidth: 0, maxWidth: size.width);
+    eventNamePainter.paint(canvas, Offset.fromDirection(0, 6));
+    TextStyle eventTimeStyle = TextStyle(color: Colors.black, fontSize: 10.5);
+    TextSpan eventTimeSpan = TextSpan(
         text:
             "${intl.DateFormat("h:mm").format(event.timeStart)} - ${intl.DateFormat("h:mma").format(event.timeEnd)}",
-        style: textStyle);
-    textPainter =
-        TextPainter(text: textSpan, textDirection: (TextDirection.ltr));
-    textPainter.layout(minWidth: 0, maxWidth: size.width);
-    textPainter.paint(
+        style: eventTimeStyle);
+    TextPainter eventTimePainter =
+        TextPainter(text: eventTimeSpan, textDirection: (TextDirection.ltr));
+    eventTimePainter.layout(minWidth: 0, maxWidth: size.width);
+    eventTimePainter.paint(
         canvas, Offset.fromDirection(90, 20) + Offset.fromDirection(0, 16));
   }
 
@@ -373,258 +207,3 @@ class MyPainter extends CustomPainter {
     return false;
   }
 }
-/*class SingleDay extends StatefulWidget {
-  DateTime date;
-  SingleDay(this.date, {super.key});
-
-  @override
-  _SingleDayState createState() => _SingleDayState(date);
-}
-
-class _SingleDayState extends State<SingleDay> {
-  DateTime date;
-  List<Event> eventsToday = [];
-  int eventCount = 0;
-  bool forEvents = true;
-  _SingleDayState(this.date) {
-    db.getListOfEventsInDay(date: date).then((value) => setState(() {
-          eventCount = value.length;
-          eventsToday = value;
-        }));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: GestureDetector(
-        onHorizontalDragEnd: (details) {
-          if (details.primaryVelocity! < 0) {
-            Navigator.of(context)
-                .push(MaterialPageRoute(builder: (context) => WeekView()));
-          }
-        },
-        child: //Scaffold(
-          /*appBar: AppBar(
-              elevation: 1,
-              shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(20),
-                bottomRight: Radius.circular(20),
-              )),
-              backgroundColor: Colors.white,
-              leading: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                      style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black),
-                      "${date.month}/${date.day}"),
-                ],
-              ),
-              title: Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        const Text(
-                          'Tasks ',
-                          style: TextStyle(
-                            color: Colors.black,
-                          ),
-                        ),
-                        Switch(
-                          // thumb color (round icon)
-                          activeColor: Colors.white,
-                          activeTrackColor: Colors.cyan,
-                          inactiveThumbColor: Colors.blueGrey.shade600,
-                          inactiveTrackColor: Colors.grey.shade400,
-                          splashRadius: 50.0,
-                          value: forEvents,
-                          onChanged: (value) {
-                            setState(() {
-                              forEvents = value;
-                            });
-                            if (!forEvents) {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => TaskView(),
-                                ),
-                              );
-                            }
-                          },
-                        ),
-                        const Text(
-                          ' Events',
-                          style: TextStyle(
-                            color: Colors.black,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              actions: [
-                MenuAnchor(
-                  builder: (BuildContext context, MenuController controller,
-                      Widget? child) {
-                    return IconButton(
-                      color: Colors.black,
-                      onPressed: () {
-                        if (controller.isOpen) {
-                          controller.close();
-                        } else {
-                          controller.open();
-                        }
-                      },
-                      icon: const Icon(Icons.more_vert),
-                      tooltip: 'Show menu',
-                    );
-                  },
-                  menuChildren: [
-                    IconButton(
-                        icon: const Icon(
-                            color: Colors.black, Icons.calendar_month_rounded),
-                        onPressed: () async {
-                          DateTime? picked = await showDatePicker(
-                            context: context,
-                            initialDate: date,
-                            firstDate: DateTime(2000),
-                            lastDate: DateTime(2101),
-                          );
-                          if (picked != null) {
-                            setState(() {
-                              date = picked;
-                            });
-                          }
-                        }),
-                    IconButton(
-                        icon: const Icon(color: Colors.black, Icons.east),
-                        onPressed: () {
-                          setState(() {
-                            date = getDateOnly(date, offsetDays: 1);
-                          });
-                        }),
-                    IconButton(
-                        icon: const Icon(color: Colors.black, Icons.west),
-                        onPressed: () {
-                          setState(() {
-                            date = getDateOnly(date, offsetDays: -1);
-                          });
-                        })
-                  ],
-                )
-              ]),
-          body:*/ Column(
-            children: [
-              Expanded(
-                child: ListView(
-                  children: List.generate(24, (index) {
-                    int displaynum;
-                    String ampm;
-                    if (index % 12 == 0) {
-                      displaynum = 12;
-                    } else if (index > 12) {
-                      displaynum = index - 12;
-                    } else {
-                      displaynum = index;
-                    }
-                    if (index > 11) {
-                      ampm = "PM";
-                    } else {
-                      ampm = "AM";
-                    }
-                    return Column(
-                      children: [
-                        Row(
-                          children: [
-                            Flexible(
-                              flex: 0,
-                              child: SizedBox(
-                                width: 50,
-                                child: Center(
-                                  child: Text("$displaynum $ampm"),
-                                ),
-                              ),
-                            ),
-                            const Expanded(
-                              child: Divider(
-                                height: 1,
-                                thickness: 2,
-                                color: Colors.lightBlueAccent,
-                              ),
-                            ),
-                          ],
-                        ),
-                        generateHourBox(index),
-                      ],
-                    );
-                  }),
-                ),
-              ),
-            ],
-          ),
-        //),
-      ),
-    );
-  }
-
-  Row generateHourBox(int counter) {
-    if (counter < 24) {
-      return Row(
-        children: [
-          const Flexible(
-            flex: 0,
-            child: SizedBox(
-              width: 45,
-              child: Center(),
-            ),
-          ),
-          Expanded(
-            child: Stack(children: [
-              Container(
-                decoration: const BoxDecoration(),
-                child: SizedBox(
-                    height: 50,
-                    child: InkWell(
-                      onTap: () async {
-                        await addEventFormForDay(context, date);
-                      },
-                    )),
-              ),
-              generateEventsInHour(counter),
-            ]),
-          ),
-        ],
-      );
-    } else {
-      return const Row();
-    }
-  }
-
-  Row generateEventsInHour(hour) {
-    List<Event> eventsInHour = [];
-    for (var event in eventsToday) {
-      if (event.timeStart.hour <= hour && event.timeEnd.hour >= hour + 1) {
-        eventsInHour.add(event);
-      }
-    }
-    return Row(
-        children: eventsInHour
-            .map((item) => Expanded(
-                  child: SizedBox(
-                      height: 50,
-                      child: Card(
-                          color: Colors.amber,
-                          child: InkWell(
-                              onTap: () {
-                                showEventDetailPopup(context, item, date);
-                              },
-                              child: Center(child: Text(item.name))))),
-                ))
-            .toList());
-  }
-}*/

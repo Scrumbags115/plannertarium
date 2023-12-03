@@ -51,7 +51,7 @@ AppBar _getTopBarDaily(bool forEvents, BuildContext context, state) {
                   if (forEvents) {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => DayView(state.today),
+                        builder: (context) => DayView(date: state.today),
                       ),
                     );
                   } else {
@@ -168,12 +168,6 @@ AppBar _getTopBarWeekly(bool forEvents, BuildContext context, state) {
       ),
     ),
     actions: [
-      IconButton(
-        icon: const Icon(Icons.search, color: Colors.black),
-        onPressed: () {
-          //showSearchBar();
-        },
-      ),
       IconButton(
         icon: const Icon(Icons.arrow_forward, color: Colors.black),
         onPressed: () {
