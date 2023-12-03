@@ -155,7 +155,34 @@ class TaskViewState extends State<TaskView> {
                 },
               ),
             ),
-            getAddTaskButton(this, context),
+            //getAddTaskButton(this, context),
+           Align(
+              alignment: Alignment.bottomRight,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                    0, 0, 20, 20), // Adjust the value as needed
+                child: ClipOval(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      Task? newTask = await addButtonForm(context,this);
+                      if (newTask != null) {
+                        setState(() {
+                          todayTasks.add(newTask);
+                        });
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey,
+                      minimumSize: const Size(75, 75),
+                    ),
+                    child: const Icon(
+                      Icons.add_outlined,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+            )
           ],
         ),
       ),

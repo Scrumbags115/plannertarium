@@ -18,7 +18,7 @@ getAddTaskButton(state, context) {
             if (newTask != null) {
               state.setState(() {
                 state.todayTasks.add(newTask);
-                state.fetchWeeklyTasks();
+                //state.fetchWeeklyTasks();
               });
               state.setState(() {
                 state._selectedDay = state.selectedDay;
@@ -26,7 +26,6 @@ getAddTaskButton(state, context) {
                 state.todayTasks = newTodayTasks;
               });
             }
-            state.setState(() {});
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.grey,

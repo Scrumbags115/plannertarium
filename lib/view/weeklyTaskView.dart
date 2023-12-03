@@ -167,22 +167,50 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
     DateTime today = DateTime.now();
     return Scaffold(
       appBar: getTopBar(Task, "weekly", context, this),
-      body: GestureDetector(
-        onHorizontalDragEnd: (details) {
-          if (details.primaryVelocity! < 0) {
-            Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => const MonthlyTaskView(),
-            ));
-          }
-          if (details.primaryVelocity! > 0) {
-            Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => const TaskView(),
-            ));
-          }
-        },
-        child: ListView(
-          children: generateScreen(today) + [getAddTaskButton(this, context)],
-        ),
+      body: Stack(
+        children: [
+          GestureDetector(
+            onHorizontalDragEnd: (details) {
+              if (details.primaryVelocity! < 0) {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => const MonthlyTaskView(),
+                ));
+              }
+              if (details.primaryVelocity! > 0) {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => const TaskView(),
+                ));
+              }
+            },
+            child: ListView(
+              children: generateScreen(today),
+            ),
+          ),
+          Positioned(
+            bottom: 20.0, // Distance from the bottom of the screen
+            right: 20.0, // Distance from the right side of the screen
+            child: ClipOval(
+              child: ElevatedButton(
+                onPressed: () async {
+                  Task? newTask = await addButtonForm(context, this);
+                  if (newTask != null) {
+                    setState(() {
+                      _allTasks.add(newTask);
+                    });
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey,
+                  minimumSize: const Size(75, 75),
+                ),
+                child: const Icon(
+                  Icons.add_outlined,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
