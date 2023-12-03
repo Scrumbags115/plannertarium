@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/models/task.dart';
@@ -10,7 +11,10 @@ import 'package:planner/models/undertaking.dart';
 class DatabaseService {
   static final DatabaseService _singleton = DatabaseService._internal();
   late String userid;
+  late String username;
+  late String email;
   late FirebaseFirestore fs;
+  late String pfp;
 
   // TODO: Add caching layer here if time permits
 
@@ -37,6 +41,47 @@ class DatabaseService {
   /// takes the string ID
   initUID(String uid) {
     userid = uid;
+  }
+
+  /// Assign username.
+  initUsername(String name) {
+    username = name;
+  }
+
+  /// Assign email.
+  initEmail(String email) {
+    this.email = email;
+  }
+
+  initPFP(String pfpUrl) {
+    pfp = pfpUrl;
+  }
+
+  String getUID() {
+    return userid;
+  }
+
+  String getUsername() {
+    return username;
+  }
+
+  String getEmail() {
+    return email;
+  }
+
+  String getPFPURL() {
+    return pfp;
+  }
+
+  /// Sign the user out
+  Future<void> signOut() async {
+    userid = "";
+    username = "";
+    email = "";
+    pfp = "";
+
+    await GoogleSignIn().signOut();
+
   }
 
 ////////////////////////////////////////////////////
