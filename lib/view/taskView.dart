@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:planner/common/time_management.dart';
+import 'package:planner/common/view/addTaskButton.dart';
 import 'package:planner/common/view/topbar.dart';
 import 'package:planner/models/task.dart';
 import 'dart:async';
@@ -69,112 +70,6 @@ class TaskViewState extends State<TaskView> {
       today = selectedDate;
       todayTasks = newTasks;
     });
-  }
-
-  ///A function that asynchronously shows a dialog for adding a new task.
-  Future<Task?> addButtonForm(BuildContext context) async {
-    DatabaseService db = DatabaseService();
-    TextEditingController nameController = TextEditingController();
-    TextEditingController descriptionController = TextEditingController();
-    TextEditingController locationController = TextEditingController();
-    TextEditingController tagController = TextEditingController();
-    DateTime? dueDate;
-    DateTime? startTime = DateTime.now();
-    Completer<Task?> completer = Completer<Task?>();
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Add Task'),
-          content: SingleChildScrollView(
-            child: SizedBox(
-              height: (MediaQuery.of(context).size.height * 0.7),
-              width: (MediaQuery.of(context).size.width * 0.8),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  TextField(
-                    controller: nameController,
-                    decoration: const InputDecoration(labelText: 'Task Name'),
-                  ),
-                  TextField(
-                    controller: descriptionController,
-                    decoration: const InputDecoration(labelText: 'Description'),
-                  ),
-                  TextField(
-                    controller: locationController,
-                    decoration: const InputDecoration(labelText: 'Location'),
-                  ),
-                  TextField(
-                    controller: tagController,
-                    decoration: const InputDecoration(labelText: 'Tag'),
-                  ),
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.wallet),
-                        onPressed: () async {
-                          startTime = await datePicker();
-                          setState(() {});
-                        },
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        startTime != null
-                            ? 'Start Time: ${DateFormat('yyyy-MM-dd').format(startTime!)}'
-                            : 'No start time selected',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.calendar_month_rounded),
-                        onPressed: () async {
-                          dueDate = await datePicker();
-                        },
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'Due Time',
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                completer.complete(null);
-              },
-            ),
-            TextButton(
-              child: const Text('Submit'),
-              onPressed: () {
-                String name = nameController.text;
-                String description = descriptionController.text;
-                Task newTask = Task(
-                  name: name,
-                  description: description,
-                  timeDue: dueDate,
-                  timeStart: startTime,
-                );
-                db.setTask(newTask);
-                completer.complete(newTask);
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-    return completer.future;
   }
 
   var scaffoldKey = GlobalKey<ScaffoldState>();
@@ -260,33 +155,7 @@ class TaskViewState extends State<TaskView> {
                 },
               ),
             ),
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                    0, 0, 20, 20), // Adjust the value as needed
-                child: ClipOval(
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      Task? newTask = await addButtonForm(context);
-                      if (newTask != null) {
-                        setState(() {
-                          todayTasks.add(newTask);
-                        });
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey,
-                      minimumSize: const Size(75, 75),
-                    ),
-                    child: const Icon(
-                      Icons.add_outlined,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-              ),
-            )
+            getAddTaskButton(this, context),
           ],
         ),
       ),
