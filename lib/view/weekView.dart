@@ -45,7 +45,6 @@ class _WeekViewState extends State<WeekView> {
     }
   }
 
-  /// Asynchronously loads tasks for the previous week and generates the screen
   void loadPreviousWeek() async {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -55,7 +54,6 @@ class _WeekViewState extends State<WeekView> {
     );
   }
 
-  /// Asynchronously loads tasks for the next week and generates the screen
   void loadNextWeek() async {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -87,7 +85,6 @@ class _WeekViewState extends State<WeekView> {
           children: [
             ListView(
               children: List.generate(DateTime.daysPerWeek, (index) {
-                //This generates 7 MultiDayCard in a vertical list
                 return MultiDayCard(index, startDate);
               }),
             ),
@@ -196,21 +193,6 @@ class _MultiDayCardState extends State<MultiDayCard> {
                           Expanded(
                             child: generateEventCardListView(dateToDisplay),
                           ),
-                          /*Flexible(
-                              flex: 0,
-                              child: SizedBox(
-                                  width: 40,
-                                  child: Card(
-                                      color: Colors.blue,
-                                      child: InkWell(
-                                          onTap: () async {
-                                            await addEventFormForDay(
-                                                context, dateToDisplay);
-                                          },
-                                          child: const Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [Icon(Icons.add)])))))*/
                         ],
                       ),
                     )
@@ -225,31 +207,17 @@ class _MultiDayCardState extends State<MultiDayCard> {
   }
 
   ListView generateEventCardListView(DateTime dateToDisplay) {
-    if (eventCount == 0) {
-      return ListView(
-        shrinkWrap: true,
-        children: List.generate(eventCount, (index) {
-          return Row(
-            children: [
-              EventCard(
-                  eventsToday: eventsToday, index: index, date: dateToDisplay)
-            ],
-          );
-        }),
-      );
-    } else {
-      return ListView(
-        shrinkWrap: true,
-        children: List.generate(eventCount, (index) {
-          return Row(
-            children: [
-              EventCard(
-                  eventsToday: eventsToday, index: index, date: dateToDisplay)
-            ],
-          );
-        }),
-      );
-    }
+    return ListView(
+      shrinkWrap: true,
+      children: List.generate(eventCount, (index) {
+        return Row(
+          children: [
+            EventCard(
+                eventsToday: eventsToday, index: index, date: dateToDisplay)
+          ],
+        );
+      }),
+    );
   }
 }
 
@@ -272,24 +240,29 @@ class _EventCardState extends State<EventCard> {
   Widget build(BuildContext context) {
     Event event = widget.eventsToday[widget.index];
     return Expanded(
-      child: SizedBox(
-        height: 40,
-        child: Card(
-          color: Colors.amber,
-          child: InkWell(
-            onTap: () {
-              showEventDetailPopup(context, event, widget.date);
-            },
-            child: Column(
-              children: [
-                Text(event.name),
-                Text(
-                    "${DateFormat("h:mma").format(event.timeStart)} to ${DateFormat("h:mma").format(event.timeEnd)}")
-              ],
+      //This Expanded > Row > Expanded is necessary to prevent ParentDataWidget error
+      child: Row(children: [
+        Expanded(
+          child: SizedBox(
+            height: 44,
+            child: Card(
+              color: Colors.amber,
+              child: InkWell(
+                onTap: () {
+                  showEventDetailPopup(context, event, widget.date);
+                },
+                child: Column(
+                  children: [
+                    Text(event.name),
+                    Text(
+                        "${DateFormat("h:mma").format(event.timeStart)} to ${DateFormat("h:mma").format(event.timeEnd)}")
+                  ],
+                ),
+              ),
             ),
           ),
         ),
-      ),
+      ]),
     );
   }
 }

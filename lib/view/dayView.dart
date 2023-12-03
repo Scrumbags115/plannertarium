@@ -8,6 +8,8 @@ import 'package:planner/view/weekView.dart';
 import 'package:planner/common/view/topbar.dart';
 
 DatabaseService db = DatabaseService();
+const hourHeight = 40.0;
+const displayedHourWidth = 50.0;
 
 class DayView extends StatefulWidget {
   DateTime date;
@@ -98,25 +100,29 @@ class _SingleDayState extends State<SingleDay> {
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width - 50;
+    double width = MediaQuery.of(context).size.width - displayedHourWidth;
     return Column(
       children: [
+        SizedBox(height: 40),
         Expanded(
             child: ListView.builder(
           itemCount: 24,
           itemBuilder: (context, index) {
             return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Column(children: [
-                  SizedBox(
-                      width: 50,
-                      height: 40,
-                      child: Center(
-                        child: Text(intl.DateFormat('j').format(
-                            getDateOnly(DateTime.now())
-                                .add(Duration(hours: index)))),
-                      )),
-                ]),
+                Column(
+                  children: [
+                    Container(
+                        width: displayedHourWidth,
+                        height: hourHeight,
+                        child: Center(
+                          child: Text(intl.DateFormat('j').format(
+                              getDateOnly(DateTime.now())
+                                  .add(Duration(hours: index)))),
+                        )),
+                  ],
+                ),
                 Expanded(
                   child: Column(
                     children: [
@@ -124,7 +130,11 @@ class _SingleDayState extends State<SingleDay> {
                         height: 1,
                         thickness: 2,
                       ),
-                      paintEvents(index, width),
+                      Container(
+                          height: 40,
+                          width: width,
+                          child: OverflowBox(
+                              maxHeight: 60, child: paintEvents(index, width))),
                     ],
                   ),
                 )
@@ -146,17 +156,21 @@ class _SingleDayState extends State<SingleDay> {
     double space = width / eventsInHour.length;
     //print("hour is $hour");
     //print("events starting in hour: $eventsInHour");
-    List<CustomPaint> eventsToPaint = eventsInHour
+    List<InkWell> eventsToPaint = eventsInHour
         .map(
-          (event) => CustomPaint(
-            painter: MyPainter(context, eventSpace: space, event: event),
-            child: GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onTap: () {
-                  showEventDetailPopup(context, event, widget.date);
-                },
-                child: SizedBox(
-                    width: space, child: const Card(color: Colors.black))),
+          (event) => InkWell(
+            onTap: () {
+              showEventDetailPopup(context, event, widget.date);
+            },
+            child: CustomPaint(
+              painter: MyPainter(context, eventSpace: space, event: event),
+              child: Container(
+                  width: space,
+                  child: const Card(
+                      child: Column(
+                    children: [],
+                  ))),
+            ),
           ),
         )
         .toList();
@@ -172,16 +186,23 @@ class MyPainter extends CustomPainter {
   @override
   void paint(canvas, size) {
     final rrectPaint = Paint()
-      ..strokeWidth = 10
       ..color = Colors.amber
       ..style = PaintingStyle.fill;
     final myPaint2 = Paint()
       ..strokeWidth = 2
       ..color = Colors.black
       ..style = PaintingStyle.stroke;
+    double hoursCovered =
+        (event.timeEnd.hour - event.timeStart.hour).toDouble();
+    if (hoursCovered == 0) {
+      hoursCovered += 1;
+    }
+    double eventDuration =
+        (event.timeEnd).difference(event.timeStart).inMinutes / 60;
+    double hourOffset = event.timeStart.minute.toDouble() / 60;
     RRect eventRRect = RRect.fromRectAndRadius(
-        Rect.fromLTWH(0, 0, eventSpace,
-            40 * (event.timeEnd.hour - event.timeStart.hour).toDouble()),
+        Rect.fromLTWH(
+            0, hourHeight * hourOffset, eventSpace, hourHeight * eventDuration),
         const Radius.circular(7.5));
     Path eventRRectBorder = Path();
     eventRRectBorder.addRRect(eventRRect);
