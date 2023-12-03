@@ -29,12 +29,21 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
   }
 
   /// Asynchronously fetches tasks for the current week
-  Future<void> fetchData() async {
-    List<Task> tasks = await _db.fetchWeeklyTask();
+  Future<void> fetchData({DateTime? weekStart}) async {
+    List<Task> tasks = await _db.fetchWeeklyTask(weekStart: weekStart);
     setState(() {
       _allTasks = tasks;
     });
     print(_allTasks);
+  }
+
+  /// Checks if a task is due on the current day
+  bool isTaskDueOnCurrentDay(Task task, DateTime currentDate) {
+    if (task.timeDue == null) {
+      return false;
+    }
+    return getDateOnly(task.timeDue ?? currentDate)
+        .isAtSameMomentAs(currentDate);
   }
 
   /// Asynchronously loads tasks for the previous week and generates the screen
@@ -55,9 +64,9 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
     generateScreen(today);
   }
 
-  ///A DatePicker function to prompt a calendar
-  ///Returns a selectedDate if chosen, defaulted to today if no selectedDate
-  Future<void> calendarIconDatePicker() async {
+  /// A DatePicker function to prompt a calendar
+  /// Returns a selectedDate if chosen, defaulted to today if no selectedDate
+  Future<void> datePicker() async {
     DateTime? selectedDate = await showDatePicker(
       context: context,
       initialDate: today,
@@ -69,7 +78,7 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
       setState(() {
         today = selectedDate;
       });
-      await fetchData();
+      await fetchData(weekStart: selectedDate);
       generateScreen(today);
     }
   }
@@ -127,7 +136,6 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
 
   @override
   Widget build(BuildContext context) {
-    DateTime today = DateTime.now();
     return Scaffold(
       appBar: getTopBar(Task, "weekly", context, this),
       body: Stack(
@@ -157,10 +165,8 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
                 onPressed: () async {
                   Task? newTask = await addButtonForm(context, this);
                   if (newTask != null) {
-                    _db.setTask(newTask);
                     setState(() {
-                      fetchData();
-                      generateScreen(today);
+                      fetchData(weekStart: newTask.timeStart);
                     });
                   }
                 },

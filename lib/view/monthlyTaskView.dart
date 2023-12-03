@@ -40,6 +40,7 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
     todayTasks = newTodayTasks;
     active = newMonthlyTasks;
     setState(() {});
+    print('monthly: $active');
   }
 
   @override

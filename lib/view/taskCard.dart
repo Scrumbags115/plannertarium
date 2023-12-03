@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_constructors, use_build_context_synchronously
 
+import 'package:get/get.dart';
 import 'package:planner/common/database.dart';
 import 'package:flutter/material.dart';
 import 'package:planner/models/task.dart';
@@ -29,7 +30,6 @@ class TaskCardState extends State<TaskCard> {
     // widget.task = await db.getTask(widget.task.id);
     db.setTask(widget.task);
     allTagsofTask = await db.getTagsOfTask(widget.task.id);
-    print("initializing tag list $allTagsofTask");
     setState(() {});
   }
 
@@ -248,8 +248,10 @@ class TaskCardState extends State<TaskCard> {
       tagNames += "${tag.name}, ";
     }
     // remove the last comma
-    tagNames = tagNames.substring(0, tagNames.length - 2);
-
+    if (tagsOfWidgetTask.isNotEmpty) {
+      tagNames = tagNames.substring(0, tagNames.length - 2);
+    }
+    
     showDialog(
       context: context,
       builder: (context) {
