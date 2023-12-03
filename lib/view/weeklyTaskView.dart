@@ -29,30 +29,11 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
   }
 
   /// Asynchronously fetches tasks for the current week
-  Future<void> fetchData() async {
-    List<Task> tasks = await _db.fetchWeeklyTask();
+  Future<void> fetchData({DateTime? weekStart}) async {
+    List<Task> tasks = await _db.fetchWeeklyTask(weekStart: weekStart);
     setState(() {
       _allTasks = tasks;
     });
-  }
-
-  /// Asynchronously fetches tasks for the current week
-  Future<List<Task>> fetchWeeklyTask() async {
-    DateTime today = getDateOnly(DateTime.now());
-    Map<DateTime, List<Task>> activeMap, delayedMap, completedMap;
-
-    // Fetch task maps for the specified week
-    (activeMap, delayedMap, completedMap) = await _db.getTaskMapsWeek(today);
-    Map<DateTime, List<Task>> dueTasksMap = await _db.getTasksDueWeek(today);
-
-    List<Task> allTasks = [
-      ...?activeMap[today],
-      ...?delayedMap[today],
-      ...?completedMap[today],
-      ...?dueTasksMap[today],
-    ];
-
-    return allTasks;
   }
 
   /// Checks if a task is due on the current day
@@ -82,9 +63,9 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
     generateScreen(today);
   }
 
-  ///A DatePicker function to prompt a calendar
-  ///Returns a selectedDate if chosen, defaulted to today if no selectedDate
-  Future<void> calendarIconDatePicker() async {
+  /// A DatePicker function to prompt a calendar
+  /// Returns a selectedDate if chosen, defaulted to today if no selectedDate
+  Future<void> datePicker() async {
     DateTime? selectedDate = await showDatePicker(
       context: context,
       initialDate: today,
@@ -96,7 +77,7 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
       setState(() {
         today = selectedDate;
       });
-      await fetchData();
+      await fetchData(weekStart: selectedDate);
       generateScreen(today);
     }
   }
@@ -164,7 +145,6 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
 
   @override
   Widget build(BuildContext context) {
-    DateTime today = DateTime.now();
     return Scaffold(
       appBar: getTopBar(Task, "weekly", context, this),
       body: Stack(

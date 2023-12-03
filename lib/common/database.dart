@@ -898,8 +898,8 @@ class DatabaseService {
   }
 
   /// Get weekly tasks as a single list
-  Future<List<Task>> fetchWeeklyTask() async {
-    DateTime today = getDateOnly(DateTime.now());
+  Future<List<Task>> fetchWeeklyTask({DateTime? weekStart}) async {
+    DateTime today = getDateOnly(weekStart ?? DateTime.now());
     Map<DateTime, List<Task>> activeMap, delayedMap, completedMap;
 
     // Fetch task maps for the specified week
