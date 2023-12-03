@@ -43,6 +43,9 @@ class LoginViewState extends State<LoginView> {
                     runAuthFlow().then((u) {
                       DatabaseService db = DatabaseService();
                       db.initUID(u!.uid);
+                      db.initUsername(u.displayName!);
+                      db.initEmail(u.email!);
+                      db.initPFP(u.photoURL!);
                       setState(() {
                         isLogin = true;
                       });
