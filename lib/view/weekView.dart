@@ -7,7 +7,6 @@ import 'package:planner/common/time_management.dart';
 import 'package:planner/view/eventDialogs.dart';
 import 'package:planner/view/monthView.dart';
 import 'package:intl/intl.dart';
-import 'package:planner/view/weeklyTaskView.dart';
 
 DatabaseService db = DatabaseService();
 
@@ -50,7 +49,8 @@ class _WeekViewState extends State<WeekView> {
   void loadPreviousWeek() async {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => WeekView(date: getDateOnly(widget.monday, offsetDays: -7)),
+        builder: (context) =>
+            WeekView(date: getDateOnly(widget.monday, offsetDays: -7)),
       ),
     );
   }
@@ -59,7 +59,8 @@ class _WeekViewState extends State<WeekView> {
   void loadNextWeek() async {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => WeekView(date: getDateOnly(widget.monday, offsetDays: 7)),
+        builder: (context) =>
+            WeekView(date: getDateOnly(widget.monday, offsetDays: 7)),
       ),
     );
   }
@@ -69,16 +70,17 @@ class _WeekViewState extends State<WeekView> {
     DateTime startDate = mostRecentMonday(widget.monday);
     return Scaffold(
       appBar: getTopBar(Event, "weekly", context, this),
-      drawer: Drawer(),
+      drawer: const Drawer(),
       body: GestureDetector(
         onHorizontalDragEnd: (details) {
           if (details.primaryVelocity! < 0) {
             Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => MonthView()));
+                MaterialPageRoute(builder: (context) => const MonthView()));
           }
           if (details.primaryVelocity! > 0) {
-            Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => DayView(date: getDateOnly(DateTime.now()))));
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) =>
+                    DayView(date: getDateOnly(DateTime.now()))));
           }
         },
         child: Stack(
