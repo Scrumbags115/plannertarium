@@ -39,12 +39,12 @@ class _DayViewState extends State<DayView> {
   /// A void function that asynchronously selects a date and fetches tasks for that date.
   Future<void> selectDate() async {
     DateTime selectedDate = await datePicker() ?? widget.date;
-    List<Event> newEvents = await db.getListOfEventsInDay(date: selectedDate);
 
-    setState(() {
-      widget.date = selectedDate;
-      SingleDay(widget.date);
-    });
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => DayView(selectedDate),
+      ),
+    );
   }
 
   @override
