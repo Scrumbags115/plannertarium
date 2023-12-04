@@ -23,26 +23,18 @@ class WeekView extends StatefulWidget {
 class _WeekViewState extends State<WeekView> {
   var scaffoldKey = GlobalKey<ScaffoldState>();
 
-  ///A DatePicker function to prompt a calendar
-  ///Returns a selectedDate if chosen, defaulted to today if no selectedDate
-  Future<void> datePicker() async {
-    DateTime? selectedDate = await showDatePicker(
-      context: context,
-      initialDate: widget.monday,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-
-    if (selectedDate != null) {
-      setState(() {
-        widget.monday = selectedDate;
-      });
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => WeekView(date: widget.monday),
-        ),
-      );
+  void resetView(DateTime? selectedDate) async {
+    if (selectedDate == null) {
+      return;
     }
+    setState(() {
+      widget.monday = selectedDate;
+    });
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => WeekView(date: widget.monday),
+      ),
+    );
   }
 
   /// Asynchronously loads tasks for the previous week and generates the screen
@@ -68,6 +60,7 @@ class _WeekViewState extends State<WeekView> {
   @override
   Widget build(BuildContext context) {
     DateTime startDate = mostRecentMonday(widget.monday);
+    DateTime today = DateTime.now();
     return Scaffold(
       appBar: getTopBar(Event, "weekly", context, this),
       drawer: const Drawer(),
@@ -99,7 +92,7 @@ class _WeekViewState extends State<WeekView> {
                 child: ClipOval(
                   child: ElevatedButton(
                     onPressed: () async {
-                      await addEventFormForDay(context, startDate);
+                      await addEventFormForDay(context, today);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.grey,
@@ -135,6 +128,7 @@ class _MultiDayCardState extends State<MultiDayCard> {
   int index;
   DateTime startDate;
   _MultiDayCardState(this.index, this.startDate) {
+    // todo: eventWeeklyView is currently implemented as a list of events in a day. This doesn't support/deal with events with overlapping time frames. For example, event A and B could be from 3-4PM Dec 1 and 2 respectively, but grabbing it with getListOfEventsInDay() for Dec 1 can return both if event A's timeEnd and eventB's timeStart are in range, as it expects the user to deal with overlapping times over a current day
     db
         .getListOfEventsInDay(date: getDateOnly(startDate, offsetDays: index))
         .then((value) {
