@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 ///A DatePicker function to prompt a calendar
 ///Returns a selectedDate if chosen, default value else
-Future<DateTime?> datePicker(context, {DateTime? initialDate, DateTime? defaultDate}) async {
+Future<DateTime?> datePicker(context,
+    {DateTime? initialDate, DateTime? defaultDate}) async {
   initialDate ??= DateTime.now();
   DateTime? selectedDate = await showDatePicker(
     context: context,

@@ -140,7 +140,9 @@ class DatabaseService {
   /// Get all events within a date range as a Map
   /// Returns a map, with the eventID being the key and value being an Event class
   Future<Map<String, Event>> getEventsInDateRange(
-      {required DateTime dateStart, required DateTime dateEnd, bool complexSearch=false}) async {
+      {required DateTime dateStart,
+      required DateTime dateEnd,
+      bool complexSearch = false}) async {
     final timestampStart = Timestamp.fromDate(dateStart);
     final timestampEnd = Timestamp.fromDate(dateEnd);
     // i can't do a composite search as it requires a composite index, which is not built automatically and has a limit in firestore

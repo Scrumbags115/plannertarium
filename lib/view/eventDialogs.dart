@@ -37,9 +37,11 @@ class CustomButton extends StatelessWidget {
   }
 }
 
-Future<Event?> editEventFormForDay(BuildContext context, DateTime date, {Event? event}) async {
+Future<Event?> editEventFormForDay(BuildContext context, DateTime date,
+    {Event? event}) async {
   return addEventFormForDay(context, date, event: event, edit: true);
 }
+
 Future<Event?> addEventFormForDay(BuildContext context, DateTime date,
     {Event? event, bool edit = false}) async {
   DatabaseService db = DatabaseService();
@@ -47,10 +49,10 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime date,
   TextEditingController descriptionController = TextEditingController();
   TextEditingController locationController = TextEditingController();
   DateTime now = DateTime.now();
-  DateTime timeStart = DateTime(date.year, date.month, date.day,
-      now.hour, now.minute);
-  DateTime timeEnd = DateTime(date.year, date.month, date.day,
-      now.hour, now.minute);
+  DateTime timeStart =
+      DateTime(date.year, date.month, date.day, now.hour, now.minute);
+  DateTime timeEnd =
+      DateTime(date.year, date.month, date.day, now.hour, now.minute);
   bool enableRecurrence = false;
   DateTime? recurrenceEndTime;
   DateTime? recurrenceStartTime;
@@ -88,7 +90,6 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime date,
     oldEvent = event.clone();
   }
 
-
   showDialog(
     context: context,
     builder: (context) {
@@ -97,7 +98,9 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime date,
           child: AlertDialog(
             title: Row(
               children: [
-                !edit ? const Text('Add Event on') : const Text("Edit Event on"),
+                !edit
+                    ? const Text('Add Event on')
+                    : const Text("Edit Event on"),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
                   child: ElevatedButton(
@@ -109,8 +112,10 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime date,
                             lastDate: DateTime(2101)));
                         if (newDate != null) {
                           date = newDate;
-                          timeStart = DateTime(newDate.year, newDate.month, newDate.day, timeStart.hour, timeStart.minute);
-                          timeEnd = DateTime(newDate.year, newDate.month, newDate.day, timeEnd.hour, timeEnd.minute);
+                          timeStart = DateTime(newDate.year, newDate.month,
+                              newDate.day, timeStart.hour, timeStart.minute);
+                          timeEnd = DateTime(newDate.year, newDate.month,
+                              newDate.day, timeEnd.hour, timeEnd.minute);
                         }
                         setState(() {});
                       },
@@ -168,13 +173,13 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime date,
               ),
               Visibility(
                 visible: enableRecurrence,
-                child:
-                Row(
+                child: Row(
                   children: [
                     IconButton(
                       icon: const Icon(Icons.wallet),
                       onPressed: () async {
-                        final DateTime? pickedDate = await datePicker(context, initialDate: recurrenceStartTime);
+                        final DateTime? pickedDate = await datePicker(context,
+                            initialDate: recurrenceStartTime);
                         if (pickedDate != null &&
                             pickedDate != recurrenceStartTime) {
                           setState(() {
@@ -195,35 +200,35 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime date,
               ),
               Visibility(
                 visible: enableRecurrence,
-                child:
-              Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.calendar_month_rounded),
-                    onPressed: () async {
-                      final DateTime? pickedEndDate = await datePicker(context, initialDate: recurrenceEndTime);
-                      if (pickedEndDate != null &&
-                          pickedEndDate != recurrenceEndTime) {
-                        setState(() {
-                          recurrenceEndTime = pickedEndDate;
-                        });
-                      }
-                    },
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    recurrenceEndTime != null
-                        ? 'End Date: ${DateFormat('MM-dd-yyyy').format(recurrenceEndTime!)}'
-                        : 'No end date selected',
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                ],
-              ),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.calendar_month_rounded),
+                      onPressed: () async {
+                        final DateTime? pickedEndDate = await datePicker(
+                            context,
+                            initialDate: recurrenceEndTime);
+                        if (pickedEndDate != null &&
+                            pickedEndDate != recurrenceEndTime) {
+                          setState(() {
+                            recurrenceEndTime = pickedEndDate;
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      recurrenceEndTime != null
+                          ? 'End Date: ${DateFormat('MM-dd-yyyy').format(recurrenceEndTime!)}'
+                          : 'No end date selected',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
               ),
               Visibility(
                 visible: enableRecurrence,
-                child:
-                SingleChildScrollView(
+                child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: ToggleButtons(
                       isSelected: selectedRecurrenceDays,
@@ -231,11 +236,11 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime date,
                         setState(() {
                           // simply toggling buttons between true and false state
                           selectedRecurrenceDays[index] =
-                          !selectedRecurrenceDays[index];
+                              !selectedRecurrenceDays[index];
                         });
                       },
                       constraints:
-                      const BoxConstraints.expand(height: 30, width: 30),
+                          const BoxConstraints.expand(height: 30, width: 30),
                       children: List<Widget>.generate(7, (index) {
                         return CustomButton(
                           index: index,
@@ -243,32 +248,33 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime date,
                         );
                       }),
                     )
-                  // ],
-                ),
+                    // ],
+                    ),
               ),
             ]),
             actionsAlignment: MainAxisAlignment.end,
-            actionsPadding: edit && enableRecurrence ? const EdgeInsets.symmetric(horizontal: 12, vertical: 24) : const EdgeInsets.only(left: 24.0, right: 24.0, bottom: 24.0),
+            actionsPadding: edit && enableRecurrence
+                ? const EdgeInsets.symmetric(horizontal: 12, vertical: 24)
+                : const EdgeInsets.only(left: 24.0, right: 24.0, bottom: 24.0),
             actions: <Widget>[
               Visibility(
                 visible: edit && enableRecurrence,
-                child:
-                Wrap(
-
-                  direction: Axis.horizontal,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  spacing: -10,
-                  children: [
-                    const Text("Edit Recurring:"),
-                    Checkbox.adaptive(value: editRelatedRecurringEvents, onChanged: (newValue) {
-                      setState(() {
-                        editRelatedRecurringEvents = newValue!;
-                      });
-                    }),
-                  ]
+                child: Wrap(
+                    direction: Axis.horizontal,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: -10,
+                    children: [
+                      const Text("Edit Recurring:"),
+                      Checkbox.adaptive(
+                          value: editRelatedRecurringEvents,
+                          onChanged: (newValue) {
+                            setState(() {
+                              editRelatedRecurringEvents = newValue!;
+                            });
+                          }),
+                    ]
                     //  <-- leading Checkbox
-                )
-                ,
+                    ),
               ),
               TextButton(
                 child: const Text('Cancel'),
@@ -304,13 +310,19 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime date,
 
                   /// return if one of the datetimes provided is not set/is the epoch
                   bool oneIsUnset(DateTime one, DateTime two) {
-                    final DateTime epoch = DateTime.fromMillisecondsSinceEpoch(0);
-                    return epoch.compareTo(one) == 0 || epoch.compareTo(two) == 0;
+                    final DateTime epoch =
+                        DateTime.fromMillisecondsSinceEpoch(0);
+                    return epoch.compareTo(one) == 0 ||
+                        epoch.compareTo(two) == 0;
                   }
 
                   /// return if the given event has valid recurrence datetimes
                   bool validRecurrenceDateTimes(Event e) {
-                    return !oneIsUnset(e.recurrenceRules.timeStart, e.recurrenceRules.timeEnd) && e.recurrenceRules.timeStart.compareTo(e.recurrenceRules.timeEnd) < 0;
+                    return !oneIsUnset(e.recurrenceRules.timeStart,
+                            e.recurrenceRules.timeEnd) &&
+                        e.recurrenceRules.timeStart
+                                .compareTo(e.recurrenceRules.timeEnd) <
+                            0;
                   }
 
                   /// return if the event has valid timestart and timeend datetimes
@@ -321,10 +333,12 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime date,
                   // test if datetimes are valid for both the event and recurring event
                   if (!validEventDateTimes(currentEvent)) {
                     // if the current event datetime range is invalid, display an error
-                    showFlashError(context, "The event's start and end times are invalid! Please try again.");
+                    showFlashError(context,
+                        "The event's start and end times are invalid! Please try again.");
                   } else if (!validRecurrenceDateTimes(currentEvent)) {
                     // if the current event's recurrence rules has existing datetimes and the range is invalid, display an error
-                    showFlashError(context, "The recurrence start and end times are invalid! Please try again.");
+                    showFlashError(context,
+                        "The recurrence start and end times are invalid! Please try again.");
                   } else {
                     db.setEvent(currentEvent);
                     if (currentEvent.recurrenceRules.enabled) {
@@ -375,13 +389,12 @@ void showEventDetailPopup(BuildContext context, Event event, DateTime date) {
         ),
         actions: [
           TextButton(
-            onPressed: () {
-              DatabaseService db = DatabaseService();
-              db.deleteEvent(event);
-              Navigator.of(context).pop();
-            },
-            child: const Text('Delete')
-          ),
+              onPressed: () {
+                DatabaseService db = DatabaseService();
+                db.deleteEvent(event);
+                Navigator.of(context).pop();
+              },
+              child: const Text('Delete')),
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();

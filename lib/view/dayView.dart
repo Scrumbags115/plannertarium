@@ -24,7 +24,9 @@ class _DayViewState extends State<DayView> {
 
   /// A void function that asynchronously selects a date and fetches tasks for that date.
   Future<void> selectDate() async {
-    DateTime selectedDate = await datePicker(context, initialDate: widget.date, defaultDate:widget.date) ?? widget.date;
+    DateTime selectedDate = await datePicker(context,
+            initialDate: widget.date, defaultDate: widget.date) ??
+        widget.date;
 
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -162,8 +164,8 @@ class _SingleDayState extends State<SingleDay> {
                 onTap: () {
                   showEventDetailPopup(context, event, widget.date);
                 },
-                child:
-                    SizedBox(width: space, child: const Card(color: Colors.black))),
+                child: SizedBox(
+                    width: space, child: const Card(color: Colors.black))),
           ),
         )
         .toList();
@@ -197,13 +199,15 @@ class MyPainter extends CustomPainter {
       rrectPaint,
     );
     canvas.drawPath(eventRRectBorder, myPaint2);
-    TextStyle eventNameStyle = const TextStyle(color: Colors.black, fontSize: 15);
+    TextStyle eventNameStyle =
+        const TextStyle(color: Colors.black, fontSize: 15);
     TextSpan eventNameSpan = TextSpan(text: event.name, style: eventNameStyle);
     TextPainter eventNamePainter =
         TextPainter(text: eventNameSpan, textDirection: (TextDirection.ltr));
     eventNamePainter.layout(minWidth: 0, maxWidth: size.width);
     eventNamePainter.paint(canvas, Offset.fromDirection(0, 6));
-    TextStyle eventTimeStyle = const TextStyle(color: Colors.black, fontSize: 10.5);
+    TextStyle eventTimeStyle =
+        const TextStyle(color: Colors.black, fontSize: 10.5);
     TextSpan eventTimeSpan = TextSpan(
         text:
             "${intl.DateFormat("h:mm").format(event.timeStart)} - ${intl.DateFormat("h:mma").format(event.timeEnd)}",

@@ -47,7 +47,8 @@ class TaskViewState extends State<TaskView> {
 
   /// A void function that asynchronously selects a date and fetches tasks for that date.
   Future<void> selectDate() async {
-    DateTime selectedDate = await datePicker(context, initialDate: today) ?? today;
+    DateTime selectedDate =
+        await datePicker(context, initialDate: today) ?? today;
     List<Task> newTasks = await db.fetchTodayTasks(selectedDate);
 
     setState(() {

@@ -454,7 +454,10 @@ class TaskCardState extends State<TaskCard> {
                           IconButton(
                             icon: const Icon(Icons.wallet),
                             onPressed: () async {
-                              final DateTime? pickedDate = await datePicker(context, initialDate: DateTime.now(), defaultDate: null);
+                              final DateTime? pickedDate = await datePicker(
+                                  context,
+                                  initialDate: DateTime.now(),
+                                  defaultDate: null);
                               if (pickedDate != null &&
                                   pickedDate != startTime) {
                                 setState(() {
@@ -481,8 +484,10 @@ class TaskCardState extends State<TaskCard> {
                           IconButton(
                             icon: const Icon(Icons.calendar_month_rounded),
                             onPressed: () async {
-                              final DateTime? pickedDueDate =
-                                  await datePicker(context, initialDate: DateTime.now(), defaultDate: null);
+                              final DateTime? pickedDueDate = await datePicker(
+                                  context,
+                                  initialDate: DateTime.now(),
+                                  defaultDate: null);
                               if (pickedDueDate != null &&
                                   pickedDueDate != dueDate) {
                                 setState(() {

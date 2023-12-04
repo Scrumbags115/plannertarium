@@ -82,12 +82,12 @@ class Recurrence {
   /// Clone the recurrence object. If generateNewID is true, the ID of the cloned event will be different
   Recurrence.clone(Recurrence r, {generateNewID = false})
       : this(
-      enabled: r.enabled,
-      timeStart: r.timeStart,
-      timeEnd: r.timeEnd,
-      dates: List.from(r.dates),
-      id: generateNewID ? "${r.id}-copy-${const Uuid().v4()}" : r.id,
-  );
+          enabled: r.enabled,
+          timeStart: r.timeStart,
+          timeEnd: r.timeEnd,
+          dates: List.from(r.dates),
+          id: generateNewID ? "${r.id}-copy-${const Uuid().v4()}" : r.id,
+        );
 
   /// Same as Recurrence.clone()
   Recurrence clone({generateNewID = false}) {

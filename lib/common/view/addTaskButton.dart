@@ -134,8 +134,9 @@ Future<Task?> addButtonForm(BuildContext context, state) async {
                       IconButton(
                         icon: const Icon(Icons.wallet),
                         onPressed: () async {
-                          final DateTime? pickedDate =
-                              await datePicker(context, initialDate: state.today, defaultDate: state.today);
+                          final DateTime? pickedDate = await datePicker(context,
+                              initialDate: state.today,
+                              defaultDate: state.today);
                           if (pickedDate != null && pickedDate != startTime) {
                             setState(() {
                               startTime = pickedDate;
@@ -157,8 +158,10 @@ Future<Task?> addButtonForm(BuildContext context, state) async {
                       IconButton(
                         icon: const Icon(Icons.calendar_month_rounded),
                         onPressed: () async {
-                          final DateTime? pickedDueDate =
-                              await datePicker(context, initialDate: state.monday, defaultDate: state.monday);
+                          final DateTime? pickedDueDate = await datePicker(
+                              context,
+                              initialDate: state.monday,
+                              defaultDate: state.monday);
                           if (pickedDueDate != null &&
                               pickedDueDate != dueDate) {
                             setState(() {
@@ -305,4 +308,3 @@ Future<List<Tag>> showTagSelectionDialog(BuildContext context) async {
 
   return selectedTags;
 }
-
