@@ -25,6 +25,7 @@ class TaskViewState extends State<TaskView> {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final User? user = FirebaseAuth.instance.currentUser;
   DatabaseService db = DatabaseService();
+  DateTime today = DateTime.now();
   List<Task> active = [];
   List<Task> delay = [];
   List<Task> complete = [];
