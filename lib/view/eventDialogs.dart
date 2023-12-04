@@ -4,6 +4,9 @@ import 'package:planner/common/database.dart';
 import 'package:planner/models/event.dart';
 import 'package:intl/intl.dart';
 
+import '../common/view/timeManagement.dart';
+import '../common/view/flashError.dart';
+
 class CustomButton extends StatelessWidget {
   final int index;
   final List<String> listOfDayStrings = ["M", "T", "W", "TH", "F", "S", "SU"];
@@ -34,14 +37,22 @@ class CustomButton extends StatelessWidget {
   }
 }
 
-Future<Event?> addEventFormForDay(BuildContext context, DateTime? date,
+Future<Event?> editEventFormForDay(BuildContext context, DateTime date,
     {Event? event}) async {
+  return addEventFormForDay(context, date, event: event, edit: true);
+}
+
+Future<Event?> addEventFormForDay(BuildContext context, DateTime date,
+    {Event? event, bool edit = false}) async {
   DatabaseService db = DatabaseService();
   TextEditingController nameController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
   TextEditingController locationController = TextEditingController();
-  DateTime timeStart = DateTime.now();
-  DateTime timeEnd = DateTime.now();
+  DateTime now = DateTime.now();
+  DateTime timeStart =
+      DateTime(date.year, date.month, date.day, now.hour, now.minute);
+  DateTime timeEnd =
+      DateTime(date.year, date.month, date.day, now.hour, now.minute);
   bool enableRecurrence = false;
   DateTime? recurrenceEndTime;
   DateTime? recurrenceStartTime;
@@ -61,29 +72,22 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date,
     timeStart = event.timeStart;
     timeEnd = event.timeEnd;
     enableRecurrence = event.recurrenceRules.enabled;
-    if (event.recurrenceRules.enabled) {
+    final DateTime epoch = DateTime.fromMillisecondsSinceEpoch(0);
+    if (epoch.compareTo(event.recurrenceRules.timeEnd) != 0) {
       recurrenceEndTime = event.recurrenceRules.timeEnd;
-      recurrenceStartTime = event.recurrenceRules.timeStart;
-      selectedRecurrenceDays = event.recurrenceRules.dates;
     }
+    if (epoch.compareTo(event.recurrenceRules.timeStart) != 0) {
+      recurrenceStartTime = event.recurrenceRules.timeStart;
+    }
+    selectedRecurrenceDays = event.recurrenceRules.dates;
   }
+
+  bool editRelatedRecurringEvents = false;
   Completer<Event?> completer = Completer<Event?>();
   Event? oldEvent =
       event; // old event, so if editing an event, remove the old one
-
-  Future<DateTime?> datePicker() async {
-    DateTime todayDate = DateTime.now();
-    DateTime? selectedDate = await showDatePicker(
-      context: context,
-      initialDate: todayDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-
-    if (selectedDate != null) {
-      return selectedDate;
-    }
-    return selectedDate;
+  if (event != null) {
+    oldEvent = event.clone();
   }
 
   showDialog(
@@ -94,22 +98,28 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date,
           child: AlertDialog(
             title: Row(
               children: [
-                const Text('Add Event on'),
+                !edit
+                    ? const Text('Add Event on')
+                    : const Text("Edit Event on"),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
                   child: ElevatedButton(
                       onPressed: () async {
-                        DateTime? originalDate = date;
-                        date = (await showDatePicker(
+                        DateTime? newDate = (await showDatePicker(
                             context: context,
-                            initialDate: date!,
+                            initialDate: date,
                             firstDate: DateTime(2000),
                             lastDate: DateTime(2101)));
-                        date ??=
-                            originalDate; //in case user cancels date picker, show original date
+                        if (newDate != null) {
+                          date = newDate;
+                          timeStart = DateTime(newDate.year, newDate.month,
+                              newDate.day, timeStart.hour, timeStart.minute);
+                          timeEnd = DateTime(newDate.year, newDate.month,
+                              newDate.day, timeEnd.hour, timeEnd.minute);
+                        }
                         setState(() {});
                       },
-                      child: Text('${date?.month}/${date?.day}/${date?.year}')),
+                      child: Text('${date.month}/${date.day}/${date.year}')),
                 )
               ],
             ),
@@ -131,7 +141,7 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date,
                   TimeOfDay? startTOD = await showTimePicker(
                       context: context, initialTime: TimeOfDay.now());
                   startTOD ??= TimeOfDay.now(); //in case of cancel
-                  timeStart = DateTime(date!.year, date!.month, date!.day,
+                  timeStart = DateTime(date.year, date.month, date.day,
                       startTOD.hour, startTOD.minute);
                   setState(() {});
                 },
@@ -143,20 +153,12 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date,
                   TimeOfDay? endTOD = await showTimePicker(
                       context: context, initialTime: TimeOfDay.now());
                   endTOD ??= TimeOfDay.now(); //in case of cancel
-                  timeEnd = DateTime(date!.year, date!.month, date!.day,
+                  timeEnd = DateTime(date.year, date.month, date.day,
                       endTOD.hour, endTOD.minute);
                   setState(() {});
                 },
                 child: Text("Ends at: ${DateFormat("h:mma").format(timeEnd)}"),
               ),
-              // TextField(
-              //   controller: tagController,
-              //   decoration: InputDecoration(labelText: 'Tag'),
-              // ),
-              // TextField(
-              //   controller: recRulesController,
-              //   decoration: InputDecoration(labelText: 'Recurrence Rules'),
-              // ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -169,92 +171,111 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date,
                       }))
                 ],
               ),
-              Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.wallet),
-                    onPressed: () async {
-                      final DateTime? pickedDate = await datePicker();
-                      if (pickedDate != null &&
-                          pickedDate != recurrenceStartTime) {
-                        setState(() {
-                          recurrenceStartTime = pickedDate;
-                        });
-                      }
-                    },
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    recurrenceStartTime != null
-                        ? 'Start Date: ${DateFormat('MM-dd-yyyy').format(recurrenceStartTime!)}'
-                        : 'No start date selected',
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                ],
+              Visibility(
+                visible: enableRecurrence,
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.wallet),
+                      onPressed: () async {
+                        final DateTime? pickedDate = await datePicker(context,
+                            initialDate: recurrenceStartTime);
+                        if (pickedDate != null &&
+                            pickedDate != recurrenceStartTime) {
+                          setState(() {
+                            recurrenceStartTime = pickedDate;
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      recurrenceStartTime != null
+                          ? 'Start Date: ${DateFormat('MM-dd-yyyy').format(recurrenceStartTime!)}'
+                          : 'No start date selected',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
               ),
-              Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.calendar_month_rounded),
-                    onPressed: () async {
-                      final DateTime? pickedEndDate = await datePicker();
-                      if (pickedEndDate != null &&
-                          pickedEndDate != recurrenceEndTime) {
-                        setState(() {
-                          recurrenceEndTime = pickedEndDate;
-                        });
-                      }
-                    },
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    recurrenceEndTime != null
-                        ? 'End Date: ${DateFormat('MM-dd-yyyy').format(recurrenceEndTime!)}'
-                        : 'No end date selected',
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                ],
+              Visibility(
+                visible: enableRecurrence,
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.calendar_month_rounded),
+                      onPressed: () async {
+                        final DateTime? pickedEndDate = await datePicker(
+                            context,
+                            initialDate: recurrenceEndTime);
+                        if (pickedEndDate != null &&
+                            pickedEndDate != recurrenceEndTime) {
+                          setState(() {
+                            recurrenceEndTime = pickedEndDate;
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      recurrenceEndTime != null
+                          ? 'End Date: ${DateFormat('MM-dd-yyyy').format(recurrenceEndTime!)}'
+                          : 'No end date selected',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
               ),
-              SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: ToggleButtons(
-                    isSelected: selectedRecurrenceDays,
-                    onPressed: (int index) {
-                      setState(() {
-                        // simply toggling buttons between true and false state
-                        selectedRecurrenceDays[index] =
-                            !selectedRecurrenceDays[index];
-                      });
-                    },
-
-                    // onPressed: (index) {
-                    //   setStateFunction(() {
-                    //     for (int i = 0; i < isSelected.length; i++) {
-                    //       if (i == index) {
-                    //         isSelected[i] = true;
-                    //       } else {
-                    //         isSelected[i] = false;
-                    //       }
-                    //     }
-                    //   });
-                    // },
-                    // renderBorder: false,
-
-                    fillColor: Colors.transparent,
-                    splashColor: Colors.orange,
-                    constraints:
-                        const BoxConstraints.expand(height: 30, width: 30),
-                    children: List<Widget>.generate(7, (index) {
-                      return CustomButton(
-                        index: index,
-                        selectedRecurringDay: selectedRecurrenceDays[index],
-                      );
-                    }),
-                  )
-                  // ],
-                  ),
+              Visibility(
+                visible: enableRecurrence,
+                child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: ToggleButtons(
+                      isSelected: selectedRecurrenceDays,
+                      onPressed: (int index) {
+                        setState(() {
+                          // simply toggling buttons between true and false state
+                          selectedRecurrenceDays[index] =
+                              !selectedRecurrenceDays[index];
+                        });
+                      },
+                      constraints:
+                          const BoxConstraints.expand(height: 30, width: 30),
+                      children: List<Widget>.generate(7, (index) {
+                        return CustomButton(
+                          index: index,
+                          selectedRecurringDay: selectedRecurrenceDays[index],
+                        );
+                      }),
+                    )
+                    // ],
+                    ),
+              ),
             ]),
+            actionsAlignment: MainAxisAlignment.end,
+            actionsPadding: edit && enableRecurrence
+                ? const EdgeInsets.symmetric(horizontal: 12, vertical: 24)
+                : const EdgeInsets.only(left: 24.0, right: 24.0, bottom: 24.0),
             actions: <Widget>[
+              Visibility(
+                visible: edit && enableRecurrence,
+                child: Wrap(
+                    direction: Axis.horizontal,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: -10,
+                    children: [
+                      const Text("Edit Recurring:"),
+                      Checkbox.adaptive(
+                          value: editRelatedRecurringEvents,
+                          onChanged: (newValue) {
+                            setState(() {
+                              editRelatedRecurringEvents = newValue!;
+                            });
+                          }),
+                    ]
+                    //  <-- leading Checkbox
+                    ),
+              ),
               TextButton(
                 child: const Text('Cancel'),
                 onPressed: () {
@@ -286,21 +307,56 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date,
                     currentEvent.recurrenceRules.timeStart =
                         recurrenceStartTime!;
                   }
-                  if (oldEvent != null) {
-                    db.deleteEvent(oldEvent);
+
+                  /// return if one of the datetimes provided is not set/is the epoch
+                  bool oneIsUnset(DateTime one, DateTime two) {
+                    final DateTime epoch =
+                        DateTime.fromMillisecondsSinceEpoch(0);
+                    return epoch.compareTo(one) == 0 ||
+                        epoch.compareTo(two) == 0;
                   }
-                  db.setEvent(currentEvent);
-                  if (currentEvent.recurrenceRules.enabled) {
+
+                  /// return if the given event has valid recurrence datetimes
+                  bool validRecurrenceDateTimes(Event e) {
+                    return !e.recurrenceRules.enabled || (!oneIsUnset(e.recurrenceRules.timeStart,
+                            e.recurrenceRules.timeEnd) &&
+                        e.recurrenceRules.timeStart
+                                .compareTo(e.recurrenceRules.timeEnd) <
+                            0);
+                  }
+
+                  /// return if the event has valid timestart and timeend datetimes
+                  bool validEventDateTimes(Event e) {
+                    return e.timeStart.compareTo(e.timeEnd) < 0;
+                  }
+
+                  // test if datetimes are valid for both the event and recurring event
+                  if (!validEventDateTimes(currentEvent)) {
+                    // if the current event datetime range is invalid, display an error
+                    showFlashError(context,
+                        "The event's start and end times are invalid! Please try again.");
+                  } else if (!validRecurrenceDateTimes(currentEvent)) {
+                    // if the current event's recurrence rules has existing datetimes and the range is invalid, display an error
+                    showFlashError(context,
+                        "The recurrence start and end times are invalid! Please try again.");
+                  } else {
+                    db.setEvent(currentEvent);
+                    if (currentEvent.recurrenceRules.enabled) {
+                      db.setRecurringEvents(currentEvent);
+                    }
+
+                    // if we are editing an event, delete the old one
                     if (oldEvent != null) {
-                      // delete related recurring events only if the recurrence rules are being overridden
+                      db.deleteEvent(oldEvent);
+                    }
+
+                    if (editRelatedRecurringEvents && oldEvent != null) {
+                      // delete related recurring events if the option is explicitly set
                       db.deleteRecurringEvents(oldEvent, excludeMyself: true);
                     }
 
-                    db.setRecurringEvents(currentEvent);
+                    completer.complete(currentEvent);
                   }
-
-                  completer.complete(currentEvent);
-
                   Navigator.of(context).pop();
                 },
               ),
@@ -327,11 +383,18 @@ void showEventDetailPopup(BuildContext context, Event event, DateTime date) {
             Text('Title: ${event.name}'),
             Text('Description: ${event.description}'),
             Text('Location: ${event.location}'),
-            Text('Starts at: ${DateFormat("h:mma MM/dd/yyyy").format(event.timeStart)}'),
-            Text('Ends At: ${DateFormat("h:mma MM/dd/yyyy").format(event.timeEnd)}'),
+            Text('Starts at: ${DateFormat("h:mma").format(event.timeStart)}'),
+            Text('Ends At: ${DateFormat("h:mma").format(event.timeEnd)}'),
           ],
         ),
         actions: [
+          TextButton(
+              onPressed: () {
+                DatabaseService db = DatabaseService();
+                db.deleteEvent(event);
+                Navigator.of(context).pop();
+              },
+              child: const Text('Delete')),
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
@@ -342,7 +405,7 @@ void showEventDetailPopup(BuildContext context, Event event, DateTime date) {
             onPressed: () async {
               // Wait for the _showEditPopup to complete and get the edited task
               Event? editedEvent =
-                  await addEventFormForDay(context, date, event: event);
+                  await editEventFormForDay(context, date, event: event);
               Navigator.of(context).pop();
             },
             child: const Text('Edit'),
@@ -351,147 +414,6 @@ void showEventDetailPopup(BuildContext context, Event event, DateTime date) {
       );
     },
   );
-}
-
-Future<Event?> _showEditPopup(
-    BuildContext context, Event event, DateTime? date) async {
-  DatabaseService db = DatabaseService();
-  TextEditingController nameController = TextEditingController();
-  nameController.text = event.name;
-  TextEditingController descriptionController = TextEditingController();
-  descriptionController.text = event.description;
-  TextEditingController locationController = TextEditingController();
-  locationController.text = event.location;
-  TextEditingController tagController = TextEditingController();
-  TextEditingController recRulesController = TextEditingController();
-  DateTime timeStart = event.timeStart;
-  DateTime timeEnd = event.timeEnd;
-
-  Completer<Event?> completer = Completer<Event?>();
-
-  showDialog(
-    context: context,
-    builder: (context) {
-      return StatefulBuilder(builder: (context, setState) {
-        return SingleChildScrollView(
-          child: AlertDialog(
-            title: Row(
-              children: [
-                const Text('Edit Event on'),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
-                  child: ElevatedButton(
-                      onPressed: () async {
-                        DateTime? originalDate = date;
-                        date = (await showDatePicker(
-                            context: context,
-                            initialDate: date!,
-                            firstDate: DateTime(2000),
-                            lastDate: DateTime(2101)));
-                        setState(() {
-                          //in case user cancels date picker, show original date
-                          date ??= originalDate;
-                        });
-                      },
-                      child: Text('${date?.month}/${date?.day}/${date?.year}')),
-                )
-              ],
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(labelText: 'Event Name'),
-                ),
-                TextField(
-                  controller: descriptionController,
-                  decoration: const InputDecoration(labelText: 'Description'),
-                ),
-                TextField(
-                  controller: locationController,
-                  decoration: const InputDecoration(labelText: 'Location'),
-                ),
-                // TextField(
-                //   controller: tagController,
-                //   decoration: InputDecoration(labelText: 'Tag'),
-                // ),
-                // TextField(
-                //   controller: recRulesController,
-                //   decoration: InputDecoration(labelText: 'Recurrence Rules'),
-                // ),
-                ElevatedButton(
-                  onPressed: () async {
-                    TimeOfDay? startTOD = await showTimePicker(
-                        context: context, initialTime: TimeOfDay.now());
-                    startTOD ??= TimeOfDay(
-                        hour: timeStart.hour, minute: timeStart.minute);
-                    timeStart = DateTime(date!.year, date!.month, date!.day,
-                        startTOD.hour, startTOD.minute);
-                    setState(() {});
-                  },
-                  child: Text(DateFormat("h:mma").format(timeStart)),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    TimeOfDay? endTOD = await showTimePicker(
-                        context: context, initialTime: TimeOfDay.now());
-                    endTOD ??=
-                        TimeOfDay(hour: timeEnd.hour, minute: timeEnd.minute);
-                    timeEnd = DateTime(date!.year, date!.month, date!.day,
-                        endTOD.hour, endTOD.minute);
-                    setState(() {});
-                  },
-                  child: Text(DateFormat("h:mma").format(timeEnd)),
-                ),
-              ],
-            ),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () {
-                  db.deleteEvent(event);
-                  Navigator.of(context).pop();
-                },
-                child: const Text('Delete'),
-              ),
-              TextButton(
-                child: const Text('Cancel'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  completer.complete(null);
-                },
-              ),
-              TextButton(
-                child: const Text('Submit'),
-                onPressed: () {
-                  String name = nameController.text;
-                  String description = descriptionController.text;
-                  String location = locationController.text;
-                  String tag = tagController.text;
-                  //String recRules = recRulesController.text;
-                  event.name = name;
-                  event.description = description;
-                  event.location = location;
-                  event.color = tag;
-                  event.timeStart = timeStart;
-                  event.timeEnd = timeEnd;
-                  //widget.task.recurrenceRules = recRules;
-
-                  db.setEvent(event);
-
-                  completer.complete(event);
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          ),
-        );
-      });
-    },
-  );
-
-  // Return the Future that completes with the edited task
-  return completer.future;
 }
 
 class AddEventButton extends StatelessWidget {

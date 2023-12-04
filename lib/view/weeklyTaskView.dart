@@ -63,23 +63,16 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
     generateScreen(today);
   }
 
-  /// A DatePicker function to prompt a calendar
-  /// Returns a selectedDate if chosen, defaulted to today if no selectedDate
-  Future<void> datePicker() async {
-    DateTime? selectedDate = await showDatePicker(
-      context: context,
-      initialDate: today,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-
-    if (selectedDate != null) {
-      setState(() {
-        today = selectedDate;
-      });
-      await fetchData(weekStart: selectedDate);
-      generateScreen(today);
+  void resetView(DateTime? selectedDate) async {
+    if (selectedDate == null) {
+      return;
     }
+
+    setState(() {
+      today = selectedDate;
+    });
+    await fetchData(weekStart: selectedDate);
+    generateScreen(today);
   }
 
   ///A function that generates the screen for the next 7 days

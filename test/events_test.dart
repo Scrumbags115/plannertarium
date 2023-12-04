@@ -1,7 +1,7 @@
 import 'dart:core';
 
 import 'package:planner/common/database.dart';
-import 'package:planner/common/recurrence.dart';
+import 'package:planner/models/recurrence.dart';
 import 'package:planner/models/event.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
