@@ -24,9 +24,9 @@ class WeeklyTaskView extends StatefulWidget {
 class WeeklyTaskViewState extends State<WeeklyTaskView> {
   final DatabaseService _db = DatabaseService();
   DateTime today = DateTime.now();
-  Map<DateTime, List<Task>> _active = {};
-  Map<DateTime, List<Task>> _complete = {};
-  Map<DateTime, List<Task>> _delay = {};
+  Map<DateTime, List<Task>> active = {};
+  Map<DateTime, List<Task>> complete = {};
+  Map<DateTime, List<Task>> delay = {};
   @override
 
   /// Initializes the state of the widget
@@ -39,26 +39,42 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
   Future<void> setData() async {
     var taskMaps = await _db.getTaskMapsWeek(widget.monday);
     setState(() {
-      _active = taskMaps.$1;
-      _complete = taskMaps.$2;
-      _delay = taskMaps.$3;
+      active = taskMaps.$1;
+      complete = taskMaps.$2;
+      delay = taskMaps.$3;
+    });
+  }
+
+  void toggleCompleted(Task task) {
+    for (int i = 0; i < 7; i++) {
+      DateTime curr = getDateOnly(widget.currentDate, offsetDays: i);
+      if (task.completed) {
+        active[curr]!.remove(task);
+        complete[curr]!.add(task);
+      } else {
+        active[curr]!.add(task);
+        complete[curr]!.remove(task);
+      }
+    }
+    setState(() {
+      generateScreen();
     });
   }
 
   void moveDelayedTask(Task task, DateTime oldTaskDate) async {
     DateTime newTaskDate = task.timeCurrent;
-    _active[oldTaskDate]!.remove(task);
+    active[oldTaskDate]!.remove(task);
     for (int i = 0; i < daysBetween(oldTaskDate, newTaskDate); i++) {
       DateTime dateToDelay = getDateOnly(oldTaskDate, offsetDays: i);
-      if (_delay[dateToDelay] == null) {
-        _delay[dateToDelay] = [];
+      if (delay[dateToDelay] == null) {
+        delay[dateToDelay] = [];
       }
-      _delay[dateToDelay]!.add(task);
+      delay[dateToDelay]!.add(task);
     }
-    if (_active[newTaskDate] == null) {
-      _active[newTaskDate] = [];
+    if (active[newTaskDate] == null) {
+      active[newTaskDate] = [];
     }
-    _active[newTaskDate]!.add(task);
+    active[newTaskDate]!.add(task);
     setState(() {
       generateScreen();
     });
@@ -72,9 +88,9 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
 
     for (int i = 0; i < daysToDelete; i++) {
       DateTime toDeleteTaskFrom = getDateOnly(deletionStart, offsetDays: i);
-      _active[toDeleteTaskFrom]!.remove(task);
-      _complete[toDeleteTaskFrom]!.remove(task);
-      _delay[toDeleteTaskFrom]!.remove(task);
+      active[toDeleteTaskFrom]!.remove(task);
+      complete[toDeleteTaskFrom]!.remove(task);
+      delay[toDeleteTaskFrom]!.remove(task);
     }
 
     setState(() {
@@ -126,9 +142,9 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
 
     for (int i = 0; i < 7; i++) {
       DateTime currentDate = getDateOnly(widget.monday, offsetDays: i);
-      List<Task> tasksForDay = (_active[currentDate] ?? []) +
-          (_complete[currentDate] ?? []) +
-          (_delay[currentDate] ?? []);
+      List<Task> tasksForDay = (active[currentDate] ?? []) +
+          (complete[currentDate] ?? []) +
+          (delay[currentDate] ?? []);
 
       dayWidgets.add(
         Column(

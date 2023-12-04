@@ -70,6 +70,20 @@ class TaskViewState extends State<TaskView> {
     return widget.focusedDay;
   }
 
+  void toggleCompleted(Task task) {
+    if (task.completed) {
+      active.remove(task);
+      complete.add(task);
+    } else {
+      active.add(task);
+      complete.remove(task);
+    }
+    todayTasks = active + delay + complete;
+    setState(() {
+      getTodayTaskList();
+    });
+  }
+
   /// A void function that asynchronously selects a date and fetches tasks for that date.
   Future<void> selectDate({context}) async {
     DateTime selectedDate = await datePicker() ?? widget.focusedDay;
