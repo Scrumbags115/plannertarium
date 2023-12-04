@@ -8,7 +8,7 @@ import 'package:planner/view/weekView.dart';
 import 'package:planner/common/view/topbar.dart';
 
 DatabaseService db = DatabaseService();
-const hourHeight = 40.0;
+const hourHeight = 50.0;
 const displayedHourWidth = 50.0;
 
 class DayView extends StatefulWidget {
@@ -23,7 +23,6 @@ class _DayViewState extends State<DayView> {
   var scaffoldKey = GlobalKey<ScaffoldState>();
 
   ///A DatePicker function to prompt a calendar
-  ///Returns a selectedDate if chosen, defaulted to today if no selectedDate
   Future<DateTime?> datePicker() async {
     DateTime? selectedDate = await showDatePicker(
       context: context,
@@ -38,7 +37,6 @@ class _DayViewState extends State<DayView> {
     return widget.date;
   }
 
-  /// A void function that asynchronously selects a date and fetches tasks for that date.
   Future<void> selectDate() async {
     DateTime selectedDate = await datePicker() ?? widget.date;
 
@@ -103,7 +101,6 @@ class _SingleDayState extends State<SingleDay> {
     double width = MediaQuery.of(context).size.width - displayedHourWidth;
     return Column(
       children: [
-        SizedBox(height: 40),
         Expanded(
             child: ListView.builder(
           itemCount: 24,
@@ -115,7 +112,6 @@ class _SingleDayState extends State<SingleDay> {
                   children: [
                     Container(
                         width: displayedHourWidth,
-                        height: hourHeight,
                         child: Center(
                           child: Text(intl.DateFormat('j').format(
                               getDateOnly(DateTime.now())
@@ -126,15 +122,19 @@ class _SingleDayState extends State<SingleDay> {
                 Expanded(
                   child: Column(
                     children: [
+                      const SizedBox(height: 10),
                       const Divider(
-                        height: 1,
+                        height: 0,
                         thickness: 2,
                       ),
                       Container(
                           height: 40,
                           width: width,
                           child: OverflowBox(
-                              maxHeight: 60, child: paintEvents(index, width))),
+                              minHeight: 40,
+                              alignment: Alignment.topLeft,
+                              maxHeight: MediaQuery.of(context).size.height,
+                              child: paintEvents(index, width))),
                     ],
                   ),
                 )
@@ -154,22 +154,18 @@ class _SingleDayState extends State<SingleDay> {
       }
     }
     double space = width / eventsInHour.length;
-    //print("hour is $hour");
-    //print("events starting in hour: $eventsInHour");
-    List<InkWell> eventsToPaint = eventsInHour
+    List<GestureDetector> eventsToPaint = eventsInHour
         .map(
-          (event) => InkWell(
+          (event) => GestureDetector(
             onTap: () {
               showEventDetailPopup(context, event, widget.date);
             },
             child: CustomPaint(
-              painter: MyPainter(context, eventSpace: space, event: event),
+              painter: MyPainter(context, eventWidth: space, event: event),
               child: Container(
-                  width: space,
-                  child: const Card(
-                      child: Column(
-                    children: [],
-                  ))),
+                width: space,
+                height: hourHeight,
+              ),
             ),
           ),
         )
@@ -179,10 +175,10 @@ class _SingleDayState extends State<SingleDay> {
 }
 
 class MyPainter extends CustomPainter {
-  double eventSpace;
+  double eventWidth;
   Event event;
   final BuildContext context;
-  MyPainter(this.context, {required this.eventSpace, required this.event});
+  MyPainter(this.context, {required this.eventWidth, required this.event});
   @override
   void paint(canvas, size) {
     final rrectPaint = Paint()
@@ -202,7 +198,7 @@ class MyPainter extends CustomPainter {
     double hourOffset = event.timeStart.minute.toDouble() / 60;
     RRect eventRRect = RRect.fromRectAndRadius(
         Rect.fromLTWH(
-            0, hourHeight * hourOffset, eventSpace, hourHeight * eventDuration),
+            0, hourHeight * hourOffset, eventWidth, hourHeight * eventDuration),
         const Radius.circular(7.5));
     Path eventRRectBorder = Path();
     eventRRectBorder.addRRect(eventRRect);
@@ -217,7 +213,10 @@ class MyPainter extends CustomPainter {
     TextPainter eventNamePainter =
         TextPainter(text: eventNameSpan, textDirection: (TextDirection.ltr));
     eventNamePainter.layout(minWidth: 0, maxWidth: size.width);
-    eventNamePainter.paint(canvas, Offset.fromDirection(0, 6));
+    eventNamePainter.paint(
+        canvas,
+        Offset.fromDirection(90, hourHeight * hourOffset + 5) +
+            Offset.fromDirection(0, 25));
     TextStyle eventTimeStyle =
         const TextStyle(color: Colors.black, fontSize: 10.5);
     TextSpan eventTimeSpan = TextSpan(
@@ -228,7 +227,9 @@ class MyPainter extends CustomPainter {
         TextPainter(text: eventTimeSpan, textDirection: (TextDirection.ltr));
     eventTimePainter.layout(minWidth: 0, maxWidth: size.width);
     eventTimePainter.paint(
-        canvas, Offset.fromDirection(90, 20) + Offset.fromDirection(0, 16));
+        canvas,
+        Offset.fromDirection(90, hourHeight * hourOffset + 20) +
+            Offset.fromDirection(0, 32));
   }
 
   @override
