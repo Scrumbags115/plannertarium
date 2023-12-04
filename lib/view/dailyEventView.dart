@@ -4,7 +4,7 @@ import 'package:planner/common/database.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/view/eventDialogs.dart';
-import 'package:planner/view/weekView.dart';
+import 'package:planner/view/weeklyEventView.dart';
 import 'package:planner/common/view/topbar.dart';
 
 import '../common/view/timeManagement.dart';
