@@ -58,9 +58,37 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
     });
   }
 
+  void toggleCompleted(Task task) {
+    for (int i = 0;
+        i <
+            daysBetween(widget.startOfMonth,
+                getNextMonthAsDateTime(widget.startOfMonth));
+        i++) {
+      DateTime curr = getDateOnly(widget.currentDate, offsetDays: i);
+      if (task.completed) {
+        _active[curr]!.remove(task);
+        _complete[curr]!.add(task);
+      } else {
+        _active[curr]!.add(task);
+        _complete[curr]!.remove(task);
+      }
+      setState(() {
+        getTasksForDay(curr);
+      });
+    }
+    todayTasks = (_active[_selectedDay] ?? []) +
+        (_complete[_selectedDay] ?? []) +
+        (_delay[_selectedDay] ?? []);
+    setState(() {
+      getTaskList();
+    });
+  }
+
   void moveDelayedTask(Task task, DateTime oldTaskDate) async {
     DateTime newTaskDate = task.timeCurrent;
-    _active[oldTaskDate]!.remove(task) ? print("removed $task") : print("failed to remove $task");
+    _active[oldTaskDate]!.remove(task)
+        ? print("removed $task")
+        : print("failed to remove $task");
     setState(() {});
     for (int i = 0; i < daysBetween(oldTaskDate, newTaskDate); i++) {
       DateTime dateToDelay = getDateOnly(oldTaskDate, offsetDays: i);
@@ -68,6 +96,9 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
         _delay[dateToDelay] = [];
       }
       _delay[dateToDelay]!.add(task);
+      setState(() {
+        getTasksForDay(dateToDelay);
+      });
     }
     if (_active[newTaskDate] == null) {
       _active[newTaskDate] = [];
@@ -76,15 +107,13 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
     todayTasks = (_active[_selectedDay] ?? []) +
         (_complete[_selectedDay] ?? []) +
         (_delay[_selectedDay] ?? []);
+
+    setState(() {
+      getTaskList();
+    });
   }
 
   void deleteTask(Task task) {
-    print("deleting $task on $_selectedDay");
-    print("active: $_active");
-    print("delay: $_delay");
-    print("comp: $_complete");
-    print("today: $todayTasks");
-
     DateTime deletionStart = task.timeStart.isBefore(widget.startOfMonth)
         ? widget.startOfMonth
         : task.timeStart;
@@ -93,9 +122,15 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
 
     for (int i = 0; i < daysToDelete; i++) {
       DateTime toDeleteTaskFrom = getDateOnly(deletionStart, offsetDays: i);
-      _active[toDeleteTaskFrom]!.remove(task) ? print("removed $task from active[$toDeleteTaskFrom]") : print("failed to remove $task from active[$toDeleteTaskFrom]");
-      _complete[toDeleteTaskFrom]!.remove(task) ? print("removed $task from _complete[$toDeleteTaskFrom]") : print("failed to remove $task from _complete[$toDeleteTaskFrom]");
-      _delay[toDeleteTaskFrom]!.remove(task) ? print("removed $task from delay[$toDeleteTaskFrom]") : print("failed to remove $task from delay[$toDeleteTaskFrom]");
+      _active[toDeleteTaskFrom]!.remove(task)
+          ? print("removed $task from active[$toDeleteTaskFrom]")
+          : print("failed to remove $task from active[$toDeleteTaskFrom]");
+      _complete[toDeleteTaskFrom]!.remove(task)
+          ? print("removed $task from _complete[$toDeleteTaskFrom]")
+          : print("failed to remove $task from _complete[$toDeleteTaskFrom]");
+      _delay[toDeleteTaskFrom]!.remove(task)
+          ? print("removed $task from delay[$toDeleteTaskFrom]")
+          : print("failed to remove $task from delay[$toDeleteTaskFrom]");
       setState(() {
         getTasksForDay(toDeleteTaskFrom);
       });
@@ -103,11 +138,6 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
     todayTasks = (_active[_selectedDay] ?? []) +
         (_complete[_selectedDay] ?? []) +
         (_delay[_selectedDay] ?? []);
-    print("shouldve deleted $task on $_selectedDay");
-    print("active: $_active");
-    print("delay: $_delay");
-    print("comp: $_complete");
-    print("today: $todayTasks");
     setState(() {
       getTaskList();
     });
@@ -223,8 +253,8 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
                               newTask
                             ];
                             todayTasks = (_active[_selectedDay] ?? []) +
-                              (_complete[_selectedDay] ?? []) +
-                              (_delay[_selectedDay] ?? []);
+                                (_complete[_selectedDay] ?? []) +
+                                (_delay[_selectedDay] ?? []);
                             getTaskList();
                           });
                         }
