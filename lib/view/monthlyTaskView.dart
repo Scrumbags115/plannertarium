@@ -81,16 +81,6 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
     todayTasks = (_active[_selectedDay] ?? []) +
         (_complete[_selectedDay] ?? []) +
         (_delay[_selectedDay] ?? []);
-    print("new lists for $_selectedDay");
-    print("active: $_active");
-    print("delay: $_delay");
-    print("comp: $_complete");
-    print("today: $todayTasks");
-    setState(() {
-      getTasksForDay(oldTaskDate);
-      getTasksForDay(newTaskDate);
-      getTaskList();
-    });
   }
 
   void deleteTask(Task task) {
@@ -112,6 +102,7 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
     todayTasks = (_active[_selectedDay] ?? []) +
         (_complete[_selectedDay] ?? []) +
         (_delay[_selectedDay] ?? []);
+        
     setState(() {
       getTaskList();
     });
@@ -226,6 +217,10 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
                               ..._active[newTaskDateStart] ?? [],
                               newTask
                             ];
+                            todayTasks = (_active[_selectedDay] ?? []) +
+                              (_complete[_selectedDay] ?? []) +
+                              (_delay[_selectedDay] ?? []);
+                            getTaskList();
                           });
                         }
                       },
