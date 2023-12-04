@@ -318,11 +318,11 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime date,
 
                   /// return if the given event has valid recurrence datetimes
                   bool validRecurrenceDateTimes(Event e) {
-                    return e.recurrenceRules.enabled && !oneIsUnset(e.recurrenceRules.timeStart,
+                    return !e.recurrenceRules.enabled || (!oneIsUnset(e.recurrenceRules.timeStart,
                             e.recurrenceRules.timeEnd) &&
                         e.recurrenceRules.timeStart
                                 .compareTo(e.recurrenceRules.timeEnd) <
-                            0;
+                            0);
                   }
 
                   /// return if the event has valid timestart and timeend datetimes
