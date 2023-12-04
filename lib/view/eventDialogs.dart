@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:planner/common/database.dart';
 import 'package:planner/models/event.dart';
 import 'package:intl/intl.dart';
+import 'package:planner/models/tag.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 import '../common/view/timeManagement.dart';
 import '../common/view/flashError.dart';
@@ -368,6 +370,80 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime date,
   );
 
   return completer.future;
+}
+
+Future<List<Tag>> showTagSelectionDialog(BuildContext context) async {
+  List<Tag> selectedTags = [];
+
+  TextEditingController nameController = TextEditingController();
+  Color selectedColor = Colors.blue;
+  Color pickerColor = const Color(0xff443a49);
+
+  void changeColor(Color color) {
+    pickerColor = color;
+    selectedColor = color;
+  }
+
+  await showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('Add Tag'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: 'Tag Name'),
+              ),
+              const SizedBox(height: 16),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Tag Color:',
+                        style: TextStyle(
+                          color: Colors.black,
+                        )),
+                  ),
+                  SizedBox(
+                    width: 200,
+                    child: ColorPicker(
+                      pickerColor: pickerColor,
+                      onColorChanged: changeColor,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context, selectedTags);
+            },
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Tag selectedTag = Tag(
+                name: nameController.text,
+                color: selectedColor.value.toString(), // turn color into int
+              );
+              selectedTags.add(selectedTag);
+              nameController.clear();
+            },
+            child: const Text('Add'),
+          ),
+        ],
+      );
+    },
+  );
+
+  return selectedTags;
 }
 
 void showEventDetailPopup(BuildContext context, Event event, DateTime date) {

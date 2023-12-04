@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_constructors, use_build_context_synchronously
 
+import 'package:get/get.dart';
 import 'package:planner/common/database.dart';
 import 'package:flutter/material.dart';
 import 'package:planner/models/task.dart';
@@ -12,7 +13,15 @@ import '../common/view/timeManagement.dart';
 
 class TaskCard extends StatefulWidget {
   final Task task;
-  const TaskCard({super.key, required this.task});
+  late DateTime cardDate;
+  late var state;
+  TaskCard(
+      {super.key,
+      required this.task,
+      DateTime? dateOfCard,
+      required this.state}) {
+    cardDate = dateOfCard ?? getDateOnly(DateTime.now());
+  }
 
   @override
   TaskCardState createState() => TaskCardState();
@@ -31,7 +40,6 @@ class TaskCardState extends State<TaskCard> {
     // widget.task = await db.getTask(widget.task.id);
     db.setTask(widget.task);
     allTagsofTask = await db.getTagsOfTask(widget.task.id);
-    print("initializing tag list $allTagsofTask");
     setState(() {});
   }
 
@@ -44,6 +52,19 @@ class TaskCardState extends State<TaskCard> {
 
   DatabaseService db = DatabaseService();
 
+
+  Color getTaskColor() {
+    if (widget.task.timeDue != null &&
+        widget.task.timeDue!.isAtSameMomentAs(widget.cardDate)) {
+      return const Color.fromARGB(255, 255, 185, 185);
+    } else if (widget.task.isDelayedOn(widget.cardDate) ||
+        widget.task.completed) {
+      return Colors.grey.withOpacity(0.5);
+    } else {
+      return Colors.white;
+    }
+  }
+  
   bool isTaskDueToday() {
     DateTime today = DateTime.now();
     DateTime? dueDate = widget.task.timeDue;
@@ -79,38 +100,41 @@ class TaskCardState extends State<TaskCard> {
   Widget build(BuildContext context) {
     return Dismissible(
       key: UniqueKey(),
-      onDismissed: (direction) async {
-        if (direction == DismissDirection.startToEnd) {
-          setState(() {
-            widget.task.moveToNextDay();
-            db.setTask(widget.task);
-          });
-        } else if (direction == DismissDirection.endToStart) {
-          showDialog(
+      confirmDismiss: (DismissDirection direction) async {
+        if (direction == DismissDirection.endToStart) {
+          return await showDialog(
             context: context,
-            builder: (context) {
+            builder: (BuildContext context) {
               return AlertDialog(
-                title: const Text('Confirm Deletion'),
+                title: const Text("Confirm"),
                 content:
-                    const Text('Are you sure you want to delete this task?'),
-                actions: [
+                    const Text("Are you sure you wish to delete this item?"),
+                actions: <Widget>[
                   TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Cancel'),
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text("CANCEL"),
                   ),
                   TextButton(
-                    onPressed: () {
-                      db.deleteTask(widget.task);
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Delete'),
-                  ),
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: const Text("DELETE")),
                 ],
               );
             },
           );
+        }
+        return true;
+      },
+      onDismissed: (direction) async {
+        if (direction == DismissDirection.startToEnd) {
+          setState(() {
+            DateTime oldTaskDate = widget.task.timeCurrent;
+            widget.task.moveToNextDay();
+            db.setTask(widget.task);
+            widget.state.moveDelayedTask(widget.task, oldTaskDate);
+          });
+        } else if (direction == DismissDirection.endToStart) {
+          db.deleteTask(widget.task);
+          widget.state.deleteTask(widget.task);
         }
       },
       background: Container(
@@ -134,7 +158,7 @@ class TaskCardState extends State<TaskCard> {
           borderRadius: BorderRadius.circular(10.0),
         ),
         elevation: 2,
-        color: isTaskDueToday() ? Colors.white : Colors.grey.withOpacity(0.5),
+        color: getTaskColor(),
         margin: const EdgeInsets.fromLTRB(10, 5, 10, 5),
         child: InkWell(
           onTap: () {
@@ -146,6 +170,7 @@ class TaskCardState extends State<TaskCard> {
                   setState(() {
                     widget.task.completed = !widget.task.completed;
                     db.setTask(widget.task);
+                    widget.state.toggleCompleted(widget.task);
                   });
                 },
                 child: CircleAvatar(
@@ -210,7 +235,7 @@ class TaskCardState extends State<TaskCard> {
         return tag.name;
       }
     }
-    return ("Tag not found in local tag list");
+    return "";
   }
 
   void showExistingTags(BuildContext context) {

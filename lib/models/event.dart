@@ -1,5 +1,5 @@
 import 'package:planner/models/recurrence.dart';
-import 'package:planner/common/time_management.dart';
+import 'package:planner/common/view/timeManagement.dart';
 import 'package:planner/models/undertaking.dart';
 import 'package:uuid/uuid.dart';
 

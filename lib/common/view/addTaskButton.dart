@@ -54,7 +54,7 @@ Future<Task?> addButtonForm(BuildContext context, state) async {
   TextEditingController locationController = TextEditingController();
   TextEditingController tagController = TextEditingController();
   DateTime? dueDate;
-  DateTime? startTime = DateTime.now();
+  DateTime startTime = getDateOnly(DateTime.now());
   Completer<Task?> completer = Completer<Task?>();
   List<Tag> enteredTags = [];
   showDialog(
@@ -202,7 +202,7 @@ Future<Task?> addButtonForm(BuildContext context, state) async {
                   description: description,
                   location: location,
                   timeDue: dueDate,
-                  timeStart: startTime,
+                  timeStart: getDateOnly(startTime),
                 );
 
                 // if (enteredTags.isNotEmpty) {
@@ -239,7 +239,7 @@ Future<List<Tag>> showTagSelectionDialog(BuildContext context) async {
   List<Tag> selectedTags = [];
 
   TextEditingController nameController = TextEditingController();
-  Color selectedColor = Colors.blue;
+  Color selectedColor = Colors.grey;
   Color pickerColor = const Color(0xff443a49);
 
   void changeColor(Color color) {
