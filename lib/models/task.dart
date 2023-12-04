@@ -127,6 +127,7 @@ class Task extends Undertaking {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! Task) return false;
+    if (id == other.id) return true;
 
     bool taskVariablesEqual = completed == other._completed &&
         timeDue == other.timeDue;
