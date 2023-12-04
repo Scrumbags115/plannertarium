@@ -10,10 +10,8 @@ import 'package:planner/view/taskCard.dart';
 
 class MonthlyTaskView extends StatefulWidget {
   late DateTime startOfMonth;
-  late DateTime currentDate;
   MonthlyTaskView({super.key, required DateTime dayOfMonth}) {
-    currentDate = getDateOnly(dayOfMonth);
-    startOfMonth = getMonthAsDateTime(currentDate);
+    startOfMonth = getMonthAsDateTime(dayOfMonth);
   }
   @override
   MonthlyTaskViewState createState() => MonthlyTaskViewState();
@@ -41,20 +39,22 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
   /// Performs asynchronous initialization for the widget
   void asyncInitState() async {
     await setData();
-    setState(() {});
+    setState(() {
+      getTaskListSelectedDay();
+    });
     // print('monthly: $_active');
   }
 
   /// Asynchronously fetches tasks for the current week
   Future<void> setData() async {
-    var taskMaps = await _db.getTaskMapsMonth(widget.currentDate);
+    var taskMaps = await _db.getTaskMapsMonth(widget.startOfMonth);
     setState(() {
       _active = taskMaps.$1;
       _complete = taskMaps.$2;
       _delay = taskMaps.$3;
-      todayTasks = (_active[widget.currentDate] ?? []) +
-          (_complete[widget.currentDate] ?? []) +
-          (_delay[widget.currentDate] ?? []);
+      todayTasks = (_active[_selectedDay] ?? []) +
+          (_complete[_selectedDay] ?? []) +
+          (_delay[_selectedDay] ?? []);
     });
   }
 
@@ -84,15 +84,19 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
         ? widget.startOfMonth
         : task.timeStart;
     DateTime deletionEnd = task.timeCurrent;
-    int daysToDelete = daysBetween(deletionStart, deletionEnd)+1;
+    int daysToDelete = daysBetween(deletionStart, deletionEnd) + 1;
 
     for (int i = 0; i < daysToDelete; i++) {
       DateTime toDeleteTaskFrom = getDateOnly(deletionStart, offsetDays: i);
       _active[toDeleteTaskFrom]!.remove(task);
       _complete[toDeleteTaskFrom]!.remove(task);
       _delay[toDeleteTaskFrom]!.remove(task);
+      todayTasks = (_active[_selectedDay] ?? []) +
+          (_complete[_selectedDay] ?? []) +
+          (_delay[_selectedDay] ?? []);
       setState(() {
         getTasksForDay(toDeleteTaskFrom);
+        getTaskListSelectedDay();
       });
     }
   }
@@ -111,6 +115,19 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
     return taskForDay;
   }
 
+  ListView getTaskListSelectedDay() {
+    todayTasks = (_active[_selectedDay] ?? []) +
+          (_complete[_selectedDay] ?? []) +
+          (_delay[_selectedDay] ?? []);
+    return ListView.builder(
+      itemCount: todayTasks.length,
+      itemBuilder: (context, index) {
+        Task task = todayTasks[index];
+        return TaskCard(task: task, dateOfCard: _selectedDay, state: this);
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -122,103 +139,98 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
           }
         },
         child: Scaffold(
-            appBar: getTopBar(Task, "monthly", context, this),
-            body: Column(
-                children: [
-                  TableCalendar(
-                    firstDay: DateTime.utc(2020, 10, 16),
-                    lastDay: DateTime.utc(2130, 3, 14),
-                    focusedDay: _focusedDay,
-                    calendarFormat: _calendarFormat,
-                    selectedDayPredicate: (day) {
-                      return isSameDay(_selectedDay, day);
-                    },
-                    onDaySelected: (selectedDay, focusedDay) async {
-                      if (!isSameDay(_selectedDay, selectedDay)) {
-                        final newTodayTasks =
-                            await _db.fetchTodayTasks(selectedDay);
-                        setState(() {
-                          _selectedDay = selectedDay;
-                          _focusedDay = focusedDay;
-                          todayTasks = newTodayTasks;
-                        });
-                      }
-                    },
-                    onPageChanged: (focusedDay) {
+          appBar: getTopBar(Task, "monthly", context, this),
+          body: Column(
+            children: [
+              TableCalendar(
+                firstDay: DateTime.utc(2020, 10, 16),
+                lastDay: DateTime.utc(2130, 3, 14),
+                focusedDay: _focusedDay,
+                calendarFormat: _calendarFormat,
+                selectedDayPredicate: (day) {
+                  return isSameDay(_selectedDay, day);
+                },
+                onDaySelected: (selectedDay, focusedDay) async {
+                  if (!isSameDay(_selectedDay, selectedDay)) {
+                    final newTodayTasks =
+                        await _db.fetchTodayTasks(selectedDay);
+                    setState(() {
+                      _selectedDay = selectedDay;
                       _focusedDay = focusedDay;
-                      widget.currentDate = getDateOnly(focusedDay);
-                    },
-                    eventLoader: (day) {
-                      return getTasksForDay(day);
-                    },
-                    calendarBuilders: CalendarBuilders(
-                      markerBuilder: (context, date, tasks) {
-                        if (tasks.isNotEmpty) {
-                          return Positioned(
-                            left: 1,
-                            right: 1,
-                            bottom: 1,
-                            child: Container(
-                              width: 6,
-                              height: 6,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.red,
-                              ),
-                            ),
-                          );
-                        }
-                        return Container();
-                      },
-                    ),
-                    headerStyle: const HeaderStyle(
-                      titleCentered: true,
-                      formatButtonVisible: false,
-                    ),
-                  ),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: todayTasks.length,
-                      itemBuilder: (context, index) {
-                        Task task = todayTasks[index];
-                        return TaskCard(
-                            task: task, dateOfCard: _selectedDay, state: this);
-                      },
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.bottomRight,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                          0, 0, 20, 20), // Adjust the value as needed
-                      child: ClipOval(
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            Task? newTask = await addButtonForm(context, this);
-                            if (newTask != null) {
-                              setState(() {
-                                DateTime newTaskDateStart = newTask.timeStart;
-                                _active[newTaskDateStart] = [
-                                  ..._active[newTaskDateStart] ?? [],
-                                  newTask
-                                ];
-                              });
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey,
-                            minimumSize: const Size(75, 75),
-                          ),
-                          child: const Icon(
-                            Icons.add_outlined,
-                            color: Colors.black,
+                      todayTasks = newTodayTasks;
+                    });
+                  }
+                },
+                onPageChanged: (focusedDay) {
+                  _focusedDay = focusedDay;
+                  _selectedDay = getDateOnly(focusedDay);
+                },
+                eventLoader: (day) {
+                  return getTasksForDay(day);
+                },
+                calendarBuilders: CalendarBuilders(
+                  markerBuilder: (context, date, tasks) {
+                    if (tasks.isNotEmpty) {
+                      return Positioned(
+                        left: 1,
+                        right: 1,
+                        bottom: 1,
+                        child: Container(
+                          width: 6,
+                          height: 6,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.red,
                           ),
                         ),
+                      );
+                    }
+                    return Container();
+                  },
+                ),
+                headerStyle: const HeaderStyle(
+                  titleCentered: true,
+                  formatButtonVisible: false,
+                ),
+              ),
+              Expanded(
+                child: getTaskListSelectedDay(),
+              ),
+              Align(
+                alignment: Alignment.bottomRight,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                      0, 0, 20, 20), // Adjust the value as needed
+                  child: ClipOval(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        Task? newTask = await addButtonForm(context, this);
+                        if (newTask != null) {
+                          setState(() {
+                            DateTime newTaskDateStart = newTask.timeStart;
+                            _active[newTaskDateStart]!.add(newTask);
+                            todayTasks = (_active[_selectedDay] ?? []) +
+                              (_complete[_selectedDay] ?? []) +
+                              (_delay[_selectedDay] ?? []);
+                            getTasksForDay(newTaskDateStart);
+                            getTaskListSelectedDay();
+                          });
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey,
+                        minimumSize: const Size(75, 75),
+                      ),
+                      child: const Icon(
+                        Icons.add_outlined,
+                        color: Colors.black,
                       ),
                     ),
-                  )
-                ],
-              ),
-            ));
+                  ),
+                ),
+              )
+            ],
+          ),
+        ));
   }
 }
