@@ -8,8 +8,6 @@ import 'package:planner/view/eventDialogs.dart';
 import 'package:planner/view/monthlyEventView.dart';
 import 'package:intl/intl.dart';
 
-DatabaseService db = DatabaseService();
-
 class WeeklyEventView extends StatefulWidget {
   late DateTime monday;
   WeeklyEventView({super.key, DateTime? date}) {
@@ -22,7 +20,7 @@ class WeeklyEventView extends StatefulWidget {
 
 class _WeeklyEventViewState extends State<WeeklyEventView> {
   var scaffoldKey = GlobalKey<ScaffoldState>();
-
+  DatabaseService db = DatabaseService();
   void resetView(DateTime? selectedDate) async {
     if (selectedDate == null) {
       return;
@@ -103,6 +101,7 @@ class _MultiDayCardState extends State<MultiDayCard> {
   List<Event> eventsToday = [];
   int index;
   DateTime startDate;
+  DatabaseService db = DatabaseService();
   _MultiDayCardState(this.index, this.startDate) {
     // todo: eventWeeklyView is currently implemented as a list of events in a day. This doesn't support/deal with events with overlapping time frames. For example, event A and B could be from 3-4PM Dec 1 and 2 respectively, but grabbing it with getListOfEventsInDay() for Dec 1 can return both if event A's timeEnd and eventB's timeStart are in range, as it expects the user to deal with overlapping times over a current day
     db

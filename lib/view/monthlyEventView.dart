@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/common/view/topbar.dart';
+import 'package:planner/view/dailyEventView.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/view/eventDialogs.dart';
 import 'package:planner/view/weeklyEventView.dart';
-
 
 class MonthlyEventView extends StatefulWidget {
   const MonthlyEventView({super.key});
@@ -55,8 +55,8 @@ class _MonthlyEventViewState extends State<MonthlyEventView> {
         GestureDetector(
           onHorizontalDragEnd: (details) {
             if (details.primaryVelocity! > 0) {
-              Navigator.of(context)
-                  .push(MaterialPageRoute(builder: (context) => WeeklyEventView()));
+              Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => WeeklyEventView()));
             }
           },
           child: Column(
@@ -78,6 +78,10 @@ class _MonthlyEventViewState extends State<MonthlyEventView> {
                       todayEvents = newTodayEvents;
                     });
                   }
+                },
+                onDayLongPressed: (selectedDay, focusedDay) {
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => DailyEventView(date: selectedDay)));
                 },
                 onPageChanged: (focusedDay) {
                   setState(() {
@@ -108,7 +112,7 @@ class _MonthlyEventViewState extends State<MonthlyEventView> {
               const SizedBox(
                 height: 16,
               ),
-              ListView.builder(
+              /*ListView.builder(
                 shrinkWrap: true,
                 itemCount: todayEvents.length,
                 itemBuilder: (context, index) {
@@ -117,7 +121,8 @@ class _MonthlyEventViewState extends State<MonthlyEventView> {
                       index: index,
                       date: _focusedDay);
                 },
-              )
+              )*/
+              Flexible(child: SingleDay(_focusedDay))
             ],
           ),
         ),

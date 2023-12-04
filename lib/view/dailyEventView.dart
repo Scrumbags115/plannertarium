@@ -8,7 +8,6 @@ import 'package:planner/view/eventDialogs.dart';
 import 'package:planner/view/weeklyEventView.dart';
 import 'package:planner/common/view/topbar.dart';
 
-DatabaseService db = DatabaseService();
 const hourHeight = 50.0;
 const displayedHourWidth = 50.0;
 
@@ -67,6 +66,7 @@ class _SingleDayState extends State<SingleDay> {
   List<Event> eventsToday = [];
   List<int> eventStartHours = [];
   int eventCount = 0;
+  DatabaseService db = DatabaseService();
 
   _SingleDayState(DateTime date);
 
@@ -87,54 +87,67 @@ class _SingleDayState extends State<SingleDay> {
     setState(() {});
   }
 
+  Future<List<Event>> pog() async {
+    return await db.getListOfEventsInDay(date: widget.date);
+  }
+
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width - displayedHourWidth;
-    return Column(
-      children: [
-        Expanded(
-            child: ListView.builder(
-          itemCount: 24,
-          itemBuilder: (context, index) {
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return FutureBuilder(
+        future: pog(),
+        builder: (context, AsyncSnapshot<List<Event>> snapshot) {
+          if (snapshot.data!=[]) {
+            return Column(
               children: [
-                Column(
-                  children: [
-                    Container(
-                        width: displayedHourWidth,
-                        child: Center(
-                          child: Text(intl.DateFormat('j').format(
-                              getDateOnly(DateTime.now())
-                                  .add(Duration(hours: index)))),
-                        )),
-                  ],
-                ),
                 Expanded(
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 10),
-                      const Divider(
-                        height: 0,
-                        thickness: 2,
-                      ),
-                      Container(
-                          height: 40,
-                          width: width,
-                          child: OverflowBox(
-                              minHeight: 40,
-                              alignment: Alignment.topLeft,
-                              maxHeight: MediaQuery.of(context).size.height,
-                              child: paintEvents(index, width))),
-                    ],
-                  ),
-                )
+                    child: ListView.builder(
+                  itemCount: 24,
+                  itemBuilder: (context, index) {
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Column(
+                          children: [
+                            Container(
+                                width: displayedHourWidth,
+                                child: Center(
+                                  child: Text(intl.DateFormat('j').format(
+                                      getDateOnly(DateTime.now())
+                                          .add(Duration(hours: index)))),
+                                )),
+                          ],
+                        ),
+                        Expanded(
+                          child: Column(
+                            children: [
+                              const SizedBox(height: 10),
+                              const Divider(
+                                height: 0,
+                                thickness: 2,
+                              ),
+                              Container(
+                                  height: 40,
+                                  width: width,
+                                  child: OverflowBox(
+                                      minHeight: 40,
+                                      alignment: Alignment.topLeft,
+                                      maxHeight:
+                                          MediaQuery.of(context).size.height,
+                                      child: paintEvents(index, width))),
+                            ],
+                          ),
+                        )
+                      ],
+                    );
+                  },
+                )),
               ],
             );
-          },
-        )),
-      ],
-    );
+          } else {
+            return const CircularProgressIndicator();
+          }
+        });
   }
 
   Row paintEvents(hour, width) {
