@@ -71,6 +71,7 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
       } else {
         _active[curr]!.add(task);
         _complete[curr]!.remove(task);
+        break;
       }
       setState(() {
         getTasksForDay(curr);

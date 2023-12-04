@@ -47,10 +47,13 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
 
   void toggleCompleted(Task task) {
     for (int i = 0; i < 7; i++) {
-      DateTime curr = getDateOnly(widget.currentDate, offsetDays: i);
+      DateTime curr = getDateOnly(widget.monday, offsetDays: i);
       if (task.completed) {
         active[curr]!.remove(task);
-        complete[curr]!.add(task);
+        if (i > 0) {
+          complete[curr]!.add(task);
+        }
+        break;
       } else {
         active[curr]!.add(task);
         complete[curr]!.remove(task);
