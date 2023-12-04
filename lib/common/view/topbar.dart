@@ -152,7 +152,7 @@ AppBar _getTopBarDaily(bool forEvents, BuildContext context, state) {
                   if (forEvents) {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => DayView(date: state.today),
+                        builder: (context) => DailyEventView(date: state.today),
                       ),
                     );
                   } else {
@@ -253,7 +253,7 @@ AppBar _getTopBarWeekly(bool forEvents, BuildContext context, state) {
                     if (forEvents) {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => WeekView(),
+                          builder: (context) => WeeklyEventView(),
                         ),
                       );
                     } else {
@@ -325,7 +325,7 @@ _getTopBarMonthly(bool forEvents, BuildContext context, state) {
                   if (forEvents) {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => const MonthView(),
+                        builder: (context) => const MonthlyEventView(),
                       ),
                     );
                   } else {

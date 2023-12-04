@@ -7,14 +7,14 @@ import 'package:planner/view/eventDialogs.dart';
 import 'package:planner/view/weeklyEventView.dart';
 
 
-class MonthView extends StatefulWidget {
-  const MonthView({super.key});
+class MonthlyEventView extends StatefulWidget {
+  const MonthlyEventView({super.key});
 
   @override
-  _MonthViewState createState() => _MonthViewState();
+  _MonthlyEventViewState createState() => _MonthlyEventViewState();
 }
 
-class _MonthViewState extends State<MonthView> {
+class _MonthlyEventViewState extends State<MonthlyEventView> {
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
@@ -56,7 +56,7 @@ class _MonthViewState extends State<MonthView> {
           onHorizontalDragEnd: (details) {
             if (details.primaryVelocity! > 0) {
               Navigator.of(context)
-                  .push(MaterialPageRoute(builder: (context) => WeekView()));
+                  .push(MaterialPageRoute(builder: (context) => WeeklyEventView()));
             }
           },
           child: Column(

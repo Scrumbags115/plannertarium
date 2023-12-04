@@ -12,18 +12,18 @@ DatabaseService db = DatabaseService();
 const hourHeight = 50.0;
 const displayedHourWidth = 50.0;
 
-class DayView extends StatefulWidget {
+class DailyEventView extends StatefulWidget {
   DateTime date;
-  DayView({super.key, required this.date});
+  DateTime today = DateTime.now();
+  DailyEventView({super.key, required this.date});
 
   @override
-  State<DayView> createState() => _DayViewState();
+  State<DailyEventView> createState() => _DailyEventViewState();
 }
 
-class _DayViewState extends State<DayView> {
+class _DailyEventViewState extends State<DailyEventView> {
   var scaffoldKey = GlobalKey<ScaffoldState>();
 
-  ///A DatePicker function to prompt a calendar
   Future<void> selectDate() async {
     DateTime selectedDate = await datePicker(context,
             initialDate: widget.date, defaultDate: widget.date) ??
@@ -31,7 +31,7 @@ class _DayViewState extends State<DayView> {
 
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => DayView(date: selectedDate),
+        builder: (context) => DailyEventView(date: selectedDate),
       ),
     );
   }
@@ -42,14 +42,14 @@ class _DayViewState extends State<DayView> {
       onHorizontalDragEnd: (details) {
         if (details.primaryVelocity! < 0) {
           Navigator.of(context)
-              .push(MaterialPageRoute(builder: (context) => WeekView()));
+              .push(MaterialPageRoute(builder: (context) => WeeklyEventView()));
         }
       },
       child: Scaffold(
           appBar: getTopBar(Event, "daily", context, this),
           body: Stack(children: [
             SingleDay(widget.date),
-            AddEventButton(startDate: widget.date)
+            AddEventButton(startDate: widget.date),
           ])),
     );
   }
@@ -77,8 +77,10 @@ class _SingleDayState extends State<SingleDay> {
   }
 
   void asyncInitState() async {
-    eventsToday = await db.getListOfEventsInDay(date: widget.date);
-    eventCount = eventsToday.length;
+    final List<Event> newTodayEvents =
+        await db.getListOfEventsInDay(date: widget.date);
+    eventsToday = newTodayEvents;
+    eventCount = newTodayEvents.length;
     for (var event in eventsToday) {
       eventStartHours.add(event.timeStart.hour);
     }
