@@ -64,19 +64,44 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
             daysBetween(widget.startOfMonth,
                 getNextMonthAsDateTime(widget.startOfMonth));
         i++) {
-      DateTime curr = getDateOnly(widget.currentDate, offsetDays: i);
+      DateTime curr = getDateOnly(widget.startOfMonth, offsetDays: i);
+      print(curr);
+      print('active: $_active');
       if (task.completed) {
-        _active[curr]!.remove(task);
-        _complete[curr]!.add(task);
+        if (_active[curr]!.contains(task)) {
+          // then remove it from active and add it to complete
+          _active[curr]!.remove(task);
+          _complete[curr]!.add(task);
+        }
+
+        // or if the task was delayed
+        if (_delay[curr]!.contains(task)) {
+          // then remove it from delayed and add it to complete
+          _delay[curr]!.remove(task);
+          _complete[curr]!.add(task);
+        }
+        //break;
       } else {
-        _active[curr]!.add(task);
-        _complete[curr]!.remove(task);
-        break;
+        if (_complete[curr]!.contains(task)) {
+          // then remove it from complete and add it to active
+          _complete[curr]!.remove(task);
+          // if the task ws delayed
+          if (curr.isBefore(task.timeCurrent)) {
+            // then add it to the delayed list
+            _delay[curr]!.add(task);
+          }
+
+          if (curr.isAtSameMomentAs(task.timeCurrent)) {
+            // otherwise add it to the active list
+            _active[curr]!.add(task);
+          }
+        }
       }
       setState(() {
         getTasksForDay(curr);
       });
     }
+
     todayTasks = (_active[_selectedDay] ?? []) +
         (_complete[_selectedDay] ?? []) +
         (_delay[_selectedDay] ?? []);
@@ -154,7 +179,6 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
   /// return a list of active tasks in a day (for dots)
   List<Task> getTasksForDay(DateTime day) {
     var taskForDay = _active[getDateOnly(day)] ?? [];
-    print("getting tasks for day $day: $taskForDay");
     return taskForDay;
   }
 
@@ -184,8 +208,8 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
           body: Column(
             children: [
               TableCalendar(
-                firstDay: DateTime.utc(2020, 10, 16),
-                lastDay: DateTime.utc(2130, 3, 14),
+                firstDay: DateTime(2020, 10, 16),
+                lastDay: DateTime(2130, 3, 14),
                 focusedDay: _focusedDay,
                 calendarFormat: _calendarFormat,
                 selectedDayPredicate: (day) {

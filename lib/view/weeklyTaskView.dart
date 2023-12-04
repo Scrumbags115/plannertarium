@@ -27,9 +27,9 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
   Map<DateTime, List<Task>> active = {};
   Map<DateTime, List<Task>> complete = {};
   Map<DateTime, List<Task>> delay = {};
-  @override
 
   /// Initializes the state of the widget
+  @override
   void initState() {
     super.initState();
     setData();
@@ -47,22 +47,63 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
 
   void toggleCompleted(Task task) {
     for (int i = 0; i < 7; i++) {
+      // get the date of the current day
       DateTime curr = getDateOnly(widget.monday, offsetDays: i);
+      
+      // if the task was just completed
       if (task.completed) {
-        active[curr]!.remove(task);
-        if (i > 0) {
+        // and if the task was active
+        if (active[curr]!.contains(task)) {
+          // then remove it from active and add it to complete
+          active[curr]!.remove(task);
           complete[curr]!.add(task);
         }
-        break;
+        
+        // or if the task was delayed
+        if (delay[curr]!.contains(task)) {
+          // then remove it from delayed and add it to complete
+          delay[curr]!.remove(task);
+          complete[curr]!.add(task);
+        }
+      // if the task was just uncompleted
       } else {
-        active[curr]!.add(task);
-        complete[curr]!.remove(task);
+        // and if the task was complete
+        if (complete[curr]!.contains(task)) {
+          // then remove it from complete and add it to active
+          complete[curr]!.remove(task);
+            // if the task ws delayed
+            if (curr.isBefore(task.timeCurrent)) {
+              // then add it to the delayed list
+              delay[curr]!.add(task);
+            }
+
+            if (curr.isAtSameMomentAs(task.timeCurrent)) {
+              // otherwise add it to the active list
+              active[curr]!.add(task);
+            }
+          }
       }
     }
+    // then update the screen
     setState(() {
       generateScreen();
     });
   }
+
+  // void toggleCompleted(Task task) {
+  //   for (int i = 0; i < 7; i++) {
+  //     DateTime curr = getDateOnly(widget.monday, offsetDays: i);
+
+  //     // if a task was just completed
+  //     if (task.completed) {
+  //       // and if the task was active
+  //       if (active[curr]!.contains(task)) {
+  //         active[curr]!.remove(task);
+  //         complete[curr]!.add(task);
+  //       }
+  //     }
+  //   }
+  // }
 
   void moveDelayedTask(Task task, DateTime oldTaskDate) async {
     DateTime newTaskDate = task.timeCurrent;
