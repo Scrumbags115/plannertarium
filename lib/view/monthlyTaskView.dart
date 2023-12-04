@@ -65,8 +65,6 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
                 getNextMonthAsDateTime(widget.startOfMonth));
         i++) {
       DateTime curr = getDateOnly(widget.startOfMonth, offsetDays: i);
-      print(curr);
-      print('active: $_active');
       if (task.completed) {
         if (_active[curr]!.contains(task)) {
           // then remove it from active and add it to complete
@@ -112,9 +110,7 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
 
   void moveDelayedTask(Task task, DateTime oldTaskDate) async {
     DateTime newTaskDate = task.timeCurrent;
-    _active[oldTaskDate]!.remove(task)
-        ? print("removed $task")
-        : print("failed to remove $task");
+    _active[oldTaskDate]!.remove(task);
     setState(() {});
     for (int i = 0; i < daysBetween(oldTaskDate, newTaskDate); i++) {
       DateTime dateToDelay = getDateOnly(oldTaskDate, offsetDays: i);
@@ -148,15 +144,9 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
 
     for (int i = 0; i < daysToDelete; i++) {
       DateTime toDeleteTaskFrom = getDateOnly(deletionStart, offsetDays: i);
-      _active[toDeleteTaskFrom]!.remove(task)
-          ? print("removed $task from active[$toDeleteTaskFrom]")
-          : print("failed to remove $task from active[$toDeleteTaskFrom]");
-      _complete[toDeleteTaskFrom]!.remove(task)
-          ? print("removed $task from _complete[$toDeleteTaskFrom]")
-          : print("failed to remove $task from _complete[$toDeleteTaskFrom]");
-      _delay[toDeleteTaskFrom]!.remove(task)
-          ? print("removed $task from delay[$toDeleteTaskFrom]")
-          : print("failed to remove $task from delay[$toDeleteTaskFrom]");
+      _active[toDeleteTaskFrom]!.remove(task);
+      _complete[toDeleteTaskFrom]!.remove(task);
+      _delay[toDeleteTaskFrom]!.remove(task);
       setState(() {
         getTasksForDay(toDeleteTaskFrom);
       });

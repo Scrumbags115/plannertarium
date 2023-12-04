@@ -54,20 +54,8 @@ class TaskViewState extends State<TaskView> {
     setState(() {});
   }
 
-  void toggleCompleted(Task task) {
-    if (task.completed) {
-      active.remove(task);
-      delay.remove(task);
-      complete.add(task);
-    } else {
-      active.add(task);
-      complete.remove(task);
-    }
-    todayTasks = active + delay + complete;
-    setState(() {
-      getTodayTaskList();
-    });
-  }
+  /// Dummy function called by taskCard, does not need implementation for daily view 
+  void toggleCompleted(Task task) {}
 
   /// A void function that asynchronously selects a date and fetches tasks for that date.
   Future<void> selectDate() async {
