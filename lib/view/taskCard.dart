@@ -234,8 +234,10 @@ class TaskCardState extends State<TaskCard> {
     for (Tag tag in tagsOfWidgetTask) {
       tagNames += "${tag.name}, ";
     }
-    // remove the last comma
-    tagNames = tagNames.substring(0, tagNames.length - 2);
+    // remove the last comma if the string is not empty
+    if (tagNames.isNotEmpty) {
+      tagNames = tagNames.substring(0, tagNames.length - 2);
+    }
 
     showDialog(
       context: context,
