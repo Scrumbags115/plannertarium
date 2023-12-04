@@ -98,6 +98,16 @@ class TaskViewState extends State<TaskView> {
     });
   }
 
+  void deleteTask(Task task) {
+    active.remove(task);
+    delay.remove(task);
+    complete.remove(task);
+    todayTasks = active + delay + complete;
+    setState(() {
+      getTodayTaskList();
+    });
+  }
+
   ListView getTodayTaskList() {
     return ListView.builder(
       itemCount: todayTasks.length,
