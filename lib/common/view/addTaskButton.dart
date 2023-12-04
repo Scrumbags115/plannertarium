@@ -222,7 +222,7 @@ Future<Task?> addButtonForm(BuildContext context, state) async {
                   db.addTagToTask(newTask, tag);
                   // state.allTagsofTask.add(tag);
                 }
-                
+
                 completer.complete(newTask);
                 Navigator.of(context).pop();
               },
@@ -239,7 +239,7 @@ Future<List<Tag>> showTagSelectionDialog(BuildContext context) async {
   List<Tag> selectedTags = [];
 
   TextEditingController nameController = TextEditingController();
-  Color selectedColor = Colors.blue;
+  Color selectedColor = Colors.grey;
   Color pickerColor = const Color(0xff443a49);
 
   void changeColor(Color color) {

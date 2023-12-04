@@ -235,7 +235,7 @@ class TaskCardState extends State<TaskCard> {
         return tag.name;
       }
     }
-    return ("Tag not found in local tag list");
+    return "";
   }
 
   void showExistingTags(BuildContext context) {
