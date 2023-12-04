@@ -3,12 +3,13 @@
 import 'package:get/get.dart';
 import 'package:planner/common/database.dart';
 import 'package:flutter/material.dart';
-import 'package:planner/common/time_management.dart';
 import 'package:planner/models/task.dart';
 import 'dart:async';
 import 'package:intl/intl.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:planner/models/tag.dart';
+
+import '../common/view/timeManagement.dart';
 
 class TaskCard extends StatefulWidget {
   final Task task;
@@ -51,20 +52,6 @@ class TaskCardState extends State<TaskCard> {
 
   DatabaseService db = DatabaseService();
 
-  Future<DateTime?> datePicker() async {
-    DateTime todayDate = DateTime.now();
-    DateTime? selectedDate = await showDatePicker(
-      context: context,
-      initialDate: todayDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-
-    if (selectedDate != null) {
-      return selectedDate;
-    }
-    return selectedDate;
-  }
 
   Color getTaskColor() {
     if (widget.task.timeDue != null &&
@@ -76,6 +63,17 @@ class TaskCardState extends State<TaskCard> {
     } else {
       return Colors.white;
     }
+  }
+  
+  bool isTaskDueToday() {
+    DateTime today = DateTime.now();
+    DateTime? dueDate = widget.task.timeDue;
+
+    return (dueDate != null &&
+        today.day == dueDate.day &&
+        today.month == dueDate.month &&
+        today.year == dueDate.year &&
+        !isTaskCompleted());
   }
 
   bool isTaskCompleted() {
@@ -261,8 +259,8 @@ class TaskCardState extends State<TaskCard> {
     for (Tag tag in tagsOfWidgetTask) {
       tagNames += "${tag.name}, ";
     }
-    // remove the last comma
-    if (tagsOfWidgetTask.isNotEmpty) {
+    // remove the last comma if the string is not empty
+    if (tagNames.isNotEmpty) {
       tagNames = tagNames.substring(0, tagNames.length - 2);
     }
 
@@ -483,7 +481,10 @@ class TaskCardState extends State<TaskCard> {
                           IconButton(
                             icon: const Icon(Icons.wallet),
                             onPressed: () async {
-                              final DateTime? pickedDate = await datePicker();
+                              final DateTime? pickedDate = await datePicker(
+                                  context,
+                                  initialDate: DateTime.now(),
+                                  defaultDate: null);
                               if (pickedDate != null &&
                                   pickedDate != startTime) {
                                 setState(() {
@@ -510,8 +511,10 @@ class TaskCardState extends State<TaskCard> {
                           IconButton(
                             icon: const Icon(Icons.calendar_month_rounded),
                             onPressed: () async {
-                              final DateTime? pickedDueDate =
-                                  await datePicker();
+                              final DateTime? pickedDueDate = await datePicker(
+                                  context,
+                                  initialDate: DateTime.now(),
+                                  defaultDate: null);
                               if (pickedDueDate != null &&
                                   pickedDueDate != dueDate) {
                                 setState(() {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:planner/common/database.dart';
-import 'package:planner/common/time_management.dart';
+import 'package:planner/common/view/timeManagement.dart';
 import 'package:planner/common/view/addTaskButton.dart';
 import 'package:planner/common/view/topbar.dart';
 import 'package:planner/models/task.dart';
@@ -161,23 +161,16 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
     loadWeek(getDateOnly(widget.currentDate, offsetDays: 7));
   }
 
-  /// A DatePicker function to prompt a calendar
-  /// Returns a selectedDate if chosen, defaulted to today if no selectedDate
-  Future<void> datePicker() async {
-    DateTime? selectedDate = await showDatePicker(
-      context: context,
-      initialDate: widget.monday,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-
-    if (selectedDate != null) {
-      // setState(() {
-      //   widget.monday = mostRecentMonday(selectedDate);
-      // });
-      // await setData();
-      loadWeek(getDateOnly(selectedDate));
+  void resetView(DateTime? selectedDate) async {
+    if (selectedDate == null) {
+      return;
     }
+
+    setState(() {
+      today = selectedDate;
+    });
+    await setData();
+    generateScreen();
   }
 
   ///A function that generates the screen for the next 7 days

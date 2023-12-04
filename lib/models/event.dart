@@ -1,5 +1,5 @@
-import 'package:planner/common/recurrence.dart';
-import 'package:planner/common/time_management.dart';
+import 'package:planner/models/recurrence.dart';
+import 'package:planner/common/view/timeManagement.dart';
 import 'package:planner/models/undertaking.dart';
 import 'package:uuid/uuid.dart';
 
@@ -58,7 +58,7 @@ class Event extends Undertaking {
             color: e.color,
             location: e.location,
             tags: e.tags,
-            recurrenceRules: e.recurrenceRules,
+            recurrenceRules: e.recurrenceRules.clone(),
             timeStart: e.timeStart,
             timeEnd: e.timeEnd,
             timeCreated: e.timeCreated,

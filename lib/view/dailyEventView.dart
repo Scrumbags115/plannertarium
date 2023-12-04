@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:planner/common/database.dart';
-import 'package:planner/common/time_management.dart';
+import 'package:planner/common/view/timeManagement.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/view/eventDialogs.dart';
 import 'package:planner/view/weeklyEventView.dart';
 import 'package:planner/common/view/topbar.dart';
+
+import '../common/view/timeManagement.dart';
 
 DatabaseService db = DatabaseService();
 
@@ -20,25 +22,11 @@ class DayView extends StatefulWidget {
 class _DayViewState extends State<DayView> {
   var scaffoldKey = GlobalKey<ScaffoldState>();
 
-  ///A DatePicker function to prompt a calendar
-  ///Returns a selectedDate if chosen, defaulted to today if no selectedDate
-  Future<DateTime?> datePicker() async {
-    DateTime? selectedDate = await showDatePicker(
-      context: context,
-      initialDate: widget.date,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-
-    if (selectedDate != null) {
-      return selectedDate;
-    }
-    return widget.date;
-  }
-
   /// A void function that asynchronously selects a date and fetches tasks for that date.
   Future<void> selectDate() async {
-    DateTime selectedDate = await datePicker() ?? widget.date;
+    DateTime selectedDate = await datePicker(context,
+            initialDate: widget.date, defaultDate: widget.date) ??
+        widget.date;
 
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -176,8 +164,8 @@ class _SingleDayState extends State<SingleDay> {
                 onTap: () {
                   showEventDetailPopup(context, event, widget.date);
                 },
-                child:
-                    SizedBox(width: space, child: const Card(color: Colors.black))),
+                child: SizedBox(
+                    width: space, child: const Card(color: Colors.black))),
           ),
         )
         .toList();
@@ -211,13 +199,15 @@ class MyPainter extends CustomPainter {
       rrectPaint,
     );
     canvas.drawPath(eventRRectBorder, myPaint2);
-    TextStyle eventNameStyle = const TextStyle(color: Colors.black, fontSize: 15);
+    TextStyle eventNameStyle =
+        const TextStyle(color: Colors.black, fontSize: 15);
     TextSpan eventNameSpan = TextSpan(text: event.name, style: eventNameStyle);
     TextPainter eventNamePainter =
         TextPainter(text: eventNameSpan, textDirection: (TextDirection.ltr));
     eventNamePainter.layout(minWidth: 0, maxWidth: size.width);
     eventNamePainter.paint(canvas, Offset.fromDirection(0, 6));
-    TextStyle eventTimeStyle = const TextStyle(color: Colors.black, fontSize: 10.5);
+    TextStyle eventTimeStyle =
+        const TextStyle(color: Colors.black, fontSize: 10.5);
     TextSpan eventTimeSpan = TextSpan(
         text:
             "${intl.DateFormat("h:mm").format(event.timeStart)} - ${intl.DateFormat("h:mma").format(event.timeEnd)}",

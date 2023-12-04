@@ -1,4 +1,23 @@
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+///A DatePicker function to prompt a calendar
+///Returns a selectedDate if chosen, default value else
+Future<DateTime?> datePicker(context,
+    {DateTime? initialDate, DateTime? defaultDate}) async {
+  initialDate ??= DateTime.now();
+  DateTime? selectedDate = await showDatePicker(
+    context: context,
+    initialDate: initialDate,
+    firstDate: DateTime(2000),
+    lastDate: DateTime(2101),
+  );
+
+  if (selectedDate != null) {
+    return selectedDate;
+  }
+  return defaultDate;
+}
 
 /// returns the number of 24 hour sections between 2 dates
 int daysBetween(DateTime from, DateTime to) {

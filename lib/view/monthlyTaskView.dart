@@ -5,7 +5,7 @@ import 'package:planner/common/view/topbar.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/view/weeklyTaskView.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:planner/common/time_management.dart';
+import 'package:planner/common/view/timeManagement.dart';
 import 'package:planner/view/taskCard.dart';
 
 class MonthlyTaskView extends StatefulWidget {

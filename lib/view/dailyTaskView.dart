@@ -2,7 +2,7 @@ import 'package:planner/common/database.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:planner/common/time_management.dart';
+import 'package:planner/common/view/timeManagement.dart';
 import 'package:planner/common/view/addTaskButton.dart';
 import 'package:planner/common/view/topbar.dart';
 import 'package:planner/models/task.dart';
@@ -54,25 +54,10 @@ class TaskViewState extends State<TaskView> {
     setState(() {});
   }
 
-  ///A DatePicker function to prompt a calendar
-  ///Returns a selectedDate if chosen, defaulted to today if no selectedDate
-  Future<DateTime?> datePicker() async {
-    DateTime? selectedDate = await showDatePicker(
-      context: context,
-      initialDate: widget.focusedDay,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-
-    if (selectedDate != null) {
-      return selectedDate;
-    }
-    return widget.focusedDay;
-  }
-
   void toggleCompleted(Task task) {
     if (task.completed) {
       active.remove(task);
+      delay.remove(task);
       complete.add(task);
     } else {
       active.add(task);
@@ -85,22 +70,15 @@ class TaskViewState extends State<TaskView> {
   }
 
   /// A void function that asynchronously selects a date and fetches tasks for that date.
-  Future<void> selectDate({context}) async {
-    DateTime selectedDate = await datePicker() ?? widget.focusedDay;
+  Future<void> selectDate() async {
+    DateTime selectedDate =
+        await datePicker(context, initialDate: today) ?? today;
     List<Task> newTasks = await db.fetchTodayTasks(selectedDate);
 
     setState(() {
-      widget.focusedDay = selectedDate;
+      today = selectedDate;
       todayTasks = newTasks;
     });
-
-    if (context != null) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => TaskView(dayOfDailyView: selectedDate),
-        ),
-      );
-    }
   }
 
   void moveDelayedTask(Task task, DateTime oldDate) async {

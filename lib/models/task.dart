@@ -1,4 +1,4 @@
-import 'package:planner/common/time_management.dart';
+import 'package:planner/common/view/timeManagement.dart';
 import 'package:planner/models/undertaking.dart';
 
 /// Class to hold information about a task
