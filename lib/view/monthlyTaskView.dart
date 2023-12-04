@@ -59,11 +59,6 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
   }
 
   void moveDelayedTask(Task task, DateTime oldTaskDate) async {
-    print("delaying $task on $_selectedDay");
-    print("active: $_active");
-    print("delay: $_delay");
-    print("comp: $_complete");
-    print("today: $todayTasks");
     DateTime newTaskDate = task.timeCurrent;
     _active[oldTaskDate]!.remove(task) ? print("removed $task") : print("failed to remove $task");
     setState(() {});
@@ -84,6 +79,12 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
   }
 
   void deleteTask(Task task) {
+    print("deleting $task on $_selectedDay");
+    print("active: $_active");
+    print("delay: $_delay");
+    print("comp: $_complete");
+    print("today: $todayTasks");
+
     DateTime deletionStart = task.timeStart.isBefore(widget.startOfMonth)
         ? widget.startOfMonth
         : task.timeStart;
@@ -92,9 +93,9 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
 
     for (int i = 0; i < daysToDelete; i++) {
       DateTime toDeleteTaskFrom = getDateOnly(deletionStart, offsetDays: i);
-      _active[toDeleteTaskFrom]!.remove(task);
-      _complete[toDeleteTaskFrom]!.remove(task);
-      _delay[toDeleteTaskFrom]!.remove(task);
+      _active[toDeleteTaskFrom]!.remove(task) ? print("removed $task from active[$toDeleteTaskFrom]") : print("failed to remove $task from active[$toDeleteTaskFrom]");
+      _complete[toDeleteTaskFrom]!.remove(task) ? print("removed $task from _complete[$toDeleteTaskFrom]") : print("failed to remove $task from _complete[$toDeleteTaskFrom]");
+      _delay[toDeleteTaskFrom]!.remove(task) ? print("removed $task from delay[$toDeleteTaskFrom]") : print("failed to remove $task from delay[$toDeleteTaskFrom]");
       setState(() {
         getTasksForDay(toDeleteTaskFrom);
       });
@@ -102,7 +103,11 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
     todayTasks = (_active[_selectedDay] ?? []) +
         (_complete[_selectedDay] ?? []) +
         (_delay[_selectedDay] ?? []);
-        
+    print("shouldve deleted $task on $_selectedDay");
+    print("active: $_active");
+    print("delay: $_delay");
+    print("comp: $_complete");
+    print("today: $todayTasks");
     setState(() {
       getTaskList();
     });
