@@ -23,10 +23,10 @@ class WeeklyTaskView extends StatefulWidget {
 
 class WeeklyTaskViewState extends State<WeeklyTaskView> {
   final DatabaseService _db = DatabaseService();
+  DateTime today = DateTime.now();
   Map<DateTime, List<Task>> _active = {};
   Map<DateTime, List<Task>> _complete = {};
   Map<DateTime, List<Task>> _delay = {};
-
   @override
 
   /// Initializes the state of the widget
@@ -42,6 +42,43 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
       _active = taskMaps.$1;
       _complete = taskMaps.$2;
       _delay = taskMaps.$3;
+    });
+  }
+
+  void moveDelayedTask(Task task, DateTime oldTaskDate) async {
+    DateTime newTaskDate = task.timeCurrent;
+    _active[oldTaskDate]!.remove(task);
+    for (int i = 0; i < daysBetween(oldTaskDate, newTaskDate); i++) {
+      DateTime dateToDelay = getDateOnly(oldTaskDate, offsetDays: i);
+      if (_delay[dateToDelay] == null) {
+        _delay[dateToDelay] = [];
+      }
+      _delay[dateToDelay]!.add(task);
+    }
+    if (_active[newTaskDate] == null) {
+      _active[newTaskDate] = [];
+    }
+    _active[newTaskDate]!.add(task);
+    setState(() {
+      generateScreen();
+    });
+  }
+
+  void deleteTask(Task task) {
+    DateTime deletionStart =
+        task.timeStart.isBefore(widget.monday) ? widget.monday : task.timeStart;
+    DateTime deletionEnd = task.timeCurrent;
+    int daysToDelete = daysBetween(deletionStart, deletionEnd) + 1;
+
+    for (int i = 0; i < daysToDelete; i++) {
+      DateTime toDeleteTaskFrom = getDateOnly(deletionStart, offsetDays: i);
+      _active[toDeleteTaskFrom]!.remove(task);
+      _complete[toDeleteTaskFrom]!.remove(task);
+      _delay[toDeleteTaskFrom]!.remove(task);
+    }
+
+    setState(() {
+      generateScreen();
     });
   }
 
@@ -109,7 +146,8 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
                 children: tasksForDay.map((task) {
                   return Column(
                     children: [
-                      TaskCard(task: task),
+                      TaskCard(
+                          task: task, dateOfCard: currentDate, state: this),
                     ],
                   );
                 }).toList(),
@@ -137,7 +175,8 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
             onHorizontalDragEnd: (details) {
               if (details.primaryVelocity! < 0) {
                 Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => MonthlyTaskView(),
+                  builder: (context) =>
+                      MonthlyTaskView(dayOfMonth: widget.currentDate),
                 ));
               }
               if (details.primaryVelocity! > 0) {

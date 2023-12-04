@@ -122,7 +122,7 @@ AppBar _getTopBarDaily(bool forEvents, BuildContext context, state) {
     leading: IconButton(
       icon: const Icon(Icons.calendar_month_rounded, color: Colors.black),
       onPressed: () {
-        state.selectDate();
+        state.selectDate(context: context);
       },
     ),
     title: Row(
@@ -157,7 +157,7 @@ AppBar _getTopBarDaily(bool forEvents, BuildContext context, state) {
                   } else {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => const TaskView(),
+                        builder: (context) => TaskView(),
                       ),
                     );
                   }
@@ -321,7 +321,8 @@ _getTopBarMonthly(bool forEvents, BuildContext context, state) {
                   } else {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => const MonthlyTaskView(),
+                        builder: (context) =>
+                            MonthlyTaskView(dayOfMonth: DateTime.now()),
                       ),
                     );
                   }

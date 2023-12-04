@@ -3,6 +3,7 @@
 import 'package:get/get.dart';
 import 'package:planner/common/database.dart';
 import 'package:flutter/material.dart';
+import 'package:planner/common/time_management.dart';
 import 'package:planner/models/task.dart';
 import 'dart:async';
 import 'package:intl/intl.dart';
@@ -11,7 +12,15 @@ import 'package:planner/models/tag.dart';
 
 class TaskCard extends StatefulWidget {
   final Task task;
-  const TaskCard({super.key, required this.task});
+  late DateTime cardDate;
+  late var state;
+  TaskCard(
+      {super.key,
+      required this.task,
+      DateTime? dateOfCard,
+      required this.state}) {
+    cardDate = dateOfCard ?? getDateOnly(DateTime.now());
+  }
 
   @override
   TaskCardState createState() => TaskCardState();
@@ -57,15 +66,16 @@ class TaskCardState extends State<TaskCard> {
     return selectedDate;
   }
 
-  bool isTaskDueToday() {
-    DateTime today = DateTime.now();
-    DateTime? dueDate = widget.task.timeDue;
-
-    return (dueDate != null &&
-        today.day == dueDate.day &&
-        today.month == dueDate.month &&
-        today.year == dueDate.year &&
-        !isTaskCompleted());
+  Color getTaskColor() {
+    if (widget.task.timeDue != null &&
+        widget.task.timeDue!.isAtSameMomentAs(widget.cardDate)) {
+      return const Color.fromARGB(255, 255, 185, 185);
+    } else if (widget.task.isDelayedOn(widget.cardDate) ||
+        widget.task.completed) {
+      return Colors.grey.withOpacity(0.5);
+    } else {
+      return Colors.white;
+    }
   }
 
   bool isTaskCompleted() {
@@ -88,43 +98,46 @@ class TaskCardState extends State<TaskCard> {
     return colors;
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Dismissible(
       key: UniqueKey(),
+        confirmDismiss: (DismissDirection direction) async {
+          if (direction == DismissDirection.endToStart) {
+            return await showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: const Text("Confirm"),
+                  content: const Text("Are you sure you wish to delete this item?"),
+                  actions: <Widget>[
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: const Text("DELETE")
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: const Text("CANCEL"),
+                    ),
+                  ],
+                );
+              },
+            );
+          }
+          return true;
+        },
       onDismissed: (direction) async {
         if (direction == DismissDirection.startToEnd) {
           setState(() {
+            DateTime oldTaskDate = widget.task.timeCurrent;
             widget.task.moveToNextDay();
             db.setTask(widget.task);
-            
+            widget.state.moveDelayedTask(widget.task, oldTaskDate);
           });
         } else if (direction == DismissDirection.endToStart) {
-          showDialog(
-            context: context,
-            builder: (context) {
-              return AlertDialog(
-                title: const Text('Confirm Deletion'),
-                content:
-                    const Text('Are you sure you want to delete this task?'),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Cancel'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      db.deleteTask(widget.task);
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Delete'),
-                  ),
-                ],
-              );
-            },
-          );
+          db.deleteTask(widget.task);
+          widget.state.deleteTask(widget.task);
         }
       },
       background: Container(
@@ -148,7 +161,7 @@ class TaskCardState extends State<TaskCard> {
           borderRadius: BorderRadius.circular(10.0),
         ),
         elevation: 2,
-        color: isTaskDueToday() ? Colors.white : Colors.grey.withOpacity(0.5),
+        color: getTaskColor(),
         margin: const EdgeInsets.fromLTRB(10, 5, 10, 5),
         child: InkWell(
           onTap: () {

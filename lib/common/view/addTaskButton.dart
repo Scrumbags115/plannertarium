@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
+import 'package:planner/common/time_management.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/models/tag.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
@@ -53,7 +54,7 @@ Future<Task?> addButtonForm(BuildContext context, state) async {
   TextEditingController locationController = TextEditingController();
   TextEditingController tagController = TextEditingController();
   DateTime? dueDate;
-  DateTime? startTime = DateTime.now();
+  DateTime startTime = getDateOnly(DateTime.now());
   Completer<Task?> completer = Completer<Task?>();
   List<Tag> enteredTags = [];
   showDialog(
@@ -198,7 +199,7 @@ Future<Task?> addButtonForm(BuildContext context, state) async {
                   description: description,
                   location: location,
                   timeDue: dueDate,
-                  timeStart: startTime,
+                  timeStart: getDateOnly(startTime),
                 );
 
                 // if (enteredTags.isNotEmpty) {

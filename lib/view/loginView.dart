@@ -52,7 +52,7 @@ class LoginViewState extends State<LoginView> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const TaskView(),
+                          builder: (context) => TaskView(),
                         ),
                       );
                     });
