@@ -1,3 +1,5 @@
+import 'package:uuid/uuid.dart';
+
 List<bool> NO_RECURRENCE_ANY_DAY = [
   false,
   false,
@@ -75,6 +77,21 @@ class Recurrence {
               ? recurrenceRulesMap["id"]
               : _getIdFromTime());
     }
+  }
+
+  /// Clone the recurrence object. If generateNewID is true, the ID of the cloned event will be different
+  Recurrence.clone(Recurrence r, {generateNewID = false})
+      : this(
+      enabled: r.enabled,
+      timeStart: r.timeStart,
+      timeEnd: r.timeEnd,
+      dates: List.from(r.dates),
+      id: generateNewID ? "${r.id}-copy-${const Uuid().v4()}" : r.id,
+  );
+
+  /// Same as Recurrence.clone()
+  Recurrence clone({generateNewID = false}) {
+    return Recurrence.clone(this, generateNewID: generateNewID);
   }
 
   /// Sets the start and end dates for recurrence. Optionally can enable recurrence for Task/Event

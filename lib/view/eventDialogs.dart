@@ -4,6 +4,9 @@ import 'package:planner/common/database.dart';
 import 'package:planner/models/event.dart';
 import 'package:intl/intl.dart';
 
+import '../common/view/timeManagement.dart';
+import '../common/view/flashError.dart';
+
 class CustomButton extends StatelessWidget {
   final int index;
   final List<String> listOfDayStrings = ["M", "T", "W", "TH", "F", "S", "SU"];
@@ -34,17 +37,20 @@ class CustomButton extends StatelessWidget {
   }
 }
 
-Future<Event?> editEventFormForDay(BuildContext context, DateTime? date, {Event? event}) async {
+Future<Event?> editEventFormForDay(BuildContext context, DateTime date, {Event? event}) async {
   return addEventFormForDay(context, date, event: event, edit: true);
 }
-Future<Event?> addEventFormForDay(BuildContext context, DateTime? date,
+Future<Event?> addEventFormForDay(BuildContext context, DateTime date,
     {Event? event, bool edit = false}) async {
   DatabaseService db = DatabaseService();
   TextEditingController nameController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
   TextEditingController locationController = TextEditingController();
-  DateTime timeStart = DateTime.now();
-  DateTime timeEnd = DateTime.now();
+  DateTime now = DateTime.now();
+  DateTime timeStart = DateTime(date.year, date.month, date.day,
+      now.hour, now.minute);
+  DateTime timeEnd = DateTime(date.year, date.month, date.day,
+      now.hour, now.minute);
   bool enableRecurrence = false;
   DateTime? recurrenceEndTime;
   DateTime? recurrenceStartTime;
@@ -78,21 +84,10 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date,
   Completer<Event?> completer = Completer<Event?>();
   Event? oldEvent =
       event; // old event, so if editing an event, remove the old one
-
-  Future<DateTime?> datePicker() async {
-    DateTime todayDate = DateTime.now();
-    DateTime? selectedDate = await showDatePicker(
-      context: context,
-      initialDate: todayDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-
-    if (selectedDate != null) {
-      return selectedDate;
-    }
-    return selectedDate;
+  if (event != null) {
+    oldEvent = event.clone();
   }
+
 
   showDialog(
     context: context,
@@ -107,17 +102,19 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date,
                   padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
                   child: ElevatedButton(
                       onPressed: () async {
-                        DateTime? originalDate = date;
-                        date = (await showDatePicker(
+                        DateTime? newDate = (await showDatePicker(
                             context: context,
-                            initialDate: date!,
+                            initialDate: date,
                             firstDate: DateTime(2000),
                             lastDate: DateTime(2101)));
-                        date ??=
-                            originalDate; //in case user cancels date picker, show original date
+                        if (newDate != null) {
+                          date = newDate;
+                          timeStart = DateTime(newDate.year, newDate.month, newDate.day, timeStart.hour, timeStart.minute);
+                          timeEnd = DateTime(newDate.year, newDate.month, newDate.day, timeEnd.hour, timeEnd.minute);
+                        }
                         setState(() {});
                       },
-                      child: Text('${date?.month}/${date?.day}/${date?.year}')),
+                      child: Text('${date.month}/${date.day}/${date.year}')),
                 )
               ],
             ),
@@ -139,7 +136,7 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date,
                   TimeOfDay? startTOD = await showTimePicker(
                       context: context, initialTime: TimeOfDay.now());
                   startTOD ??= TimeOfDay.now(); //in case of cancel
-                  timeStart = DateTime(date!.year, date!.month, date!.day,
+                  timeStart = DateTime(date.year, date.month, date.day,
                       startTOD.hour, startTOD.minute);
                   setState(() {});
                 },
@@ -151,20 +148,12 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date,
                   TimeOfDay? endTOD = await showTimePicker(
                       context: context, initialTime: TimeOfDay.now());
                   endTOD ??= TimeOfDay.now(); //in case of cancel
-                  timeEnd = DateTime(date!.year, date!.month, date!.day,
+                  timeEnd = DateTime(date.year, date.month, date.day,
                       endTOD.hour, endTOD.minute);
                   setState(() {});
                 },
                 child: Text("Ends at: ${DateFormat("h:mma").format(timeEnd)}"),
               ),
-              // TextField(
-              //   controller: tagController,
-              //   decoration: InputDecoration(labelText: 'Tag'),
-              // ),
-              // TextField(
-              //   controller: recRulesController,
-              //   decoration: InputDecoration(labelText: 'Recurrence Rules'),
-              // ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -185,7 +174,7 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date,
                     IconButton(
                       icon: const Icon(Icons.wallet),
                       onPressed: () async {
-                        final DateTime? pickedDate = await datePicker();
+                        final DateTime? pickedDate = await datePicker(context, initialDate: recurrenceStartTime);
                         if (pickedDate != null &&
                             pickedDate != recurrenceStartTime) {
                           setState(() {
@@ -212,7 +201,7 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date,
                   IconButton(
                     icon: const Icon(Icons.calendar_month_rounded),
                     onPressed: () async {
-                      final DateTime? pickedEndDate = await datePicker();
+                      final DateTime? pickedEndDate = await datePicker(context, initialDate: recurrenceEndTime);
                       if (pickedEndDate != null &&
                           pickedEndDate != recurrenceEndTime) {
                         setState(() {
@@ -319,13 +308,21 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime? date,
                     // delete related recurring events if the option is explicitly set
                     db.deleteRecurringEvents(oldEvent, excludeMyself: true);
                   }
-                  db.setEvent(currentEvent);
-                  if (currentEvent.recurrenceRules.enabled) {
-                    db.setRecurringEvents(currentEvent);
+                  // test if datetimes are valid for both the event and recurring event
+                  if (currentEvent.timeStart.compareTo(currentEvent.timeEnd) >= 0) {
+                    // if the current event datetime range is invalid, display an error
+                    showFlashError(context, "The event's start and end times are invalid! Please try again.");
+                  } else if (currentEvent.recurrenceRules.timeStart.compareTo(currentEvent.recurrenceRules.timeEnd) > 0) {
+                    // if the current event's recurrence rules has existing datetimes and the range is invalid, display an error
+                    showFlashError(context, "The recurrence start and end times are invalid! Please try again.");
+                  } else {
+                    db.setEvent(currentEvent);
+                    if (currentEvent.recurrenceRules.enabled) {
+                      db.setRecurringEvents(currentEvent);
+                    }
+
+                    completer.complete(currentEvent);
                   }
-
-                  completer.complete(currentEvent);
-
                   Navigator.of(context).pop();
                 },
               ),
@@ -357,6 +354,14 @@ void showEventDetailPopup(BuildContext context, Event event, DateTime date) {
           ],
         ),
         actions: [
+          TextButton(
+            onPressed: () {
+              DatabaseService db = DatabaseService();
+              db.deleteEvent(event);
+              Navigator.of(context).pop();
+            },
+            child: const Text('Delete')
+          ),
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();

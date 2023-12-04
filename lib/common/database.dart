@@ -140,7 +140,7 @@ class DatabaseService {
   /// Get all events within a date range as a Map
   /// Returns a map, with the eventID being the key and value being an Event class
   Future<Map<String, Event>> getEventsInDateRange(
-      {required DateTime dateStart, required DateTime dateEnd}) async {
+      {required DateTime dateStart, required DateTime dateEnd, bool complexSearch=false}) async {
     final timestampStart = Timestamp.fromDate(dateStart);
     final timestampEnd = Timestamp.fromDate(dateEnd);
     // i can't do a composite search as it requires a composite index, which is not built automatically and has a limit in firestore
@@ -187,42 +187,45 @@ class DatabaseService {
     checkAndAddEventToMap(eventsTimeStartInRange, idNotInMap);
     checkAndAddEventToMap(eventsTimeEndInRange, idNotInMap);
 
-    // there's also a risk of a super long event not being caught
-    // this is probably expensive but I can't think of a better way to do this, so unless someone else
-    // has an idea I'll do this for now
-    final QuerySnapshot<Map<String, dynamic>> eventsLessThan = await users
-        .doc(userid)
-        .collection("events")
-        .where("event time start", isLessThan: timestampStart)
-        .get();
-    final QuerySnapshot<Map<String, dynamic>> eventsGreaterThan = await users
-        .doc(userid)
-        .collection("events")
-        .where("event time start", isGreaterThan: timestampEnd)
-        .get();
+    // this doesn't seem to currently be used on the event view, so I'll lock it behind a flag to not incur too many reads for now
+    if (complexSearch) {
+      // there's also a risk of a super long event not being caught
+      // this is probably expensive but I can't think of a better way to do this, so unless someone else
+      // has an idea I'll do this for now
+      final QuerySnapshot<Map<String, dynamic>> eventsLessThan = await users
+          .doc(userid)
+          .collection("events")
+          .where("time start", isLessThan: timestampStart)
+          .get();
+      final QuerySnapshot<Map<String, dynamic>> eventsGreaterThan = await users
+          .doc(userid)
+          .collection("events")
+          .where("time start", isGreaterThan: timestampEnd)
+          .get();
 
-    // add the intersection of the two sets
-    // by converting each into a set of IDs
-    // This is a little ugly as a result of Dart disliking forEach
-    Set<String> setLessThan = {};
-    Set<String> setGreaterThan = {};
-    for (var doc in eventsLessThan.docs) {
-      setLessThan.add(doc.id);
-    }
-    for (var doc in eventsGreaterThan.docs) {
-      setGreaterThan.add(doc.id);
-    }
+      // add the intersection of the two sets
+      // by converting each into a set of IDs
+      // This is a little ugly as a result of Dart disliking forEach
+      Set<String> setLessThan = {};
+      Set<String> setGreaterThan = {};
+      for (var doc in eventsLessThan.docs) {
+        setLessThan.add(doc.id);
+      }
+      for (var doc in eventsGreaterThan.docs) {
+        setGreaterThan.add(doc.id);
+      }
 
-    /// if QueryDocumentSnapshot in intersection of sets and not already added into map
-    bool notInSetOrMap(QueryDocumentSnapshot<Map<String, dynamic>> doc) {
-      return idNotInMap(doc) &&
-          setLessThan.contains(doc.id) &&
-          setGreaterThan.contains(doc.id);
-    }
+      /// if QueryDocumentSnapshot in intersection of sets and not already added into map
+      bool notInSetOrMap(QueryDocumentSnapshot<Map<String, dynamic>> doc) {
+        return idNotInMap(doc) &&
+            setLessThan.contains(doc.id) &&
+            setGreaterThan.contains(doc.id);
+      }
 
-    // and checking if the event exists in both sets
-    checkAndAddEventToMap(eventsLessThan, notInSetOrMap);
-    checkAndAddEventToMap(eventsGreaterThan, notInSetOrMap);
+      // and checking if the event exists in both sets
+      checkAndAddEventToMap(eventsLessThan, notInSetOrMap);
+      checkAndAddEventToMap(eventsGreaterThan, notInSetOrMap);
+    }
     return eventsMap;
   }
 

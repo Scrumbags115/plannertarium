@@ -7,6 +7,8 @@ import 'package:planner/view/eventDialogs.dart';
 import 'package:planner/view/weekView.dart';
 import 'package:planner/common/view/topbar.dart';
 
+import '../common/view/timeManagement.dart';
+
 DatabaseService db = DatabaseService();
 
 class DayView extends StatefulWidget {
@@ -20,25 +22,9 @@ class DayView extends StatefulWidget {
 class _DayViewState extends State<DayView> {
   var scaffoldKey = GlobalKey<ScaffoldState>();
 
-  ///A DatePicker function to prompt a calendar
-  ///Returns a selectedDate if chosen, defaulted to today if no selectedDate
-  Future<DateTime?> datePicker() async {
-    DateTime? selectedDate = await showDatePicker(
-      context: context,
-      initialDate: widget.date,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-
-    if (selectedDate != null) {
-      return selectedDate;
-    }
-    return widget.date;
-  }
-
   /// A void function that asynchronously selects a date and fetches tasks for that date.
   Future<void> selectDate() async {
-    DateTime selectedDate = await datePicker() ?? widget.date;
+    DateTime selectedDate = await datePicker(context, initialDate: widget.date, defaultDateTime:widget.date) ?? widget.date;
 
     Navigator.of(context).push(
       MaterialPageRoute(
