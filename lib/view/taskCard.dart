@@ -8,6 +8,8 @@ import 'package:intl/intl.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:planner/models/tag.dart';
 
+import '../common/view/timeManagement.dart';
+
 class TaskCard extends StatefulWidget {
   final Task task;
   const TaskCard({super.key, required this.task});
@@ -41,21 +43,6 @@ class TaskCardState extends State<TaskCard> {
   }
 
   DatabaseService db = DatabaseService();
-
-  Future<DateTime?> datePicker() async {
-    DateTime todayDate = DateTime.now();
-    DateTime? selectedDate = await showDatePicker(
-      context: context,
-      initialDate: todayDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-
-    if (selectedDate != null) {
-      return selectedDate;
-    }
-    return selectedDate;
-  }
 
   bool isTaskDueToday() {
     DateTime today = DateTime.now();
@@ -247,8 +234,10 @@ class TaskCardState extends State<TaskCard> {
     for (Tag tag in tagsOfWidgetTask) {
       tagNames += "${tag.name}, ";
     }
-    // remove the last comma
-    tagNames = tagNames.substring(0, tagNames.length - 2);
+    // remove the last comma if the string is not empty
+    if (tagNames.isNotEmpty) {
+      tagNames = tagNames.substring(0, tagNames.length - 2);
+    }
 
     showDialog(
       context: context,
@@ -467,7 +456,10 @@ class TaskCardState extends State<TaskCard> {
                           IconButton(
                             icon: const Icon(Icons.wallet),
                             onPressed: () async {
-                              final DateTime? pickedDate = await datePicker();
+                              final DateTime? pickedDate = await datePicker(
+                                  context,
+                                  initialDate: DateTime.now(),
+                                  defaultDate: null);
                               if (pickedDate != null &&
                                   pickedDate != startTime) {
                                 setState(() {
@@ -494,8 +486,10 @@ class TaskCardState extends State<TaskCard> {
                           IconButton(
                             icon: const Icon(Icons.calendar_month_rounded),
                             onPressed: () async {
-                              final DateTime? pickedDueDate =
-                                  await datePicker();
+                              final DateTime? pickedDueDate = await datePicker(
+                                  context,
+                                  initialDate: DateTime.now(),
+                                  defaultDate: null);
                               if (pickedDueDate != null &&
                                   pickedDueDate != dueDate) {
                                 setState(() {

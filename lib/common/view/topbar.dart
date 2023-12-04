@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/common/time_management.dart';
+import 'package:planner/common/view/timeManagement.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/view/dailyEventView.dart';
@@ -208,8 +209,17 @@ AppBar _getTopBarWeekly(bool forEvents, BuildContext context, state) {
         Expanded(
           child: IconButton(
             icon: const Icon(Icons.calendar_month_rounded, color: Colors.black),
-            onPressed: () {
-              state.datePicker();
+            onPressed: () async {
+              DateTime initialDate;
+              // todo: This is done to avoid extreme duplication of code, but the way the event and task view are written are fundamentally very different to trying to call it with the same signature will crash. This just ensures that if the view's object is different, the proper signature is called
+              try {
+                initialDate = state.today;
+              } on NoSuchMethodError catch (_) {
+                initialDate = state.widget.monday;
+              }
+              final DateTime? selectedDate = await datePicker(state.context,
+                  initialDate: initialDate, defaultDate: null);
+              await state.resetView(selectedDate);
             },
           ),
         ),

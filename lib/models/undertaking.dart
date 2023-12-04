@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:planner/common/recurrence.dart';
+import 'package:planner/models/recurrence.dart';
 import 'package:planner/common/time_management.dart';
 
 class Undertaking {
