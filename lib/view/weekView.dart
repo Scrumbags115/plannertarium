@@ -23,26 +23,18 @@ class WeekView extends StatefulWidget {
 class _WeekViewState extends State<WeekView> {
   var scaffoldKey = GlobalKey<ScaffoldState>();
 
-  ///A DatePicker function to prompt a calendar
-  ///Returns a selectedDate if chosen, defaulted to today if no selectedDate
-  Future<void> datePicker() async {
-    DateTime? selectedDate = await showDatePicker(
-      context: context,
-      initialDate: widget.monday,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-
-    if (selectedDate != null) {
-      setState(() {
-        widget.monday = selectedDate;
-      });
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => WeekView(date: widget.monday),
-        ),
-      );
+  void resetView(DateTime? selectedDate) async {
+    if (selectedDate == null) {
+      return;
     }
+    setState(() {
+      widget.monday = selectedDate;
+    });
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => WeekView(date: widget.monday),
+      ),
+    );
   }
 
   /// Asynchronously loads tasks for the previous week and generates the screen

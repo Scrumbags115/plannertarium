@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
+import 'package:planner/common/view/timeManagement.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/models/tag.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
@@ -134,7 +135,7 @@ Future<Task?> addButtonForm(BuildContext context, state) async {
                         icon: const Icon(Icons.wallet),
                         onPressed: () async {
                           final DateTime? pickedDate =
-                              await datePicker(context, state);
+                              await datePicker(context, initialDate: state.today, defaultDate: state.today);
                           if (pickedDate != null && pickedDate != startTime) {
                             setState(() {
                               startTime = pickedDate;
@@ -157,7 +158,7 @@ Future<Task?> addButtonForm(BuildContext context, state) async {
                         icon: const Icon(Icons.calendar_month_rounded),
                         onPressed: () async {
                           final DateTime? pickedDueDate =
-                              await datePicker(context, state);
+                              await datePicker(context, initialDate: state.monday, defaultDate: state.monday);
                           if (pickedDueDate != null &&
                               pickedDueDate != dueDate) {
                             setState(() {
@@ -305,18 +306,3 @@ Future<List<Tag>> showTagSelectionDialog(BuildContext context) async {
   return selectedTags;
 }
 
-///A DatePicker function to prompt a calendar
-///Returns a selectedDate if chosen, defaulted to today if no selectedDate
-Future<DateTime?> datePicker(context, state) async {
-  DateTime? selectedDate = await showDatePicker(
-    context: context,
-    initialDate: state.today,
-    firstDate: DateTime(2000),
-    lastDate: DateTime(2101),
-  );
-
-  if (selectedDate != null) {
-    return selectedDate;
-  }
-  return state.today;
-}

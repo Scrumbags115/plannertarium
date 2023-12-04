@@ -301,24 +301,44 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime date,
                     currentEvent.recurrenceRules.timeStart =
                         recurrenceStartTime!;
                   }
-                  if (oldEvent != null) {
-                    db.deleteEvent(oldEvent);
+
+                  /// return if one of the datetimes provided is not set/is the epoch
+                  bool oneIsUnset(DateTime one, DateTime two) {
+                    final DateTime epoch = DateTime.fromMillisecondsSinceEpoch(0);
+                    return epoch.compareTo(one) == 0 || epoch.compareTo(two) == 0;
                   }
-                  if (editRelatedRecurringEvents && oldEvent != null) {
-                    // delete related recurring events if the option is explicitly set
-                    db.deleteRecurringEvents(oldEvent, excludeMyself: true);
+
+                  /// return if the given event has valid recurrence datetimes
+                  bool validRecurrenceDateTimes(Event e) {
+                    return !oneIsUnset(e.recurrenceRules.timeStart, e.recurrenceRules.timeEnd) && e.recurrenceRules.timeStart.compareTo(e.recurrenceRules.timeEnd) < 0;
                   }
+
+                  /// return if the event has valid timestart and timeend datetimes
+                  bool validEventDateTimes(Event e) {
+                    return e.timeStart.compareTo(e.timeEnd) < 0;
+                  }
+
                   // test if datetimes are valid for both the event and recurring event
-                  if (currentEvent.timeStart.compareTo(currentEvent.timeEnd) >= 0) {
+                  if (!validEventDateTimes(currentEvent)) {
                     // if the current event datetime range is invalid, display an error
                     showFlashError(context, "The event's start and end times are invalid! Please try again.");
-                  } else if (currentEvent.recurrenceRules.timeStart.compareTo(currentEvent.recurrenceRules.timeEnd) > 0) {
+                  } else if (!validRecurrenceDateTimes(currentEvent)) {
                     // if the current event's recurrence rules has existing datetimes and the range is invalid, display an error
                     showFlashError(context, "The recurrence start and end times are invalid! Please try again.");
                   } else {
                     db.setEvent(currentEvent);
                     if (currentEvent.recurrenceRules.enabled) {
                       db.setRecurringEvents(currentEvent);
+                    }
+
+                    // if we are editing an event, delete the old one
+                    if (oldEvent != null) {
+                      db.deleteEvent(oldEvent);
+                    }
+
+                    if (editRelatedRecurringEvents && oldEvent != null) {
+                      // delete related recurring events if the option is explicitly set
+                      db.deleteRecurringEvents(oldEvent, excludeMyself: true);
                     }
 
                     completer.complete(currentEvent);

@@ -10,6 +10,8 @@ import 'dart:async';
 import 'package:planner/view/weeklyTaskView.dart';
 import 'package:planner/view/taskCard.dart';
 
+import '../common/view/timeManagement.dart';
+
 class TaskView extends StatefulWidget {
   const TaskView({super.key});
   @override
@@ -43,25 +45,9 @@ class TaskViewState extends State<TaskView> {
     setState(() {});
   }
 
-  ///A DatePicker function to prompt a calendar
-  ///Returns a selectedDate if chosen, defaulted to today if no selectedDate
-  Future<DateTime?> datePicker() async {
-    DateTime? selectedDate = await showDatePicker(
-      context: context,
-      initialDate: today,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-
-    if (selectedDate != null) {
-      return selectedDate;
-    }
-    return today;
-  }
-
   /// A void function that asynchronously selects a date and fetches tasks for that date.
   Future<void> selectDate() async {
-    DateTime selectedDate = await datePicker() ?? today;
+    DateTime selectedDate = await datePicker(context, initialDate: today) ?? today;
     List<Task> newTasks = await db.fetchTodayTasks(selectedDate);
 
     setState(() {
