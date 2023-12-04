@@ -3,11 +3,11 @@ import 'package:planner/common/database.dart';
 import 'package:planner/common/time_management.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/models/task.dart';
-import 'package:planner/view/dayView.dart';
-import 'package:planner/view/monthView.dart';
+import 'package:planner/view/dailyEventView.dart';
+import 'package:planner/view/monthlyEvenView.dart';
 import 'package:planner/view/monthlyTaskView.dart';
 import 'package:planner/view/taskView.dart';
-import 'package:planner/view/weekView.dart';
+import 'package:planner/view/weeklyEventView.dart';
 import 'package:planner/view/weeklyTaskView.dart';
 
 RoundedRectangleBorder roundedRectangleBackground =

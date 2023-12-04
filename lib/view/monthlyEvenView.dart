@@ -3,7 +3,7 @@ import 'package:planner/common/database.dart';
 import 'package:planner/common/view/topbar.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:planner/models/event.dart';
-import 'package:planner/view/weekView.dart';
+import 'package:planner/view/weeklyEventView.dart';
 
 class MonthView extends StatefulWidget {
   const MonthView({super.key});
