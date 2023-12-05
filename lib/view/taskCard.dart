@@ -1,12 +1,10 @@
 // ignore_for_file: prefer_const_constructors, use_build_context_synchronously
 
-import 'package:get/get.dart';
 import 'package:planner/common/database.dart';
 import 'package:flutter/material.dart';
 import 'package:planner/models/task.dart';
 import 'dart:async';
 import 'package:intl/intl.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:planner/models/tag.dart';
 import 'package:planner/common/view/tagPopup.dart';
 
@@ -64,7 +62,7 @@ class TaskCardState extends State<TaskCard> {
       return Colors.white;
     }
   }
-  
+
   bool isTaskDueToday() {
     DateTime today = DateTime.now();
     DateTime? dueDate = widget.task.timeDue;
@@ -330,7 +328,6 @@ class TaskCardState extends State<TaskCard> {
     );
   }
 
-
   Future<Task?> showEditPopup(BuildContext context) async {
     DatabaseService db = DatabaseService();
 
@@ -383,8 +380,9 @@ class TaskCardState extends State<TaskCard> {
                         controller: tagController,
                         decoration: const InputDecoration(labelText: 'Tag'),
                         onTap: () async {
-                          List<Tag> result =
-                              await showTagSelectionDialog(context, setState: setState);
+                          List<Tag> result = await showTagSelectionDialog(
+                              context,
+                              setState: setState);
                           for (Tag tag in result) {
                             addToLocalTagList(tag);
                           }

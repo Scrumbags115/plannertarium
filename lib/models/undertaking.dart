@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:planner/models/recurrence.dart';
 import 'package:planner/common/view/timeManagement.dart';
 
-
 class Undertaking {
   late String _name = "";
   late final String _id;

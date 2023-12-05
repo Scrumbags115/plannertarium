@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/common/view/timeManagement.dart';
 import 'package:planner/common/view/addTaskButton.dart';
@@ -49,7 +48,7 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
     for (int i = 0; i < 7; i++) {
       // get the date of the current day
       DateTime curr = getDateOnly(widget.monday, offsetDays: i);
-      
+
       // if the task was just completed
       if (task.completed) {
         // and if the task was active
@@ -58,30 +57,30 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
           active[curr]!.remove(task);
           complete[curr]!.add(task);
         }
-        
+
         // or if the task was delayed
         if (delay[curr]!.contains(task)) {
           // then remove it from delayed and add it to complete
           delay[curr]!.remove(task);
           complete[curr]!.add(task);
         }
-      // if the task was just uncompleted
+        // if the task was just uncompleted
       } else {
         // and if the task was complete
         if (complete[curr]!.contains(task)) {
           // then remove it from complete and add it to active
           complete[curr]!.remove(task);
-            // if the task ws delayed
-            if (curr.isBefore(task.timeCurrent)) {
-              // then add it to the delayed list
-              delay[curr]!.add(task);
-            }
-
-            if (curr.isAtSameMomentAs(task.timeCurrent)) {
-              // otherwise add it to the active list
-              active[curr]!.add(task);
-            }
+          // if the task ws delayed
+          if (curr.isBefore(task.timeCurrent)) {
+            // then add it to the delayed list
+            delay[curr]!.add(task);
           }
+
+          if (curr.isAtSameMomentAs(task.timeCurrent)) {
+            // otherwise add it to the active list
+            active[curr]!.add(task);
+          }
+        }
       }
     }
     // then update the screen
