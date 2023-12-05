@@ -48,8 +48,7 @@ Future<List<Tag>> showTagSelectionDialog(BuildContext context,
                                 ),
                               ),
                               Column(
-                                mainAxisAlignment:
-                                MainAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   const Align(
                                     alignment: Alignment.centerLeft,
@@ -58,16 +57,19 @@ Future<List<Tag>> showTagSelectionDialog(BuildContext context,
                                           color: Colors.black,
                                         )),
                                   ),
-                                  isOnIOSorAndroid() ? SizedBox( // temporary, since I can't figure out howo to make colorpicker expand to the right sizes, for some reason it overflows at phone level widths
-                                    width: 200,
-                                    child: ColorPicker(
-                                      pickerColor: pickerColor,
-                                      onColorChanged: changeColor,
-                                    ),
-                                  ) : ColorPicker(
-                                    pickerColor: pickerColor,
-                                    onColorChanged: changeColor,
-                                  ),
+                                  isOnIOSorAndroid()
+                                      ? SizedBox(
+                                          // temporary, since I can't figure out howo to make colorpicker expand to the right sizes, for some reason it overflows at phone level widths
+                                          width: 200,
+                                          child: ColorPicker(
+                                            pickerColor: pickerColor,
+                                            onColorChanged: changeColor,
+                                          ),
+                                        )
+                                      : ColorPicker(
+                                          pickerColor: pickerColor,
+                                          onColorChanged: changeColor,
+                                        ),
                                 ],
                               ),
                             ],
