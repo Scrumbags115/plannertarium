@@ -159,8 +159,8 @@ class _SingleDayState extends State<SingleDay> {
             painter: MyPainter(context, eventSpace: space, event: event),
             child: GestureDetector(
                 behavior: HitTestBehavior.translucent,
-                onTap: () {
-                  showEventDetailPopup(context, event, widget.date);
+                onTap: () async {
+                  await showEventDetailPopup(context, event, widget.date);
                 },
                 child: SizedBox(
                     width: space, child: const Card(color: Colors.black))),

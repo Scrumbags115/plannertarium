@@ -3,6 +3,7 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'dart:async';
 
 import '../../models/tag.dart';
+import '../../view/loginView.dart';
 import 'flashError.dart';
 
 /// Display a popup to select a tag with a colorpicker. Takes in the runtime context and an optional setState function to call on update for updating a view as necessary.
@@ -32,37 +33,45 @@ Future<List<Tag>> showTagSelectionDialog(BuildContext context,
                 body: AlertDialog(
                   title: const Text('Add Tag'),
                   content: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        TextField(
-                          controller: nameController,
-                          decoration:
-                              const InputDecoration(labelText: 'Tag Name'),
-                        ),
-                        const SizedBox(height: 16),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text('Tag Color:',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                  )),
-                            ),
-                            SizedBox(
-                              width: 200,
-                              child: ColorPicker(
-                                pickerColor: pickerColor,
-                                onColorChanged: changeColor,
+                      child: SizedBox(
+                          height: (MediaQuery.of(context).size.width * 0.7),
+                          width: (MediaQuery.of(context).size.height * 0.8),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                                child: TextField(
+                                  controller: nameController,
+                                  decoration: const InputDecoration(
+                                      labelText: 'Tag Name'),
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
+                              Column(
+                                mainAxisAlignment:
+                                MainAxisAlignment.center,
+                                children: [
+                                  const Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text('Tag Color:',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                        )),
+                                  ),
+                                  isOnIOSorAndroid() ? SizedBox( // temporary, since I can't figure out howo to make colorpicker expand to the right sizes, for some reason it overflows at phone level widths
+                                    width: 200,
+                                    child: ColorPicker(
+                                      pickerColor: pickerColor,
+                                      onColorChanged: changeColor,
+                                    ),
+                                  ) : ColorPicker(
+                                    pickerColor: pickerColor,
+                                    onColorChanged: changeColor,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ))),
                   actions: [
                     TextButton(
                       onPressed: () {

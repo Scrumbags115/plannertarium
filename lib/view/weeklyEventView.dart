@@ -292,8 +292,8 @@ class _EventCardState extends State<EventCard> {
         child: Card(
           color: Colors.amber,
           child: InkWell(
-            onTap: () {
-              showEventDetailPopup(context, event, widget.date);
+            onTap: () async {
+              await showEventDetailPopup(context, event, widget.date);
             },
             child: Column(
               children: [
