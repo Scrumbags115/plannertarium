@@ -1,8 +1,7 @@
 import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:planner/common/time_management.dart';
+import 'package:planner/common/view/timeManagement.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/models/tag.dart';
@@ -887,37 +886,24 @@ class DatabaseService {
     return getTasksDue(dateStart, nextMonth);
   }
 
-  /// Get daily and monthly tasks from a day as a single collection for each
-  /// return value is (List of daily tasks, map of monthly tasks)
-  Future<(List<Task>, Map<DateTime, List<Task>>)> fetchMonthlyTasks(
-      DateTime selectedDate) async {
-    DateTime dateStart = getDateOnly(selectedDate);
-    Map<DateTime, List<Task>> activeMap, delayedMap, completedMap;
-    (activeMap, delayedMap, completedMap) = await getTaskMapsMonth(dateStart);
-
-    var active = activeMap.map((key, value) => MapEntry(getDateOnly(key),
-        value)); // Use getDateOnly when setting tasks in the active map
-    final todayTasks = active[getDateOnly(selectedDate)] ??
-        []; // Use getDateOnly when getting tasks from the active map
-
-    return (todayTasks, active);
-  }
-
   /// Get weekly tasks as a single list
   Future<List<Task>> fetchWeeklyTask({DateTime? weekStart}) async {
     DateTime today = getDateOnly(weekStart ?? DateTime.now());
+    today = mostRecentMonday(today);
     Map<DateTime, List<Task>> activeMap, delayedMap, completedMap;
 
     // Fetch task maps for the specified week
     (activeMap, delayedMap, completedMap) = await getTaskMapsWeek(today);
     Map<DateTime, List<Task>> dueTasksMap = await getTasksDueWeek(today);
 
-    List<Task> allTasks = [
-      ...?activeMap[today],
-      ...?delayedMap[today],
-      ...?completedMap[today],
-      ...?dueTasksMap[today],
-    ];
+    List<Task> allTasks = [];
+    for (int i = 0; i < 7; i++) {
+      DateTime newDay = getDateOnly(today, offsetDays: i);
+      allTasks += activeMap[newDay]!;
+      allTasks += delayedMap[newDay]!;
+      allTasks += completedMap[newDay]!;
+      allTasks += dueTasksMap[newDay]!;
+    }
     // print('All tasks for the week: $allTasks');
 
     return allTasks;

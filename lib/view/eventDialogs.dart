@@ -4,7 +4,6 @@ import 'package:planner/common/database.dart';
 import 'package:planner/models/event.dart';
 import 'package:intl/intl.dart';
 import 'package:planner/view/dailyEventView.dart';
-
 import '../common/view/timeManagement.dart';
 import '../common/view/flashError.dart';
 

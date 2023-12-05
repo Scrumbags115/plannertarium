@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
-import 'package:planner/common/time_management.dart';
 import 'package:planner/common/view/timeManagement.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/view/dailyEventView.dart';
 import 'package:planner/view/monthlyEventView.dart';
 import 'package:planner/view/monthlyTaskView.dart';
-import 'package:planner/view/taskView.dart';
+import 'package:planner/view/dailyTaskView.dart';
 import 'package:planner/view/weeklyEventView.dart';
 import 'package:planner/view/weeklyTaskView.dart';
 
@@ -123,7 +122,7 @@ AppBar _getTopBarDaily(bool forEvents, BuildContext context, state) {
     leading: IconButton(
       icon: const Icon(Icons.calendar_month_rounded, color: Colors.black),
       onPressed: () {
-        state.selectDate();
+        state.selectDate(context: context);
       },
     ),
     title: Row(
@@ -158,7 +157,7 @@ AppBar _getTopBarDaily(bool forEvents, BuildContext context, state) {
                   } else {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => const TaskView(),
+                        builder: (context) => TaskView(),
                       ),
                     );
                   }
@@ -259,7 +258,7 @@ AppBar _getTopBarWeekly(bool forEvents, BuildContext context, state) {
                     } else {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => const WeeklyTaskView(),
+                          builder: (context) => WeeklyTaskView(),
                         ),
                       );
                     }
@@ -331,7 +330,8 @@ _getTopBarMonthly(bool forEvents, BuildContext context, state) {
                   } else {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => const MonthlyTaskView(),
+                        builder: (context) =>
+                            MonthlyTaskView(dayOfMonth: DateTime.now()),
                       ),
                     );
                   }

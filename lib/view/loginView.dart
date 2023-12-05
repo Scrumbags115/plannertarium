@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:planner/common/database.dart';
 import 'package:flutter/material.dart';
 import 'package:planner/common/login.dart';
-import 'package:planner/view/taskView.dart';
+import 'package:planner/view/dailyTaskView.dart';
 import 'package:slider_button/slider_button.dart';
 
 class SwitchListTileExample extends StatefulWidget {
@@ -82,7 +82,7 @@ class LoginViewState extends State<LoginView> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => const TaskView(),
+          builder: (context) => TaskView(),
         ),
       );
     });

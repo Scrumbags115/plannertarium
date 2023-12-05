@@ -1,4 +1,4 @@
-import 'package:planner/common/time_management.dart';
+import 'package:planner/common/view/timeManagement.dart';
 import 'package:planner/models/undertaking.dart';
 
 /// Class to hold information about a task
@@ -79,6 +79,11 @@ class Task extends Undertaking {
     timeCurrent = getDateOnly(timeCurrent, offsetDays: 1);
   }
 
+  @override
+  set timeStart(DateTime newTimeStart) {
+    super.timeStart = getDateOnly(newTimeStart);
+  }
+
   set completed(bool newCompleted) {
     timeModified = DateTime.now();
     _completed = newCompleted;
@@ -88,17 +93,26 @@ class Task extends Undertaking {
 
   set timeCurrent(DateTime newTimeCurrent) {
     timeModified = DateTime.now();
-    _timeCurrent = newTimeCurrent;
+    _timeCurrent = getDateOnly(newTimeCurrent);
   }
 
   DateTime get timeCurrent => _timeCurrent;
 
   set timeDue(DateTime? newTimeDue) {
     timeModified = DateTime.now();
-    _timeDue = newTimeDue;
+    if (newTimeDue != null) {
+      _timeDue = getDateOnly(newTimeDue);
+    } else {
+      _timeDue = null;
+    }
   }
 
   DateTime? get timeDue => _timeDue;
+
+  bool isDelayedOn(DateTime day) {
+    return (day.isAtSameMomentAs(timeStart) || day.isAfter(timeStart)) &&
+        day.isBefore(timeCurrent);
+  }
 
   @override
   String toString() {
@@ -113,10 +127,10 @@ class Task extends Undertaking {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! Task) return false;
+    if (id == other.id) return true;
 
     bool taskVariablesEqual = completed == other._completed &&
-        timeDue == other.timeDue &&
-        timeCurrent == other.timeCurrent;
+        timeDue == other.timeDue;
     if (!taskVariablesEqual) {
       // print("task variables are not equal")
       return false;

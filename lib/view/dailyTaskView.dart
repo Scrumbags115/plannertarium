@@ -2,6 +2,7 @@ import 'package:planner/common/database.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:planner/common/view/timeManagement.dart';
 import 'package:planner/common/view/addTaskButton.dart';
 import 'package:planner/common/view/topbar.dart';
 import 'package:planner/models/task.dart';
@@ -10,10 +11,11 @@ import 'dart:async';
 import 'package:planner/view/weeklyTaskView.dart';
 import 'package:planner/view/taskCard.dart';
 
-import '../common/view/timeManagement.dart';
-
 class TaskView extends StatefulWidget {
-  const TaskView({super.key});
+  late DateTime focusedDay;
+  TaskView({super.key, DateTime? dayOfDailyView}) {
+    focusedDay = dayOfDailyView ?? DateTime.now();
+  }
   @override
   TaskViewState createState() => TaskViewState();
 }
@@ -23,12 +25,14 @@ class TaskViewState extends State<TaskView> {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final User? user = FirebaseAuth.instance.currentUser;
   DatabaseService db = DatabaseService();
+  DateTime today = DateTime.now();
+  List<Task> active = [];
+  List<Task> delay = [];
+  List<Task> complete = [];
 
   List<Task> todayTasks = [];
   List<Task> selectedDateTasks = [];
   List<Task> todayDelayedTasks = [];
-
-  DateTime today = DateTime.now();
   bool forEvents = false;
 
   @override
@@ -41,9 +45,17 @@ class TaskViewState extends State<TaskView> {
 
   /// Performs asynchronous initialization for the widget.
   void asyncInitState() async {
-    todayTasks = await db.fetchTodayTasks(DateTime.now());
+    var taskMaps = await db.getTaskMapsDay(widget.focusedDay);
+    active = taskMaps.$1;
+    delay = taskMaps.$2;
+    complete = taskMaps.$3;
+
+    todayTasks = active + delay + complete;
     setState(() {});
   }
+
+  /// Dummy function called by taskCard, does not need implementation for daily view 
+  void toggleCompleted(Task task) {}
 
   /// A void function that asynchronously selects a date and fetches tasks for that date.
   Future<void> selectDate() async {
@@ -55,6 +67,35 @@ class TaskViewState extends State<TaskView> {
       today = selectedDate;
       todayTasks = newTasks;
     });
+  }
+
+  void moveDelayedTask(Task task, DateTime oldDate) async {
+    active.remove(task);
+    delay.add(task);
+    todayTasks = active + delay + complete;
+    setState(() {
+      getTodayTaskList();
+    });
+  }
+
+  void deleteTask(Task task) {
+    active.remove(task);
+    delay.remove(task);
+    complete.remove(task);
+    todayTasks = active + delay + complete;
+    setState(() {
+      getTodayTaskList();
+    });
+  }
+
+  ListView getTodayTaskList() {
+    return ListView.builder(
+      itemCount: todayTasks.length,
+      itemBuilder: (context, index) {
+        Task task = todayTasks[index];
+        return TaskCard(task: task, state: this, dateOfCard: widget.focusedDay);
+      },
+    );
   }
 
   var scaffoldKey = GlobalKey<ScaffoldState>();
@@ -102,7 +143,7 @@ class TaskViewState extends State<TaskView> {
         onHorizontalDragEnd: (details) {
           if (details.primaryVelocity! < 0) {
             Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => const WeeklyTaskView(),
+              builder: (context) => WeeklyTaskView(),
             ));
           }
           if (details.primaryVelocity! > 0) {
@@ -112,13 +153,7 @@ class TaskViewState extends State<TaskView> {
         child: Column(
           children: [
             Expanded(
-              child: ListView.builder(
-                itemCount: todayTasks.length,
-                itemBuilder: (context, index) {
-                  Task task = todayTasks[index];
-                  return TaskCard(task: task);
-                },
-              ),
+              child: getTodayTaskList(),
             ),
             //getAddTaskButton(this, context),
             Align(

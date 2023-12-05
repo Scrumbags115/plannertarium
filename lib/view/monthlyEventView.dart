@@ -25,6 +25,7 @@ class _MonthlyEventViewState extends State<MonthlyEventView> {
   @override
   void initState() {
     super.initState();
+
     asyncInitState();
   }
 
@@ -33,6 +34,7 @@ class _MonthlyEventViewState extends State<MonthlyEventView> {
     newTodayEvents = await fetchTodayEvents(DateTime.now());
     todayEvents = newTodayEvents;
     setState(() {});
+
   }
 
   @override
@@ -45,6 +47,7 @@ class _MonthlyEventViewState extends State<MonthlyEventView> {
     DateTime dateStart =
         DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
     return await db.getListOfEventsInDay(date: dateStart);
+
   }
 
   @override
