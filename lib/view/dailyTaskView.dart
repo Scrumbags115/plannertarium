@@ -58,7 +58,11 @@ class TaskViewState extends State<TaskView> {
   void toggleCompleted(Task task) {}
 
   /// A void function that takes a date and asynchronously fetches tasks for that date.
-  Future<void> resetView(DateTime selectedDate) async {
+  Future<void> resetView(DateTime? selectedDate) async {
+    if (selectedDate == null) {
+      return;
+    }
+    
     List<Task> newTasks = await db.fetchTodayTasks(selectedDate);
 
     setState(() {
