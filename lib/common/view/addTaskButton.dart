@@ -160,8 +160,8 @@ Future<Task?> addButtonForm(BuildContext context, state) async {
                         onPressed: () async {
                           final DateTime? pickedDueDate = await datePicker(
                               context,
-                              initialDate: state.monday,
-                              defaultDate: state.monday);
+                              initialDate: state.today,
+                              defaultDate: state.today);
                           if (pickedDueDate != null &&
                               pickedDueDate != dueDate) {
                             setState(() {

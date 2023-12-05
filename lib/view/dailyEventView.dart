@@ -12,8 +12,8 @@ import '../common/view/timeManagement.dart';
 DatabaseService db = DatabaseService();
 
 class DayView extends StatefulWidget {
-  DateTime date;
-  DayView({super.key, required this.date});
+  DateTime today;
+  DayView({super.key, required this.today});
 
   @override
   State<DayView> createState() => _DayViewState();
@@ -22,15 +22,11 @@ class DayView extends StatefulWidget {
 class _DayViewState extends State<DayView> {
   var scaffoldKey = GlobalKey<ScaffoldState>();
 
-  /// A void function that asynchronously selects a date and fetches tasks for that date.
-  Future<void> selectDate() async {
-    DateTime selectedDate = await datePicker(context,
-            initialDate: widget.date, defaultDate: widget.date) ??
-        widget.date;
-
+  /// A void function that takes a date and asynchronously fetches tasks for that date.
+  Future<void> resetView(DateTime selectedDate) async {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => DayView(date: selectedDate),
+        builder: (context) => DayView(today: selectedDate),
       ),
     );
   }
@@ -47,7 +43,7 @@ class _DayViewState extends State<DayView> {
       child: Scaffold(
           appBar: getTopBar(Event, "daily", context, this),
           body: Stack(children: [
-            SingleDay(widget.date),
+            SingleDay(widget.today),
             Align(
               alignment: Alignment.bottomRight,
               child: Padding(
@@ -56,7 +52,7 @@ class _DayViewState extends State<DayView> {
                 child: ClipOval(
                   child: ElevatedButton(
                     onPressed: () async {
-                      await addEventFormForDay(context, widget.date);
+                      await addEventFormForDay(context, widget.today);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.grey,

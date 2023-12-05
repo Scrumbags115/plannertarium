@@ -11,9 +11,9 @@ import 'package:intl/intl.dart';
 DatabaseService db = DatabaseService();
 
 class WeekView extends StatefulWidget {
-  late DateTime monday;
+  late DateTime today;
   WeekView({super.key, DateTime? date}) {
-    monday = mostRecentMonday(date ?? DateTime.now());
+    today = mostRecentMonday(date ?? DateTime.now());
   }
 
   @override
@@ -28,11 +28,11 @@ class _WeekViewState extends State<WeekView> {
       return;
     }
     setState(() {
-      widget.monday = selectedDate;
+      widget.today = selectedDate;
     });
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => WeekView(date: widget.monday),
+        builder: (context) => WeekView(date: widget.today),
       ),
     );
   }
@@ -42,7 +42,7 @@ class _WeekViewState extends State<WeekView> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) =>
-            WeekView(date: getDateOnly(widget.monday, offsetDays: -7)),
+            WeekView(date: getDateOnly(widget.today, offsetDays: -7)),
       ),
     );
   }
@@ -52,14 +52,14 @@ class _WeekViewState extends State<WeekView> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) =>
-            WeekView(date: getDateOnly(widget.monday, offsetDays: 7)),
+            WeekView(date: getDateOnly(widget.today, offsetDays: 7)),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    DateTime startDate = mostRecentMonday(widget.monday);
+    DateTime startDate = mostRecentMonday(widget.today);
     DateTime today = DateTime.now();
     return Scaffold(
       appBar: getTopBar(Event, "weekly", context, this),
@@ -73,7 +73,7 @@ class _WeekViewState extends State<WeekView> {
           if (details.primaryVelocity! > 0) {
             Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) =>
-                    DayView(date: getDateOnly(DateTime.now()))));
+                    DayView(today: getDateOnly(DateTime.now()))));
           }
         },
         child: Stack(
@@ -168,7 +168,7 @@ class _MultiDayCardState extends State<MultiDayCard> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => DayView(date: dateToDisplay)));
+                        builder: (context) => DayView(today: dateToDisplay)));
               },
               child: Center(
                 child: Column(
@@ -201,7 +201,7 @@ class _MultiDayCardState extends State<MultiDayCard> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => DayView(date: dateToDisplay)));
+                          builder: (context) => DayView(today: dateToDisplay)));
                 },
                 child: Column(
                   children: [
