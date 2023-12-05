@@ -81,19 +81,44 @@ class TaskCardState extends State<TaskCard> {
     return completed;
   }
 
-  Future<Color> getColorForTag(String tagID) async {
+  Future<Color> getColorForTagFromDB(String tagID) async {
     Tag log = await db.getTag(tagID);
 
     return Color(int.parse(log.color));
   }
 
-  Future<List<Color>> getColorsForTags(List<String> tagIDs) async {
+  Future<List<Color>> getColorsForTagsFromDB(List<String> tagIDs) async {
     List<Color> colors = [];
     for (String tagName in tagIDs) {
-      colors.add(await getColorForTag(
+      colors.add(await getColorForTagFromDB(
           tagName)); // Assuming getColorForTag returns a Future<Color>
     }
     return colors;
+  }
+
+  Color? getColorFromAllTagsList(String tagIDs) {
+    for (Tag tag in allTagsofTask) {
+      if (tag.id == tagIDs) {
+        return Color(int.parse(tag.color));
+      }
+    }
+    return null;
+  }
+
+  Future<List<Color>> getColorsForTags(List<String> tagIDs) async {
+    List<Color> colors = [];
+    for (String tagID in tagIDs) {
+      Color? localColor = getColorFromAllTagsList(tagID);
+      localColor ??= await getColorForTagFromDB(tagID);
+      colors.add(localColor);
+    }
+    return colors;
+  }
+
+  void addToLocalTagList(Tag selectedTag) {
+    if (!allTagsofTask.contains(selectedTag)) {
+      allTagsofTask.add(selectedTag);
+    }
   }
 
   @override
@@ -435,6 +460,11 @@ class TaskCardState extends State<TaskCard> {
                         onTap: () async {
                           List<Tag> result =
                               await showTagSelectionDialog(context);
+                          for (Tag tag in result) {
+                            if (!allTagsofTask.contains(tag)) {
+                              allTagsofTask.add(tag);
+                            }
+                          }
                           if (result.isNotEmpty) {
                             setState(() {
                               enteredTags.addAll(result);
@@ -567,7 +597,9 @@ class TaskCardState extends State<TaskCard> {
 
                     for (Tag tag in enteredTags) {
                       db.addTagToTask(widget.task, tag);
-                      allTagsofTask.add(tag);
+                      if (!allTagsofTask.contains(tag)) {
+                        allTagsofTask.add(tag);
+                      }
                     }
 
                     completer.complete(widget.task);
