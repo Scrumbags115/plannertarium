@@ -48,7 +48,6 @@ class _DailyEventViewState extends State<DailyEventView> {
           appBar: getTopBar(Event, "daily", context, this),
           body: Stack(children: [
             SingleDay(widget.date),
-            AddEventButton(startDate: widget.date),
           ])),
     );
   }
@@ -79,71 +78,96 @@ class _SingleDayState extends State<SingleDay> {
   void asyncInitState() async {
     final List<Event> newTodayEvents =
         await db.getListOfEventsInDay(date: widget.date);
-    eventsToday = newTodayEvents;
-    eventCount = newTodayEvents.length;
+    if (mounted) {
+      setState(() {
+        eventsToday = newTodayEvents;
+        eventCount = newTodayEvents.length;
+        for (var event in eventsToday) {
+          eventStartHours.add(event.timeStart.hour);
+        }
+        //print("Date: ${widget.date} Events fetched: $newTodayEvents");
+      });
+    }
+  }
+
+  updateSingleDay(updatedEventsToday) {
+    setState(() {
+      eventsToday = updatedEventsToday;
+    });
+  }
+
+  Future<List<Event>> getEventsForSingleDay() async {
+    final List<Event> newEventsToday =
+        await db.getListOfEventsInDay(date: widget.date);
+    eventsToday = newEventsToday;
+    //print(newTodayEvents);
+    eventCount = newEventsToday.length;
     for (var event in eventsToday) {
       eventStartHours.add(event.timeStart.hour);
     }
-    setState(() {});
-  }
-
-  Future<List<Event>> pog() async {
-    return await db.getListOfEventsInDay(date: widget.date);
+    return newEventsToday;
   }
 
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width - displayedHourWidth;
     return FutureBuilder(
-        future: pog(),
+        future: getEventsForSingleDay(),
         builder: (context, AsyncSnapshot<List<Event>> snapshot) {
-          if (snapshot.data!=[]) {
-            return Column(
-              children: [
-                Expanded(
-                    child: ListView.builder(
-                  itemCount: 24,
-                  itemBuilder: (context, index) {
-                    return Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Column(
-                          children: [
-                            Container(
-                                width: displayedHourWidth,
-                                child: Center(
-                                  child: Text(intl.DateFormat('j').format(
-                                      getDateOnly(DateTime.now())
-                                          .add(Duration(hours: index)))),
-                                )),
-                          ],
-                        ),
-                        Expanded(
-                          child: Column(
+          if (snapshot.data != []) {
+            return Stack(children: [
+              Column(
+                children: [
+                  Expanded(
+                      child: ListView.builder(
+                    itemCount: 24,
+                    itemBuilder: (context, index) {
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Column(
                             children: [
-                              const SizedBox(height: 10),
-                              const Divider(
-                                height: 0,
-                                thickness: 2,
-                              ),
                               Container(
-                                  height: 40,
-                                  width: width,
-                                  child: OverflowBox(
-                                      minHeight: 40,
-                                      alignment: Alignment.topLeft,
-                                      maxHeight:
-                                          MediaQuery.of(context).size.height,
-                                      child: paintEvents(index, width))),
+                                  width: displayedHourWidth,
+                                  child: Center(
+                                    child: Text(intl.DateFormat('j').format(
+                                        getDateOnly(DateTime.now())
+                                            .add(Duration(hours: index)))),
+                                  )),
                             ],
                           ),
-                        )
-                      ],
-                    );
-                  },
-                )),
-              ],
-            );
+                          Expanded(
+                            child: Column(
+                              children: [
+                                const SizedBox(height: 10),
+                                const Divider(
+                                  height: 0,
+                                  thickness: 2,
+                                ),
+                                Container(
+                                    height: 40,
+                                    width: width,
+                                    child: OverflowBox(
+                                        minHeight: 40,
+                                        alignment: Alignment.topLeft,
+                                        maxHeight:
+                                            MediaQuery.of(context).size.height,
+                                        child: paintEvents(index, width))),
+                              ],
+                            ),
+                          )
+                        ],
+                      );
+                    },
+                  )),
+                ],
+              ),
+              AddEventButton(
+                  startDate: widget.date,
+                  callback: updateSingleDay,
+                  events: eventsToday,
+                  viewPeriod: "day"),
+            ]);
           } else {
             return const CircularProgressIndicator();
           }
@@ -162,7 +186,10 @@ class _SingleDayState extends State<SingleDay> {
         .map(
           (event) => GestureDetector(
             onTap: () {
-              showEventDetailPopup(context, event, widget.date);
+              showEventDetailPopup(context, event, widget.date,
+                  viewPeriod: "day",
+                  callback: updateSingleDay,
+                  events: eventsToday);
             },
             child: CustomPaint(
               painter: MyPainter(context, eventWidth: space, event: event),
@@ -189,7 +216,7 @@ class MyPainter extends CustomPainter {
       ..color = Colors.amber
       ..style = PaintingStyle.fill;
     final myPaint2 = Paint()
-      ..strokeWidth = 2
+      ..strokeWidth = 1
       ..color = Colors.black
       ..style = PaintingStyle.stroke;
     double hoursCovered =
@@ -199,6 +226,10 @@ class MyPainter extends CustomPainter {
     }
     double eventDuration =
         (event.timeEnd).difference(event.timeStart).inMinutes / 60;
+    if (eventDuration < 0.5) {
+      //just display events shorter than 30 minutes as 30 minutes
+      eventDuration = 0.5;
+    }
     double hourOffset = event.timeStart.minute.toDouble() / 60;
     RRect eventRRect = RRect.fromRectAndRadius(
         Rect.fromLTWH(

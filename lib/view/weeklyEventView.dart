@@ -63,8 +63,8 @@ class _WeeklyEventViewState extends State<WeeklyEventView> {
       body: GestureDetector(
         onHorizontalDragEnd: (details) {
           if (details.primaryVelocity! < 0) {
-            Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const MonthlyEventView()));
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => const MonthlyEventView()));
           }
           if (details.primaryVelocity! > 0) {
             Navigator.of(context).push(MaterialPageRoute(
@@ -79,7 +79,7 @@ class _WeeklyEventViewState extends State<WeeklyEventView> {
                 return MultiDayCard(index, startDate);
               }),
             ),
-            AddEventButton(startDate: startDate)
+            AddEventButton(startDate: startDate, events: [], viewPeriod: "week")
           ],
         ),
       ),
@@ -143,7 +143,8 @@ class _MultiDayCardState extends State<MultiDayCard> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => DailyEventView(date: dateToDisplay)));
+                        builder: (context) =>
+                            DailyEventView(date: dateToDisplay)));
               },
               child: Center(
                 child: Column(
@@ -176,7 +177,8 @@ class _MultiDayCardState extends State<MultiDayCard> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => DailyEventView(date: dateToDisplay)));
+                          builder: (context) =>
+                              DailyEventView(date: dateToDisplay)));
                 },
                 child: Column(
                   children: [
@@ -242,7 +244,8 @@ class _EventCardState extends State<EventCard> {
               color: Colors.amber,
               child: InkWell(
                 onTap: () {
-                  showEventDetailPopup(context, event, widget.date);
+                  showEventDetailPopup(context, event, widget.date,
+                      viewPeriod: "week");
                 },
                 child: Column(
                   children: [

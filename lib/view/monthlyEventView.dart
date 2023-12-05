@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
+import 'package:planner/common/time_management.dart';
 import 'package:planner/common/view/topbar.dart';
 import 'package:planner/view/dailyEventView.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:planner/models/event.dart';
-import 'package:planner/view/eventDialogs.dart';
 import 'package:planner/view/weeklyEventView.dart';
 
 class MonthlyEventView extends StatefulWidget {
@@ -81,7 +81,8 @@ class _MonthlyEventViewState extends State<MonthlyEventView> {
                 },
                 onDayLongPressed: (selectedDay, focusedDay) {
                   Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => DailyEventView(date: selectedDay)));
+                      builder: (context) =>
+                          DailyEventView(date: getDateOnly(selectedDay))));
                 },
                 onPageChanged: (focusedDay) {
                   setState(() {
@@ -112,21 +113,11 @@ class _MonthlyEventViewState extends State<MonthlyEventView> {
               const SizedBox(
                 height: 16,
               ),
-              /*ListView.builder(
-                shrinkWrap: true,
-                itemCount: todayEvents.length,
-                itemBuilder: (context, index) {
-                  return EventCard(
-                      eventsToday: todayEvents,
-                      index: index,
-                      date: _focusedDay);
-                },
-              )*/
-              Flexible(child: SingleDay(_focusedDay))
+              Flexible(child: SingleDay(getDateOnly(_focusedDay)))
             ],
           ),
         ),
-        AddEventButton(startDate: _focusedDay)
+        //AddEventButton(startDate: _focusedDay, events: [])
       ]),
     );
   }

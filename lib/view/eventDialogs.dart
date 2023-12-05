@@ -372,7 +372,8 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime date,
   return completer.future;
 }
 
-void showEventDetailPopup(BuildContext context, Event event, DateTime date) {
+void showEventDetailPopup(BuildContext context, Event event, DateTime date,
+    {callback, events, viewPeriod}) {
   showDialog(
     context: context,
     builder: (context) {
@@ -391,9 +392,14 @@ void showEventDetailPopup(BuildContext context, Event event, DateTime date) {
         ),
         actions: [
           TextButton(
-              onPressed: () {
+              onPressed: () async {
                 DatabaseService db = DatabaseService();
                 db.deleteEvent(event);
+                final List<Event> newTodayEvents =
+                    await db.getListOfEventsInDay(date: date);
+                if (viewPeriod != "week") {
+                  callback(newTodayEvents);
+                }
                 Navigator.of(context).pop();
               },
               child: const Text('Delete')),
@@ -419,12 +425,17 @@ void showEventDetailPopup(BuildContext context, Event event, DateTime date) {
 }
 
 class AddEventButton extends StatelessWidget {
-  const AddEventButton({
-    super.key,
-    required this.startDate,
-  });
-
+  List<Event> events = [];
+  String viewPeriod;
+  AddEventButton(
+      {super.key,
+      required this.startDate,
+      this.callback,
+      events,
+      required this.viewPeriod});
+  dynamic callback;
   final DateTime startDate;
+  DatabaseService db = DatabaseService();
 
   @override
   Widget build(BuildContext context) {
@@ -437,6 +448,11 @@ class AddEventButton extends StatelessWidget {
           child: ElevatedButton(
             onPressed: () async {
               await addEventFormForDay(context, startDate);
+              final List<Event> newTodayEvents =
+                  await db.getListOfEventsInDay(date: startDate);
+              if (viewPeriod == "day") {
+                callback(newTodayEvents);
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.grey,

@@ -152,7 +152,7 @@ AppBar _getTopBarDaily(bool forEvents, BuildContext context, state) {
                   if (forEvents) {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => DailyEventView(date: state.today),
+                        builder: (context) => DailyEventView(date:getDateOnly(state.today)),
                       ),
                     );
                   } else {
