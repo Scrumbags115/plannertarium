@@ -372,24 +372,6 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime date,
               ),
               actions: <Widget>[
                 Visibility(
-                  visible: edit && enableRecurrence,
-                  child: Wrap(
-                      direction: Axis.horizontal,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        const Text("Edit Recurring:"),
-                        Checkbox.adaptive(
-                            value: editRelatedRecurringEvents,
-                            onChanged: (newValue) {
-                              setState(() {
-                                editRelatedRecurringEvents = newValue!;
-                              });
-                            }),
-                      ]
-                      //  <-- leading Checkbox
-                      ),
-                ),
-                Visibility(
                     visible: edit && enableRecurrence,
                     child: LabeledCheckbox(
                         label: "Edit Recurring: ",
@@ -432,7 +414,11 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime date,
                       currentEvent.recurrenceRules.enabled = enableRecurrence;
                       if (recurrenceEndTime != null) {
                         currentEvent.recurrenceRules.timeEnd =
-                            recurrenceEndTime!;
+                        recurrenceEndTime!;
+                      }
+                      if (recurrenceStartTime != null) {
+                        currentEvent.recurrenceRules.timeStart =
+                        recurrenceStartTime!;
                       }
                       currentEvent.recurrenceRules.dates =
                           selectedRecurrenceDays;
@@ -497,8 +483,8 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime date,
   return completer.future;
 }
 
-void showEventDetailPopup(BuildContext context, Event event, DateTime date,
-    {callback, events, viewPeriod}) {
+Future<void> showEventDetailPopup(BuildContext context, Event event, DateTime date,
+    {callback, events, viewPeriod}) async {
   String tagNames = "";
   Future<String> getTagNamesOfEvent(Event event) async {
     DatabaseService db = DatabaseService();
@@ -512,6 +498,8 @@ void showEventDetailPopup(BuildContext context, Event event, DateTime date,
     }
     return tagNames;
   }
+
+  tagNames = await getTagNamesOfEvent(event);
 
   showDialog(
     context: context,
