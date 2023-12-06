@@ -225,7 +225,7 @@ AppBar _getTopBarWeekly(bool forEvents, BuildContext context, state) {
               try {
                 initialDate = state.today;
               } on NoSuchMethodError catch (_) {
-                initialDate = state.widget.monday;
+                initialDate = state.widget.today;
               }
               final DateTime? selectedDate = await datePicker(state.context,
                   initialDate: initialDate, defaultDate: null);
