@@ -51,4 +51,4 @@ Tasks currently have a fixed color scheme:
 Recurrence functionality in events have a fixed way of updating:
 - When a recurring event is made, all created events from the base event will be linked
 
-Tasks and events must have valid date ranges or else it will not allow you to make changes.
+Tasks and events must have valid date ranges and nonempty names or else it will not allow you to make changes.
