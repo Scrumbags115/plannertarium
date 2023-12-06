@@ -54,7 +54,7 @@ class TaskViewState extends State<TaskView> {
     setState(() {});
   }
 
-  /// Dummy function called by taskCard, does not need implementation for daily view 
+  /// Dummy function called by taskCard, does not need implementation for daily view
   void toggleCompleted(Task task) {}
 
   /// A void function that takes a date and asynchronously fetches tasks for that date.
@@ -62,12 +62,17 @@ class TaskViewState extends State<TaskView> {
     if (selectedDate == null) {
       return;
     }
-    
-    List<Task> newTasks = await db.fetchTodayTasks(selectedDate);
+
+    widget.selectedDay = selectedDate;
+    var taskMaps = await db.getTaskMapsDay(selectedDate);
+    active = taskMaps.$1;
+    delay = taskMaps.$2;
+    complete = taskMaps.$3;
 
     setState(() {
       today = selectedDate;
-      todayTasks = newTasks;
+      todayTasks = active + delay + complete;
+      getTodayTaskList();
     });
   }
 
@@ -95,7 +100,8 @@ class TaskViewState extends State<TaskView> {
       itemCount: todayTasks.length,
       itemBuilder: (context, index) {
         Task task = todayTasks[index];
-        return TaskCard(task: task, state: this, dateOfCard: widget.selectedDay);
+        return TaskCard(
+            task: task, state: this, dateOfCard: widget.selectedDay);
       },
     );
   }

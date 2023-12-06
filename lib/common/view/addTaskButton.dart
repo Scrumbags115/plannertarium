@@ -5,7 +5,8 @@ import 'package:planner/common/database.dart';
 import 'package:planner/common/view/timeManagement.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/models/tag.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+
+import '../../common/view/tagPopup.dart';
 
 import 'flashError.dart';
 
@@ -137,8 +138,8 @@ Future<Task?> addButtonForm(BuildContext context, state) async {
                         icon: const Icon(Icons.wallet),
                         onPressed: () async {
                           final DateTime? pickedDate = await datePicker(context,
-                              initialDate: state.selectedDay,
-                              defaultDate: state.selectedDay);
+                              initialDate: state.today,
+                              defaultDate: state.today);
                           if (pickedDate != null && pickedDate != startTime) {
                             setState(() {
                               startTime = pickedDate;
@@ -149,7 +150,7 @@ Future<Task?> addButtonForm(BuildContext context, state) async {
                       const SizedBox(width: 8),
                       Text(
                         startTime != null
-                            ? 'Start Date: ${DateFormat('MM-dd-yyyy').format(startTime!)}'
+                            ? 'Start Date: ${DateFormat('MM-dd-yyyy').format(startTime)}'
                             : 'No start date selected',
                         style: const TextStyle(fontSize: 16),
                       ),
@@ -162,8 +163,8 @@ Future<Task?> addButtonForm(BuildContext context, state) async {
                         onPressed: () async {
                           final DateTime? pickedDueDate = await datePicker(
                               context,
-                              initialDate: state.selectedDay,
-                              defaultDate: state.selectedDay);
+                              initialDate: state.today,
+                              defaultDate: state.today);
                           if (pickedDueDate != null &&
                               pickedDueDate != dueDate) {
                             setState(() {
@@ -243,78 +244,4 @@ Future<Task?> addButtonForm(BuildContext context, state) async {
     },
   );
   return completer.future;
-}
-
-Future<List<Tag>> showTagSelectionDialog(BuildContext context) async {
-  List<Tag> selectedTags = [];
-
-  TextEditingController nameController = TextEditingController();
-  Color selectedColor = Colors.grey;
-  Color pickerColor = const Color(0xff443a49);
-
-  void changeColor(Color color) {
-    pickerColor = color;
-    selectedColor = color;
-  }
-
-  await showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: const Text('Add Tag'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Tag Name'),
-              ),
-              const SizedBox(height: 16),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text('Tag Color:',
-                        style: TextStyle(
-                          color: Colors.black,
-                        )),
-                  ),
-                  SizedBox(
-                    width: 200,
-                    child: ColorPicker(
-                      pickerColor: pickerColor,
-                      onColorChanged: changeColor,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context, selectedTags);
-            },
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Tag selectedTag = Tag(
-                name: nameController.text,
-                color: selectedColor.value.toString(), // turn color into int
-              );
-              selectedTags.add(selectedTag);
-              nameController.clear();
-            },
-            child: const Text('Add'),
-          ),
-        ],
-      );
-    },
-  );
-
-  return selectedTags;
 }

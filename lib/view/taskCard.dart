@@ -1,14 +1,13 @@
 // ignore_for_file: prefer_const_constructors, use_build_context_synchronously
 
-import 'package:get/get.dart';
 import 'package:planner/common/database.dart';
 import 'package:flutter/material.dart';
 import 'package:planner/common/view/flashError.dart';
 import 'package:planner/models/task.dart';
 import 'dart:async';
 import 'package:intl/intl.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:planner/models/tag.dart';
+import 'package:planner/common/view/tagPopup.dart';
 
 import '../common/view/timeManagement.dart';
 
@@ -53,7 +52,6 @@ class TaskCardState extends State<TaskCard> {
 
   DatabaseService db = DatabaseService();
 
-
   Color getTaskColor() {
     if (widget.task.timeDue != null &&
         widget.task.timeDue!.isAtSameMomentAs(widget.cardDate)) {
@@ -65,7 +63,7 @@ class TaskCardState extends State<TaskCard> {
       return Colors.white;
     }
   }
-  
+
   bool isTaskDueToday() {
     DateTime today = DateTime.now();
     DateTime? dueDate = widget.task.timeDue;
@@ -82,19 +80,43 @@ class TaskCardState extends State<TaskCard> {
     return completed;
   }
 
-  Future<Color> getColorForTag(String tagID) async {
+  Future<Color> getColorForTagFromDB(String tagID) async {
     Tag log = await db.getTag(tagID);
 
     return Color(int.parse(log.color));
   }
 
+  Color? getColorFromAllTagsList(String tagIDs) {
+    for (Tag tag in allTagsofTask) {
+      if (tag.id == tagIDs) {
+        return Color(int.parse(tag.color));
+      }
+    }
+    return null;
+  }
+
+  /// get all the corresponding colors from a list of tag IDs. Performs a lookup in the local cache and looks up in the database if not found.
   Future<List<Color>> getColorsForTags(List<String> tagIDs) async {
+    // the local tag list is updated alongside database updates. this enables hits when looking up existing tags, reducing reads, and can help deal with out of order calls with asynchronous functions
     List<Color> colors = [];
-    for (String tagName in tagIDs) {
-      colors.add(await getColorForTag(
-          tagName)); // Assuming getColorForTag returns a Future<Color>
+    for (String tagID in tagIDs) {
+      Color? localColor = getColorFromAllTagsList(tagID);
+      localColor ??= await getColorForTagFromDB(tagID);
+      colors.add(localColor);
     }
     return colors;
+  }
+
+  void addToLocalTagList(Tag selectedTag) {
+    if (!allTagsofTask.contains(selectedTag)) {
+      allTagsofTask.add(selectedTag);
+    }
+  }
+
+  void removeFromLocalTagList(Tag selectedTag) {
+    if (allTagsofTask.contains(selectedTag)) {
+      allTagsofTask.remove(selectedTag);
+    }
   }
 
   @override
@@ -307,82 +329,6 @@ class TaskCardState extends State<TaskCard> {
     );
   }
 
-  Future<List<Tag>> showTagSelectionDialog(BuildContext context) async {
-    List<Tag> selectedTags = [];
-
-    TextEditingController nameController = TextEditingController();
-    Color selectedColor = Colors.blue;
-    Color pickerColor = Color(0xff443a49);
-
-    void changeColor(Color color) {
-      setState(() {
-        pickerColor = color;
-        selectedColor = color;
-      });
-    }
-
-    await showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Add Tag'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(labelText: 'Tag Name'),
-                ),
-                const SizedBox(height: 16),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text('Tag Color:',
-                          style: TextStyle(
-                            color: Colors.black,
-                          )),
-                    ),
-                    SizedBox(
-                      width: 200,
-                      child: ColorPicker(
-                        pickerColor: pickerColor,
-                        onColorChanged: changeColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context, selectedTags);
-              },
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                Tag selectedTag = Tag(
-                  name: nameController.text,
-                  color: selectedColor.value.toString(), // turn color into int
-                );
-                selectedTags.add(selectedTag);
-                nameController.clear();
-              },
-              child: const Text('Add'),
-            ),
-          ],
-        );
-      },
-    );
-
-    return selectedTags;
-  }
-
   Future<Task?> showEditPopup(BuildContext context) async {
     DatabaseService db = DatabaseService();
 
@@ -395,6 +341,7 @@ class TaskCardState extends State<TaskCard> {
     Completer<Task?> completer = Completer<Task?>();
 
     List<Tag> enteredTags = [];
+    enteredTags = List.from(allTagsofTask);
     //Tag? selectedTag;
 
     nameController.text = widget.task.name;
@@ -434,8 +381,12 @@ class TaskCardState extends State<TaskCard> {
                         controller: tagController,
                         decoration: const InputDecoration(labelText: 'Tag'),
                         onTap: () async {
-                          List<Tag> result =
-                              await showTagSelectionDialog(context);
+                          List<Tag> result = await showTagSelectionDialog(
+                              context,
+                              setState: setState);
+                          for (Tag tag in result) {
+                            addToLocalTagList(tag);
+                          }
                           if (result.isNotEmpty) {
                             setState(() {
                               enteredTags.addAll(result);
@@ -462,6 +413,7 @@ class TaskCardState extends State<TaskCard> {
                                   GestureDetector(
                                     onTap: () {
                                       setState(() {
+                                        // removeFromLocalTagList(enteredTags[index]);
                                         enteredTags.removeAt(index);
                                       });
                                     },
@@ -548,6 +500,7 @@ class TaskCardState extends State<TaskCard> {
                 TextButton(
                   child: const Text('Submit'),
                   onPressed: () {
+                    Navigator.of(context).pop();
                     if (enteredTags.isNotEmpty) {
                       widget.task.tags =
                           enteredTags.map((tag) => tag.id).toList();
