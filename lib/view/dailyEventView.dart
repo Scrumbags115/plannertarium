@@ -33,7 +33,7 @@ class _DailyEventViewState extends State<DailyEventView> {
     
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => DailyEventView(selectedDay: selectedDate),
+        builder: (context) => DailyEventView(today: selectedDate),
       ),
     );
   }
@@ -50,7 +50,7 @@ class _DailyEventViewState extends State<DailyEventView> {
       child: Scaffold(
           appBar: getTopBar(Event, "daily", context, this),
           body: Stack(children: [
-            SingleDay(widget.selectedDay),
+            SingleDay(widget.today),
           ])),
     );
   }
