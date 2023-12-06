@@ -3,9 +3,7 @@ import 'dart:async';
 import 'package:planner/common/database.dart';
 import 'package:planner/models/event.dart';
 import 'package:intl/intl.dart';
-import 'package:planner/models/tag.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-
+import 'package:planner/view/dailyEventView.dart';
 import '../common/view/timeManagement.dart';
 import '../common/view/flashError.dart';
 
@@ -320,11 +318,12 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime date,
 
                   /// return if the given event has valid recurrence datetimes
                   bool validRecurrenceDateTimes(Event e) {
-                    return !e.recurrenceRules.enabled || (!oneIsUnset(e.recurrenceRules.timeStart,
-                            e.recurrenceRules.timeEnd) &&
-                        e.recurrenceRules.timeStart
-                                .compareTo(e.recurrenceRules.timeEnd) <
-                            0);
+                    return !e.recurrenceRules.enabled ||
+                        (!oneIsUnset(e.recurrenceRules.timeStart,
+                                e.recurrenceRules.timeEnd) &&
+                            e.recurrenceRules.timeStart
+                                    .compareTo(e.recurrenceRules.timeEnd) <
+                                0);
                   }
 
                   /// return if the event has valid timestart and timeend datetimes
@@ -372,81 +371,8 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime date,
   return completer.future;
 }
 
-Future<List<Tag>> showTagSelectionDialog(BuildContext context) async {
-  List<Tag> selectedTags = [];
-
-  TextEditingController nameController = TextEditingController();
-  Color selectedColor = Colors.blue;
-  Color pickerColor = const Color(0xff443a49);
-
-  void changeColor(Color color) {
-    pickerColor = color;
-    selectedColor = color;
-  }
-
-  await showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: const Text('Add Tag'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Tag Name'),
-              ),
-              const SizedBox(height: 16),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text('Tag Color:',
-                        style: TextStyle(
-                          color: Colors.black,
-                        )),
-                  ),
-                  SizedBox(
-                    width: 200,
-                    child: ColorPicker(
-                      pickerColor: pickerColor,
-                      onColorChanged: changeColor,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context, selectedTags);
-            },
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Tag selectedTag = Tag(
-                name: nameController.text,
-                color: selectedColor.value.toString(), // turn color into int
-              );
-              selectedTags.add(selectedTag);
-              nameController.clear();
-            },
-            child: const Text('Add'),
-          ),
-        ],
-      );
-    },
-  );
-
-  return selectedTags;
-}
-
-void showEventDetailPopup(BuildContext context, Event event, DateTime date) {
+void showEventDetailPopup(BuildContext context, Event event, DateTime date,
+    {callback, events, viewPeriod}) {
   showDialog(
     context: context,
     builder: (context) {
@@ -465,9 +391,14 @@ void showEventDetailPopup(BuildContext context, Event event, DateTime date) {
         ),
         actions: [
           TextButton(
-              onPressed: () {
+              onPressed: () async {
                 DatabaseService db = DatabaseService();
                 db.deleteEvent(event);
+                final List<Event> newTodayEvents =
+                    await db.getListOfEventsInDay(date: date);
+                if (viewPeriod != "week") {
+                  callback(newTodayEvents);
+                }
                 Navigator.of(context).pop();
               },
               child: const Text('Delete')),
@@ -490,4 +421,49 @@ void showEventDetailPopup(BuildContext context, Event event, DateTime date) {
       );
     },
   );
+}
+
+class AddEventButton extends StatelessWidget {
+  List<Event> events = [];
+  String viewPeriod;
+  AddEventButton(
+      {super.key,
+      required this.startDate,
+      this.callback,
+      events,
+      required this.viewPeriod});
+  dynamic callback;
+  final DateTime startDate;
+  DatabaseService db = DatabaseService();
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.bottomRight,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+            0, 0, 20, 20), // Adjust the value as needed
+        child: ClipOval(
+          child: ElevatedButton(
+            onPressed: () async {
+              await addEventFormForDay(context, startDate);
+              final List<Event> newTodayEvents =
+                  await db.getListOfEventsInDay(date: startDate);
+              if (viewPeriod == "day") {
+                callback(newTodayEvents);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.grey,
+              minimumSize: const Size(75, 75),
+            ),
+            child: const Icon(
+              Icons.add_outlined,
+              color: Colors.black,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
