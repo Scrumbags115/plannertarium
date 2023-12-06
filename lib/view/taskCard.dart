@@ -3,6 +3,7 @@
 import 'package:get/get.dart';
 import 'package:planner/common/database.dart';
 import 'package:flutter/material.dart';
+import 'package:planner/common/view/flashError.dart';
 import 'package:planner/models/task.dart';
 import 'dart:async';
 import 'package:intl/intl.dart';
@@ -483,12 +484,12 @@ class TaskCardState extends State<TaskCard> {
                             onPressed: () async {
                               final DateTime? pickedDate = await datePicker(
                                   context,
-                                  initialDate: DateTime.now(),
+                                  initialDate: startTime,
                                   defaultDate: null);
                               if (pickedDate != null &&
                                   pickedDate != startTime) {
+                                startTime = pickedDate;
                                 setState(() {
-                                  startTime = pickedDate;
                                   for (Tag tag in enteredTags) {
                                     db.setTag(tag);
                                   }
@@ -513,12 +514,12 @@ class TaskCardState extends State<TaskCard> {
                             onPressed: () async {
                               final DateTime? pickedDueDate = await datePicker(
                                   context,
-                                  initialDate: DateTime.now(),
+                                  initialDate: dueDate ?? startTime,
                                   defaultDate: null);
                               if (pickedDueDate != null &&
                                   pickedDueDate != dueDate) {
+                                dueDate = pickedDueDate;
                                 setState(() {
-                                  dueDate = pickedDueDate;
                                 });
                               }
                             },
@@ -563,14 +564,23 @@ class TaskCardState extends State<TaskCard> {
 
                     widget.task.tags = [];
 
-                    db.setTask(widget.task);
+                    // DateTimes are invalid!
+                    // timeDue is optional
+                    if (widget.task.timeDue != null && widget.task.timeStart.compareTo(widget.task.timeDue!) > 0) {
+                      showFlashError(context, "Task start and due times are invalid!");
+                    } else if (widget.task.name == "") {
+                      // name is invalid!
+                      showFlashError(context, "Task cannot have an empty name!");
+                    } else {
+                      db.setTask(widget.task);
 
-                    for (Tag tag in enteredTags) {
-                      db.addTagToTask(widget.task, tag);
-                      allTagsofTask.add(tag);
+                      for (Tag tag in enteredTags) {
+                        db.addTagToTask(widget.task, tag);
+                        allTagsofTask.add(tag);
+                      }
+
+                      completer.complete(widget.task);
                     }
-
-                    completer.complete(widget.task);
                     Navigator.of(context).pop;
                     setState(() {
                       // for (Tag tag in enteredTags) {

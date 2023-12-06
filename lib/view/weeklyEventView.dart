@@ -9,9 +9,9 @@ import 'package:planner/view/monthlyEventView.dart';
 import 'package:intl/intl.dart';
 
 class WeeklyEventView extends StatefulWidget {
-  late DateTime monday;
+  late DateTime today;
   WeeklyEventView({super.key, DateTime? date}) {
-    monday = mostRecentMonday(date ?? DateTime.now());
+    today = mostRecentMonday(date ?? DateTime.now());
   }
 
   @override
@@ -26,11 +26,11 @@ class _WeeklyEventViewState extends State<WeeklyEventView> {
       return;
     }
     setState(() {
-      widget.monday = selectedDate;
+      widget.today = selectedDate;
     });
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => WeeklyEventView(date: widget.monday),
+        builder: (context) => WeeklyEventView(date: widget.today),
       ),
     );
   }
@@ -39,7 +39,7 @@ class _WeeklyEventViewState extends State<WeeklyEventView> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) =>
-            WeeklyEventView(date: getDateOnly(widget.monday, offsetDays: -7)),
+            WeeklyEventView(date: getDateOnly(widget.today, offsetDays: -7)),
       ),
     );
   }
@@ -48,14 +48,14 @@ class _WeeklyEventViewState extends State<WeeklyEventView> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) =>
-            WeeklyEventView(date: getDateOnly(widget.monday, offsetDays: 7)),
+            WeeklyEventView(date: getDateOnly(widget.today, offsetDays: 7)),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    DateTime startDate = mostRecentMonday(widget.monday);
+    DateTime startDate = mostRecentMonday(widget.today);
     DateTime today = DateTime.now();
     return Scaffold(
       appBar: getTopBar(Event, "weekly", context, this),
@@ -69,7 +69,7 @@ class _WeeklyEventViewState extends State<WeeklyEventView> {
           if (details.primaryVelocity! > 0) {
             Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) =>
-                    DailyEventView(date: getDateOnly(DateTime.now()))));
+                  DailyEventView(today: getDateOnly(DateTime.now()))));
           }
         },
         child: Stack(
@@ -144,7 +144,7 @@ class _MultiDayCardState extends State<MultiDayCard> {
                     context,
                     MaterialPageRoute(
                         builder: (context) =>
-                            DailyEventView(date: dateToDisplay)));
+                            DailyEventView(today: dateToDisplay)));
               },
               child: Center(
                 child: Column(
@@ -178,7 +178,7 @@ class _MultiDayCardState extends State<MultiDayCard> {
                       context,
                       MaterialPageRoute(
                           builder: (context) =>
-                              DailyEventView(date: dateToDisplay)));
+                              DailyEventView(today: dateToDisplay)));
                 },
                 child: Column(
                   children: [

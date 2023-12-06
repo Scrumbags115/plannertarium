@@ -85,7 +85,7 @@ class _MonthlyEventViewState extends State<MonthlyEventView> {
                 onDayLongPressed: (selectedDay, focusedDay) {
                   Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) =>
-                          DailyEventView(date: getDateOnly(selectedDay))));
+                          DailyEventView(today: getDateOnly(selectedDay))));
                 },
                 onPageChanged: (focusedDay) {
                   setState(() {
