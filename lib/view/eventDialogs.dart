@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:collection/collection.dart';
 import "package:flutter/material.dart";
 import 'dart:async';
 import 'package:planner/common/database.dart';
@@ -9,6 +10,7 @@ import 'package:intl/intl.dart';
 import 'package:planner/view/dailyEventView.dart';
 import '../common/view/timeManagement.dart';
 import '../common/view/flashError.dart';
+import '../models/recurrence.dart';
 import '../models/tag.dart';
 
 class CustomButton extends StatelessWidget {
@@ -400,15 +402,6 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime date,
                       currentEvent.location = location;
                       currentEvent.timeStart = timeStart;
 
-                      for (Tag tag in enteredTags) {
-                        db.setTag(tag);
-                      }
-
-                      if (enteredTags.isNotEmpty) {
-                        currentEvent.tags =
-                            enteredTags.map((tag) => tag.id).toList();
-                      }
-
                       currentEvent.timeEnd = timeEnd;
 
                       currentEvent.recurrenceRules.enabled = enableRecurrence;
@@ -456,23 +449,66 @@ Future<Event?> addEventFormForDay(BuildContext context, DateTime date,
                         showFlashError(context,
                             "The recurrence start and end times are invalid! Please try again.");
                       } else {
-                        db.setEvent(currentEvent);
-                        if (currentEvent.recurrenceRules.enabled) {
-                          db.setRecurringEvents(currentEvent);
-                        }
+                        if (edit == true) {
+                          // code to edit an event
 
-                        // if we are editing an event, delete the old one
-                        if (oldEvent != null) {
-                          db.deleteEvent(oldEvent);
-                        }
+                          // if we are editing an event, delete the old one
+                          if (oldEvent != null) {
+                            db.deleteEvent(oldEvent);
+                          }
 
-                        if (editRelatedRecurringEvents && oldEvent != null) {
-                          // delete related recurring events if the option is explicitly set
-                          db.deleteRecurringEvents(oldEvent,
-                              excludeMyself: true);
-                        }
+                          bool recurrenceEquivalent(Recurrence recurrence1, Recurrence recurrence2) {
+                            Function eq = const ListEquality().equals;
+                            return
+                              recurrence1.enabled == recurrence2.enabled &&
+                            recurrence1.timeStart.compareTo(recurrence2.timeStart) == 0 &&
+                            recurrence1.timeEnd.compareTo(recurrence2.timeEnd) == 0 &&
+                            eq(recurrence1.dates, recurrence2.dates);
+                          }
+                          // if the recurrence rules are changed, don't let the user do any changes if the editRelatedRecurringEvents is False
+                          if (oldEvent != null && !recurrenceEquivalent(oldEvent.recurrenceRules, currentEvent.recurrenceRules) && editRelatedRecurringEvents == false) {
+                            showFlashError(context, "You need to enable editing recurring events if the recurrence rules were changed!");
+                            Navigator.of(context).pop();
+                          } else {
+                            if (editRelatedRecurringEvents && oldEvent != null) {
+                              // delete related recurring events if the option is explicitly set
+                              db.deleteRecurringEvents(oldEvent,
+                                  excludeMyself: true);
+                            }
 
-                        completer.complete(currentEvent);
+                            for (Tag tag in enteredTags) {
+                              db.setTag(tag);
+                            }
+
+                            if (enteredTags.isNotEmpty) {
+                              currentEvent.tags =
+                                  enteredTags.map((tag) => tag.id).toList();
+                            }
+
+                            db.setEvent(currentEvent);
+                            if (currentEvent.recurrenceRules.enabled && editRelatedRecurringEvents) {
+                              db.setRecurringEvents(currentEvent);
+                            }
+
+                            completer.complete(currentEvent);
+                          }
+                        } else {
+                          for (Tag tag in enteredTags) {
+                            db.setTag(tag);
+                          }
+
+                          if (enteredTags.isNotEmpty) {
+                            currentEvent.tags =
+                                enteredTags.map((tag) => tag.id).toList();
+                          }
+
+                          db.setEvent(currentEvent);
+                          if (currentEvent.recurrenceRules.enabled) {
+                            db.setRecurringEvents(currentEvent);
+                          }
+
+                          completer.complete(currentEvent);
+                        }
                       }
                       Navigator.of(context).pop();
                     })
