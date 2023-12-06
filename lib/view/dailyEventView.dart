@@ -7,22 +7,21 @@ import 'package:planner/view/eventDialogs.dart';
 import 'package:planner/view/weeklyEventView.dart';
 import 'package:planner/common/view/topbar.dart';
 
-import '../common/view/timeManagement.dart';
+const hourHeight = 50.0;
+const displayedHourWidth = 50.0;
 
-DatabaseService db = DatabaseService();
-
-class DayView extends StatefulWidget {
+class DailyEventView extends StatefulWidget {
   DateTime date;
-  DayView({super.key, required this.date});
+  DateTime today = DateTime.now();
+  DailyEventView({super.key, required this.date});
 
   @override
-  State<DayView> createState() => _DayViewState();
+  State<DailyEventView> createState() => _DailyEventViewState();
 }
 
-class _DayViewState extends State<DayView> {
+class _DailyEventViewState extends State<DailyEventView> {
   var scaffoldKey = GlobalKey<ScaffoldState>();
 
-  /// A void function that asynchronously selects a date and fetches tasks for that date.
   Future<void> selectDate() async {
     DateTime selectedDate = await datePicker(context,
             initialDate: widget.date, defaultDate: widget.date) ??
@@ -30,7 +29,7 @@ class _DayViewState extends State<DayView> {
 
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => DayView(date: selectedDate),
+        builder: (context) => DailyEventView(date: selectedDate),
       ),
     );
   }
@@ -41,35 +40,13 @@ class _DayViewState extends State<DayView> {
       onHorizontalDragEnd: (details) {
         if (details.primaryVelocity! < 0) {
           Navigator.of(context)
-              .push(MaterialPageRoute(builder: (context) => WeekView()));
+              .push(MaterialPageRoute(builder: (context) => WeeklyEventView()));
         }
       },
       child: Scaffold(
           appBar: getTopBar(Event, "daily", context, this),
           body: Stack(children: [
             SingleDay(widget.date),
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                    0, 0, 20, 20), // Adjust the value as needed
-                child: ClipOval(
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      await addEventFormForDay(context, widget.date);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey,
-                      minimumSize: const Size(75, 75),
-                    ),
-                    child: const Icon(
-                      Icons.add_outlined,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-              ),
-            ),
           ])),
     );
   }
@@ -87,6 +64,7 @@ class _SingleDayState extends State<SingleDay> {
   List<Event> eventsToday = [];
   List<int> eventStartHours = [];
   int eventCount = 0;
+  DatabaseService db = DatabaseService();
 
   _SingleDayState(DateTime date);
 
@@ -97,52 +75,102 @@ class _SingleDayState extends State<SingleDay> {
   }
 
   void asyncInitState() async {
-    eventsToday = await db.getListOfEventsInDay(date: widget.date);
-    eventCount = eventsToday.length;
+    final List<Event> newTodayEvents =
+        await db.getListOfEventsInDay(date: widget.date);
+    if (mounted) {
+      setState(() {
+        eventsToday = newTodayEvents;
+        eventCount = newTodayEvents.length;
+        for (var event in eventsToday) {
+          eventStartHours.add(event.timeStart.hour);
+        }
+        //print("Date: ${widget.date} Events fetched: $newTodayEvents");
+      });
+    }
+  }
+
+  updateSingleDay(updatedEventsToday) {
+    setState(() {
+      eventsToday = updatedEventsToday;
+    });
+  }
+
+  Future<List<Event>> getEventsForSingleDay() async {
+    final List<Event> newEventsToday =
+        await db.getListOfEventsInDay(date: widget.date);
+    eventsToday = newEventsToday;
+    //print(newTodayEvents);
+    eventCount = newEventsToday.length;
     for (var event in eventsToday) {
       eventStartHours.add(event.timeStart.hour);
     }
-    setState(() {});
+    return newEventsToday;
   }
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width - 50;
-    return Column(
-      children: [
-        Expanded(
-            child: ListView.builder(
-          itemCount: 24,
-          itemBuilder: (context, index) {
-            return Row(
-              children: [
-                Column(children: [
-                  SizedBox(
-                      width: 50,
-                      height: 40,
-                      child: Center(
-                        child: Text(intl.DateFormat('j').format(
-                            getDateOnly(DateTime.now())
-                                .add(Duration(hours: index)))),
-                      )),
-                ]),
-                Expanded(
-                  child: Column(
-                    children: [
-                      const Divider(
-                        height: 1,
-                        thickness: 2,
-                      ),
-                      paintEvents(index, width),
-                    ],
-                  ),
-                )
-              ],
-            );
-          },
-        )),
-      ],
-    );
+    double width = MediaQuery.of(context).size.width - displayedHourWidth;
+    return FutureBuilder(
+        future: getEventsForSingleDay(),
+        builder: (context, AsyncSnapshot<List<Event>> snapshot) {
+          if (snapshot.data != []) {
+            return Stack(children: [
+              Column(
+                children: [
+                  Expanded(
+                      child: ListView.builder(
+                    itemCount: 24,
+                    itemBuilder: (context, index) {
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Column(
+                            children: [
+                              Container(
+                                  width: displayedHourWidth,
+                                  child: Center(
+                                    child: Text(intl.DateFormat('j').format(
+                                        getDateOnly(DateTime.now())
+                                            .add(Duration(hours: index)))),
+                                  )),
+                            ],
+                          ),
+                          Expanded(
+                            child: Column(
+                              children: [
+                                const SizedBox(height: 10),
+                                const Divider(
+                                  height: 0,
+                                  thickness: 2,
+                                ),
+                                Container(
+                                    height: 40,
+                                    width: width,
+                                    child: OverflowBox(
+                                        minHeight: 40,
+                                        alignment: Alignment.topLeft,
+                                        maxHeight:
+                                            MediaQuery.of(context).size.height,
+                                        child: paintEvents(index, width))),
+                              ],
+                            ),
+                          )
+                        ],
+                      );
+                    },
+                  )),
+                ],
+              ),
+              AddEventButton(
+                  startDate: widget.date,
+                  callback: updateSingleDay,
+                  events: eventsToday,
+                  viewPeriod: "day"),
+            ]);
+          } else {
+            return const CircularProgressIndicator();
+          }
+        });
   }
 
   Row paintEvents(hour, width) {
@@ -153,19 +181,22 @@ class _SingleDayState extends State<SingleDay> {
       }
     }
     double space = width / eventsInHour.length;
-    //print("hour is $hour");
-    //print("events starting in hour: $eventsInHour");
-    List<CustomPaint> eventsToPaint = eventsInHour
+    List<GestureDetector> eventsToPaint = eventsInHour
         .map(
-          (event) => CustomPaint(
-            painter: MyPainter(context, eventSpace: space, event: event),
-            child: GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onTap: () {
-                  showEventDetailPopup(context, event, widget.date);
-                },
-                child: SizedBox(
-                    width: space, child: const Card(color: Colors.black))),
+          (event) => GestureDetector(
+            onTap: () {
+              showEventDetailPopup(context, event, widget.date,
+                  viewPeriod: "day",
+                  callback: updateSingleDay,
+                  events: eventsToday);
+            },
+            child: CustomPaint(
+              painter: MyPainter(context, eventWidth: space, event: event),
+              child: Container(
+                width: space,
+                height: hourHeight,
+              ),
+            ),
           ),
         )
         .toList();
@@ -174,23 +205,34 @@ class _SingleDayState extends State<SingleDay> {
 }
 
 class MyPainter extends CustomPainter {
-  double eventSpace;
+  double eventWidth;
   Event event;
   final BuildContext context;
-  MyPainter(this.context, {required this.eventSpace, required this.event});
+  MyPainter(this.context, {required this.eventWidth, required this.event});
   @override
   void paint(canvas, size) {
     final rrectPaint = Paint()
-      ..strokeWidth = 10
       ..color = Colors.amber
       ..style = PaintingStyle.fill;
     final myPaint2 = Paint()
-      ..strokeWidth = 2
+      ..strokeWidth = 1
       ..color = Colors.black
       ..style = PaintingStyle.stroke;
+    double hoursCovered =
+        (event.timeEnd.hour - event.timeStart.hour).toDouble();
+    if (hoursCovered == 0) {
+      hoursCovered += 1;
+    }
+    double eventDuration =
+        (event.timeEnd).difference(event.timeStart).inMinutes / 60;
+    if (eventDuration < 0.5) {
+      //just display events shorter than 30 minutes as 30 minutes
+      eventDuration = 0.5;
+    }
+    double hourOffset = event.timeStart.minute.toDouble() / 60;
     RRect eventRRect = RRect.fromRectAndRadius(
-        Rect.fromLTWH(0, 0, eventSpace,
-            40 * (event.timeEnd.hour - event.timeStart.hour).toDouble()),
+        Rect.fromLTWH(
+            0, hourHeight * hourOffset, eventWidth, hourHeight * eventDuration),
         const Radius.circular(7.5));
     Path eventRRectBorder = Path();
     eventRRectBorder.addRRect(eventRRect);
@@ -205,7 +247,10 @@ class MyPainter extends CustomPainter {
     TextPainter eventNamePainter =
         TextPainter(text: eventNameSpan, textDirection: (TextDirection.ltr));
     eventNamePainter.layout(minWidth: 0, maxWidth: size.width);
-    eventNamePainter.paint(canvas, Offset.fromDirection(0, 6));
+    eventNamePainter.paint(
+        canvas,
+        Offset.fromDirection(90, hourHeight * hourOffset + 5) +
+            Offset.fromDirection(0, 25));
     TextStyle eventTimeStyle =
         const TextStyle(color: Colors.black, fontSize: 10.5);
     TextSpan eventTimeSpan = TextSpan(
@@ -216,7 +261,9 @@ class MyPainter extends CustomPainter {
         TextPainter(text: eventTimeSpan, textDirection: (TextDirection.ltr));
     eventTimePainter.layout(minWidth: 0, maxWidth: size.width);
     eventTimePainter.paint(
-        canvas, Offset.fromDirection(90, 20) + Offset.fromDirection(0, 16));
+        canvas,
+        Offset.fromDirection(90, hourHeight * hourOffset + 20) +
+            Offset.fromDirection(0, 32));
   }
 
   @override

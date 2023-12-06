@@ -4,7 +4,7 @@ import 'package:planner/common/view/timeManagement.dart';
 import 'package:planner/models/event.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/view/dailyEventView.dart';
-import 'package:planner/view/monthlyEvenView.dart';
+import 'package:planner/view/monthlyEventView.dart';
 import 'package:planner/view/monthlyTaskView.dart';
 import 'package:planner/view/dailyTaskView.dart';
 import 'package:planner/view/weeklyEventView.dart';
@@ -151,7 +151,7 @@ AppBar _getTopBarDaily(bool forEvents, BuildContext context, state) {
                   if (forEvents) {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => DayView(date: state.today),
+                        builder: (context) => DailyEventView(date:getDateOnly(state.today)),
                       ),
                     );
                   } else {
@@ -252,7 +252,7 @@ AppBar _getTopBarWeekly(bool forEvents, BuildContext context, state) {
                     if (forEvents) {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => WeekView(),
+                          builder: (context) => WeeklyEventView(),
                         ),
                       );
                     } else {
@@ -324,7 +324,7 @@ _getTopBarMonthly(bool forEvents, BuildContext context, state) {
                   if (forEvents) {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => const MonthView(),
+                        builder: (context) => const MonthlyEventView(),
                       ),
                     );
                   } else {
