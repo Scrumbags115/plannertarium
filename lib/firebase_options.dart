@@ -44,46 +44,40 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCZGLE7nkKMlGA5zuxHM0kSACM066Mj8Ao',
-    appId: '1:86325497409:web:98f01f217afeb0779cc0c0',
-    messagingSenderId: '86325497409',
-    projectId: 'plannertarium-d1696',
-    authDomain: 'plannertarium-d1696.firebaseapp.com',
-    storageBucket: 'plannertarium-d1696.appspot.com',
-    measurementId: 'G-HM91TY6988',
+    apiKey: 'AIzaSyDJ9lpvjwkRsoHNCIJA2UimR-l2uSctXCs',
+    appId: '1:397341096369:web:5e543c4fab01a0ce412590',
+    messagingSenderId: '397341096369',
+    projectId: 'test-project-a11d7',
+    authDomain: 'test-project-a11d7.firebaseapp.com',
+    storageBucket: 'test-project-a11d7.appspot.com',
+    measurementId: 'G-KHJZ2M7C7H',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBwR4cKdPaa5c7p0fMLcAgu-VL8w3L3IUs',
-    appId: '1:86325497409:android:a2cc7cf176c84ac19cc0c0',
-    messagingSenderId: '86325497409',
-    projectId: 'plannertarium-d1696',
-    storageBucket: 'plannertarium-d1696.appspot.com',
+    apiKey: 'AIzaSyAaFPIPzQ49RGfNtgQo64OS1gbPKy8veJY',
+    appId: '1:397341096369:android:f50834436ba55aa1412590',
+    messagingSenderId: '397341096369',
+    projectId: 'test-project-a11d7',
+    storageBucket: 'test-project-a11d7.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCyEcuk8ws6jzJCLyncfad8a96Hx81JuuU',
-    appId: '1:86325497409:ios:8c7e2e61e837689f9cc0c0',
-    messagingSenderId: '86325497409',
-    projectId: 'plannertarium-d1696',
-    storageBucket: 'plannertarium-d1696.appspot.com',
-    androidClientId:
-        '86325497409-f2410jcidfas1b8rl4gtonlckkc2ej6v.apps.googleusercontent.com',
-    iosClientId:
-        '86325497409-ql5gu7ulc1gsvl2vvvssvgqvoj25men0.apps.googleusercontent.com',
-    iosBundleId: 'com.example.planner',
+    apiKey: 'AIzaSyDul5Ho-MYvepSbJwpApPT3JJsM8B41cQY',
+    appId: '1:397341096369:ios:cf99c5cc56e11640412590',
+    messagingSenderId: '397341096369',
+    projectId: 'test-project-a11d7',
+    storageBucket: 'test-project-a11d7.appspot.com',
+    iosClientId: '397341096369-vg4dhg1geasr4i1l0dibridit5oh7r6b.apps.googleusercontent.com',
+    iosBundleId: 'com.example.plannertarium',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyCyEcuk8ws6jzJCLyncfad8a96Hx81JuuU',
-    appId: '1:86325497409:ios:a92f520aa01377069cc0c0',
-    messagingSenderId: '86325497409',
-    projectId: 'plannertarium-d1696',
-    storageBucket: 'plannertarium-d1696.appspot.com',
-    androidClientId:
-        '86325497409-f2410jcidfas1b8rl4gtonlckkc2ej6v.apps.googleusercontent.com',
-    iosClientId:
-        '86325497409-tn3uvct9a9p9rmr2ek95g1vieojou7l0.apps.googleusercontent.com',
+    apiKey: 'AIzaSyDul5Ho-MYvepSbJwpApPT3JJsM8B41cQY',
+    appId: '1:397341096369:ios:7fb56431b5358495412590',
+    messagingSenderId: '397341096369',
+    projectId: 'test-project-a11d7',
+    storageBucket: 'test-project-a11d7.appspot.com',
+    iosClientId: '397341096369-lckkp2fa4h1tteu2orh3b47jeorqpiku.apps.googleusercontent.com',
     iosBundleId: 'com.example.planner.RunnerTests',
   );
 }
