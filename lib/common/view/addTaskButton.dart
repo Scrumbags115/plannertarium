@@ -28,7 +28,7 @@ getAddTaskButton(state, context) {
               });
               state.setState(() {
                 state._selectedDay = state.selectedDay;
-                state._focusedDay = state.focusedDay;
+                state._focusedDay = state.selectedDay;
                 state.todayTasks = newTodayTasks;
               });
             }
@@ -137,8 +137,8 @@ Future<Task?> addButtonForm(BuildContext context, state) async {
                         icon: const Icon(Icons.wallet),
                         onPressed: () async {
                           final DateTime? pickedDate = await datePicker(context,
-                              initialDate: state.today,
-                              defaultDate: state.today);
+                              initialDate: state.selectedDay,
+                              defaultDate: state.selectedDay);
                           if (pickedDate != null && pickedDate != startTime) {
                             setState(() {
                               startTime = pickedDate;
@@ -162,8 +162,8 @@ Future<Task?> addButtonForm(BuildContext context, state) async {
                         onPressed: () async {
                           final DateTime? pickedDueDate = await datePicker(
                               context,
-                              initialDate: state.today,
-                              defaultDate: state.today);
+                              initialDate: state.selectedDay,
+                              defaultDate: state.selectedDay);
                           if (pickedDueDate != null &&
                               pickedDueDate != dueDate) {
                             setState(() {
