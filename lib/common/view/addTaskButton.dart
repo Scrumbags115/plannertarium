@@ -8,6 +8,8 @@ import 'package:planner/models/tag.dart';
 
 import '../../common/view/tagPopup.dart';
 
+import 'flashError.dart';
+
 getAddTaskButton(state, context) {
   return Align(
     alignment: Alignment.bottomRight,
@@ -161,8 +163,8 @@ Future<Task?> addButtonForm(BuildContext context, state) async {
                         onPressed: () async {
                           final DateTime? pickedDueDate = await datePicker(
                               context,
-                              initialDate: state.monday,
-                              defaultDate: state.monday);
+                              initialDate: state.today,
+                              defaultDate: state.today);
                           if (pickedDueDate != null &&
                               pickedDueDate != dueDate) {
                             setState(() {
@@ -215,16 +217,24 @@ Future<Task?> addButtonForm(BuildContext context, state) async {
                 //       newTask.tags =
                 //           enteredTags.map((tag) => tag.id).toList();
                 // }
+                // DateTimes are invalid!
+                // timeDue is optional
+                if (newTask.timeDue != null && newTask.timeStart.compareTo(newTask.timeDue!) > 0) {
+                  showFlashError(context, "Task start and due times are invalid!");
+                } else if (newTask.name == "") {
+                  // name is invalid!
+                  showFlashError(context, "Task cannot have an empty name!");
+                } else {
+                  db.setTask(newTask);
 
-                db.setTask(newTask);
-
-                for (Tag tag in enteredTags) {
+                  for (Tag tag in enteredTags) {
                   db.setTag(tag);
                   db.addTagToTask(newTask, tag);
                   // state.allTagsofTask.add(tag);
                 }
 
                 completer.complete(newTask);
+                }
                 Navigator.of(context).pop();
               },
             ),

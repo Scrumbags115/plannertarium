@@ -82,6 +82,9 @@ class Task extends Undertaking {
   @override
   set timeStart(DateTime newTimeStart) {
     super.timeStart = getDateOnly(newTimeStart);
+    if (timeStart.isAfter(timeCurrent)) {
+      timeCurrent = timeStart;
+    }
   }
 
   set completed(bool newCompleted) {

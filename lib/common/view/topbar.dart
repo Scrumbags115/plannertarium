@@ -121,8 +121,19 @@ AppBar _getTopBarDaily(bool forEvents, BuildContext context, state) {
     shape: roundedRectangleBackground,
     leading: IconButton(
       icon: const Icon(Icons.calendar_month_rounded, color: Colors.black),
-      onPressed: () {
-        state.selectDate(context: context);
+      onPressed: () async {
+        DateTime initialDate;
+        // todo: This is done to avoid extreme duplication of code, but the way the event and task view are written are fundamentally very different to trying to call it with the same signature will crash. This just ensures that if the view's object is different, the proper signature is called
+        try {
+          initialDate = state.today;
+        } on NoSuchMethodError catch (_) {
+          initialDate = state.widget.today;
+        }
+        final DateTime? selectedDate = await datePicker(state.context,
+            initialDate: initialDate, defaultDate: null);
+        if (selectedDate != null) {
+          await state.resetView(selectedDate);
+        }
       },
     ),
     title: Row(
@@ -151,7 +162,7 @@ AppBar _getTopBarDaily(bool forEvents, BuildContext context, state) {
                   if (forEvents) {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => DailyEventView(date:getDateOnly(state.today)),
+                        builder: (context) => DailyEventView(today :getDateOnly(state.today)),
                       ),
                     );
                   } else {
@@ -214,7 +225,7 @@ AppBar _getTopBarWeekly(bool forEvents, BuildContext context, state) {
               try {
                 initialDate = state.today;
               } on NoSuchMethodError catch (_) {
-                initialDate = state.widget.monday;
+                initialDate = state.widget.today;
               }
               final DateTime? selectedDate = await datePicker(state.context,
                   initialDate: initialDate, defaultDate: null);

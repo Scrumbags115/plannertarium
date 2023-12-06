@@ -11,12 +11,13 @@ import 'package:planner/common/view/topbar.dart';
 const hourHeight = 50.0;
 const displayedHourWidth = 50.0;
 
+DatabaseService db = DatabaseService();
+
 class DailyEventView extends StatefulWidget {
 
 DatabaseService db = DatabaseService();
-  DateTime date;
   DateTime today = DateTime.now();
-  DailyEventView({super.key, required this.date});
+  DailyEventView({super.key, required this.today});
 
   @override
   State<DailyEventView> createState() => _DailyEventViewState();
@@ -25,14 +26,15 @@ DatabaseService db = DatabaseService();
 class _DailyEventViewState extends State<DailyEventView> {
   var scaffoldKey = GlobalKey<ScaffoldState>();
 
-  Future<void> selectDate() async {
-    DateTime selectedDate = await datePicker(context,
-            initialDate: widget.date, defaultDate: widget.date) ??
-        widget.date;
-
+  /// A void function that takes a date and asynchronously fetches tasks for that date.
+  Future<void> resetView(DateTime? selectedDate) async {
+    if (selectedDate == null) {
+      return;
+    }
+    
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => DailyEventView(date: selectedDate),
+        builder: (context) => DailyEventView(today: selectedDate),
       ),
     );
   }
@@ -49,7 +51,7 @@ class _DailyEventViewState extends State<DailyEventView> {
       child: Scaffold(
           appBar: getTopBar(Event, "daily", context, this),
           body: Stack(children: [
-            SingleDay(widget.date),
+            SingleDay(widget.today),
           ])),
     );
   }

@@ -9,11 +9,11 @@ import 'package:planner/view/monthlyTaskView.dart';
 import 'package:planner/view/taskCard.dart';
 
 class WeeklyTaskView extends StatefulWidget {
-  late DateTime monday;
+  late DateTime today;
   late DateTime currentDate;
   WeeklyTaskView({super.key, DateTime? dateInWeek}) {
     currentDate = getDateOnly(dateInWeek ?? DateTime.now());
-    monday = mostRecentMonday(dateInWeek ?? DateTime.now());
+    today = mostRecentMonday(dateInWeek ?? DateTime.now());
   }
 
   @override
@@ -36,7 +36,7 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
 
   /// Asynchronously fetches tasks for the current week
   Future<void> setData() async {
-    var taskMaps = await _db.getTaskMapsWeek(widget.monday);
+    var taskMaps = await _db.getTaskMapsWeek(widget.today);
     setState(() {
       active = taskMaps.$1;
       complete = taskMaps.$2;
@@ -47,8 +47,8 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
   void toggleCompleted(Task task) {
     for (int i = 0; i < 7; i++) {
       // get the date of the current day
-      DateTime curr = getDateOnly(widget.monday, offsetDays: i);
-
+      DateTime curr = getDateOnly(widget.today, offsetDays: i);
+      
       // if the task was just completed
       if (task.completed) {
         // and if the task was active
@@ -125,7 +125,7 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
 
   void deleteTask(Task task) {
     DateTime deletionStart =
-        task.timeStart.isBefore(widget.monday) ? widget.monday : task.timeStart;
+        task.timeStart.isBefore(widget.today) ? widget.today : task.timeStart;
     DateTime deletionEnd = task.timeCurrent;
     int daysToDelete = daysBetween(deletionStart, deletionEnd) + 1;
 
@@ -160,13 +160,13 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
     loadWeek(getDateOnly(widget.currentDate, offsetDays: 7));
   }
 
-  void resetView(DateTime? selectedDate) async {
+  Future<void> resetView(DateTime? selectedDate) async {
     if (selectedDate == null) {
       return;
     }
 
     setState(() {
-      today = selectedDate;
+      widget.today = selectedDate;
     });
     await setData();
     generateScreen();
@@ -177,7 +177,7 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
     List<Widget> dayWidgets = [];
 
     for (int i = 0; i < 7; i++) {
-      DateTime currentDate = getDateOnly(widget.monday, offsetDays: i);
+      DateTime currentDate = getDateOnly(widget.today, offsetDays: i);
       List<Task> tasksForDay = (active[currentDate] ?? []) +
           (complete[currentDate] ?? []) +
           (delay[currentDate] ?? []);
