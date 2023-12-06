@@ -129,8 +129,8 @@ class Task extends Undertaking {
     if (other is! Task) return false;
     if (id == other.id) return true;
 
-    bool taskVariablesEqual = completed == other._completed &&
-        timeDue == other.timeDue;
+    bool taskVariablesEqual =
+        completed == other._completed && timeDue == other.timeDue;
     if (!taskVariablesEqual) {
       // print("task variables are not equal")
       return false;

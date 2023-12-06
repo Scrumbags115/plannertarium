@@ -39,11 +39,11 @@ class LoginView extends StatefulWidget {
 }
 
 bool isOnIOSorAndroid() {
-  return defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS;
+  return defaultTargetPlatform == TargetPlatform.android ||
+      defaultTargetPlatform == TargetPlatform.iOS;
 }
 
 Widget dynamicSlider(bool value, Function callback) {
-
   if (isOnIOSorAndroid()) {
     return SliderButton(
       width: 200,
@@ -67,6 +67,7 @@ Widget dynamicSlider(bool value, Function callback) {
     );
   }
 }
+
 class LoginViewState extends State<LoginView> {
   bool isLogin = false; // Assuming this is a state variable
 
@@ -77,8 +78,7 @@ class LoginViewState extends State<LoginView> {
       db.initUsername(u.displayName!);
       db.initEmail(u.email!);
       db.initPFP(u.photoURL!);
-      setState(() {
-      });
+      setState(() {});
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -87,6 +87,7 @@ class LoginViewState extends State<LoginView> {
       );
     });
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

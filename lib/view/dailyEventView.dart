@@ -7,10 +7,13 @@ import 'package:planner/view/eventDialogs.dart';
 import 'package:planner/view/weeklyEventView.dart';
 import 'package:planner/common/view/topbar.dart';
 
+
 const hourHeight = 50.0;
 const displayedHourWidth = 50.0;
 
 class DailyEventView extends StatefulWidget {
+
+DatabaseService db = DatabaseService();
   DateTime date;
   DateTime today = DateTime.now();
   DailyEventView({super.key, required this.date});
