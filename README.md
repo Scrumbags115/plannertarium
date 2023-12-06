@@ -22,7 +22,7 @@ Android will require a registered SHA1 key with the central Firestore. iOS will 
 Alternatively, you can download and install the Plannertarium app on Android using the provided APK file in `./release` called `app-release.apk`.
 
 ---
-## Some basic user guides/design documents
+## User Information
 ### Views
 - The app is split into two main parts: Tasks and Events. The user can toggle between them with the switch located in the Topbar.
 - Tasks
