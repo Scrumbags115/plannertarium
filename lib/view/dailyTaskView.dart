@@ -63,11 +63,15 @@ class TaskViewState extends State<TaskView> {
       return;
     }
     
-    List<Task> newTasks = await db.fetchTodayTasks(selectedDate);
+    var taskMaps = await db.getTaskMapsDay(widget.selectedDay);
+    active = taskMaps.$1;
+    delay = taskMaps.$2;
+    complete = taskMaps.$3;
+
 
     setState(() {
       today = selectedDate;
-      todayTasks = newTasks;
+      todayTasks = active + delay + complete;
     });
   }
 
