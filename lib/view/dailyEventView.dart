@@ -24,7 +24,11 @@ class _DailyEventViewState extends State<DailyEventView> {
   var scaffoldKey = GlobalKey<ScaffoldState>();
 
   /// A void function that takes a date and asynchronously fetches tasks for that date.
-  Future<void> resetView(DateTime selectedDate) async {
+  Future<void> resetView(DateTime? selectedDate) async {
+    if (selectedDate == null) {
+      return;
+    }
+    
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => DailyEventView(today: selectedDate),
