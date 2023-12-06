@@ -69,7 +69,7 @@ class _WeeklyEventViewState extends State<WeeklyEventView> {
           if (details.primaryVelocity! > 0) {
             Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) =>
-                  DailyEventView(today: getDateOnly(DateTime.now()))));
+                  DailyEventView(selectedDay: getDateOnly(DateTime.now()))));
           }
         },
         child: Stack(
@@ -144,7 +144,7 @@ class _MultiDayCardState extends State<MultiDayCard> {
                     context,
                     MaterialPageRoute(
                         builder: (context) =>
-                            DailyEventView(today: dateToDisplay)));
+                            DailyEventView(selectedDay: dateToDisplay)));
               },
               child: Center(
                 child: Column(
@@ -178,7 +178,7 @@ class _MultiDayCardState extends State<MultiDayCard> {
                       context,
                       MaterialPageRoute(
                           builder: (context) =>
-                              DailyEventView(today: dateToDisplay)));
+                              DailyEventView(selectedDay: dateToDisplay)));
                 },
                 child: Column(
                   children: [

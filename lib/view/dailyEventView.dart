@@ -15,8 +15,8 @@ DatabaseService db = DatabaseService();
 
 class DailyEventView extends StatefulWidget {
 DatabaseService db = DatabaseService();
-  DateTime today = DateTime.now();
-  DailyEventView({super.key, required this.today});
+  DateTime selectedDay = DateTime.now();
+  DailyEventView({super.key, required this.selectedDay});
 
   @override
   State<DailyEventView> createState() => _DailyEventViewState();
@@ -33,7 +33,7 @@ class _DailyEventViewState extends State<DailyEventView> {
     
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => DailyEventView(today: selectedDate),
+        builder: (context) => DailyEventView(selectedDay: selectedDate),
       ),
     );
   }
@@ -50,7 +50,7 @@ class _DailyEventViewState extends State<DailyEventView> {
       child: Scaffold(
           appBar: getTopBar(Event, "daily", context, this),
           body: Stack(children: [
-            SingleDay(widget.today),
+            SingleDay(widget.selectedDay),
           ])),
     );
   }
