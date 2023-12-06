@@ -9,7 +9,7 @@
 Release documents can be found in the `./release` directory.
 
 ## Installation
-The only way to install as of now is by source.
+Currently, users can install by source or by the provided APK file. To install from source, do the following:
 
 After [installing flutter](https://docs.flutter.dev/get-started/install), clone from source:
 ```shell
