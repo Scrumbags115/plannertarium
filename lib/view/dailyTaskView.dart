@@ -12,9 +12,9 @@ import 'package:planner/view/weeklyTaskView.dart';
 import 'package:planner/view/taskCard.dart';
 
 class TaskView extends StatefulWidget {
-  late DateTime focusedDay;
+  late DateTime selectedDay;
   TaskView({super.key, DateTime? dayOfDailyView}) {
-    focusedDay = dayOfDailyView ?? DateTime.now();
+    selectedDay = dayOfDailyView ?? DateTime.now();
   }
   @override
   TaskViewState createState() => TaskViewState();
@@ -45,7 +45,7 @@ class TaskViewState extends State<TaskView> {
 
   /// Performs asynchronous initialization for the widget.
   void asyncInitState() async {
-    var taskMaps = await db.getTaskMapsDay(widget.focusedDay);
+    var taskMaps = await db.getTaskMapsDay(widget.selectedDay);
     active = taskMaps.$1;
     delay = taskMaps.$2;
     complete = taskMaps.$3;
@@ -95,7 +95,7 @@ class TaskViewState extends State<TaskView> {
       itemCount: todayTasks.length,
       itemBuilder: (context, index) {
         Task task = todayTasks[index];
-        return TaskCard(task: task, state: this, dateOfCard: widget.focusedDay);
+        return TaskCard(task: task, state: this, dateOfCard: widget.selectedDay);
       },
     );
   }

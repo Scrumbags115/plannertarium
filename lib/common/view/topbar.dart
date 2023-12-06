@@ -125,9 +125,9 @@ AppBar _getTopBarDaily(bool forEvents, BuildContext context, state) {
         DateTime initialDate;
         // todo: This is done to avoid extreme duplication of code, but the way the event and task view are written are fundamentally very different to trying to call it with the same signature will crash. This just ensures that if the view's object is different, the proper signature is called
         try {
-          initialDate = state.today;
+          initialDate = state.selectedDay;
         } on NoSuchMethodError catch (_) {
-          initialDate = state.widget.today;
+          initialDate = state.widget.selectedDay;
         }
         final DateTime? selectedDate = await datePicker(state.context,
             initialDate: initialDate, defaultDate: null);
@@ -162,7 +162,7 @@ AppBar _getTopBarDaily(bool forEvents, BuildContext context, state) {
                   if (forEvents) {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => DailyEventView(today :getDateOnly(state.today)),
+                        builder: (context) => DailyEventView(selectedDay :getDateOnly(state.today)),
                       ),
                     );
                   } else {
@@ -223,9 +223,9 @@ AppBar _getTopBarWeekly(bool forEvents, BuildContext context, state) {
               DateTime initialDate;
               // todo: This is done to avoid extreme duplication of code, but the way the event and task view are written are fundamentally very different to trying to call it with the same signature will crash. This just ensures that if the view's object is different, the proper signature is called
               try {
-                initialDate = state.today;
+                initialDate = state.selectedDay;
               } on NoSuchMethodError catch (_) {
-                initialDate = state.widget.today;
+                initialDate = state.widget.selectedDay;
               }
               final DateTime? selectedDate = await datePicker(state.context,
                   initialDate: initialDate, defaultDate: null);
