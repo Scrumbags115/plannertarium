@@ -34,8 +34,6 @@ Future<List<Tag>> showTagSelectionDialog(BuildContext context,
                   title: const Text('Add Tag'),
                   content: SingleChildScrollView(
                       child: SizedBox(
-                          height: (MediaQuery.of(context).size.width * 0.7),
-                          width: (MediaQuery.of(context).size.height * 0.8),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
