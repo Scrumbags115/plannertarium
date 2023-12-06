@@ -8,21 +8,19 @@ import 'package:planner/view/eventDialogs.dart';
 import 'package:planner/view/monthlyEventView.dart';
 import 'package:intl/intl.dart';
 
-DatabaseService db = DatabaseService();
-
-class WeekView extends StatefulWidget {
+class WeeklyEventView extends StatefulWidget {
   late DateTime today;
-  WeekView({super.key, DateTime? date}) {
+  WeeklyEventView({super.key, DateTime? date}) {
     today = mostRecentMonday(date ?? DateTime.now());
   }
 
   @override
-  State<WeekView> createState() => _WeekViewState();
+  State<WeeklyEventView> createState() => _WeeklyEventViewState();
 }
 
-class _WeekViewState extends State<WeekView> {
+class _WeeklyEventViewState extends State<WeeklyEventView> {
   var scaffoldKey = GlobalKey<ScaffoldState>();
-
+  DatabaseService db = DatabaseService();
   void resetView(DateTime? selectedDate) async {
     if (selectedDate == null) {
       return;
@@ -32,27 +30,25 @@ class _WeekViewState extends State<WeekView> {
     });
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => WeekView(date: widget.today),
+        builder: (context) => WeeklyEventView(date: widget.today),
       ),
     );
   }
 
-  /// Asynchronously loads tasks for the previous week and generates the screen
   void loadPreviousWeek() async {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) =>
-            WeekView(date: getDateOnly(widget.today, offsetDays: -7)),
+            WeeklyEventView(date: getDateOnly(widget.today, offsetDays: -7)),
       ),
     );
   }
 
-  /// Asynchronously loads tasks for the next week and generates the screen
   void loadNextWeek() async {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) =>
-            WeekView(date: getDateOnly(widget.today, offsetDays: 7)),
+            WeeklyEventView(date: getDateOnly(widget.today, offsetDays: 7)),
       ),
     );
   }
@@ -67,45 +63,23 @@ class _WeekViewState extends State<WeekView> {
       body: GestureDetector(
         onHorizontalDragEnd: (details) {
           if (details.primaryVelocity! < 0) {
-            Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const MonthView()));
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => const MonthlyEventView()));
           }
           if (details.primaryVelocity! > 0) {
             Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) =>
-                    DayView(today: getDateOnly(DateTime.now()))));
+                  DailyEventView(today: getDateOnly(DateTime.now()))));
           }
         },
         child: Stack(
           children: [
             ListView(
               children: List.generate(DateTime.daysPerWeek, (index) {
-                //This generates 7 MultiDayCard in a vertical list
                 return MultiDayCard(index, startDate);
               }),
             ),
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                    0, 0, 20, 20), // Adjust the value as needed
-                child: ClipOval(
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      await addEventFormForDay(context, today);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey,
-                      minimumSize: const Size(75, 75),
-                    ),
-                    child: const Icon(
-                      Icons.add_outlined,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-              ),
-            )
+            AddEventButton(startDate: startDate, events: [], viewPeriod: "week")
           ],
         ),
       ),
@@ -127,6 +101,7 @@ class _MultiDayCardState extends State<MultiDayCard> {
   List<Event> eventsToday = [];
   int index;
   DateTime startDate;
+  DatabaseService db = DatabaseService();
   _MultiDayCardState(this.index, this.startDate) {
     // todo: eventWeeklyView is currently implemented as a list of events in a day. This doesn't support/deal with events with overlapping time frames. For example, event A and B could be from 3-4PM Dec 1 and 2 respectively, but grabbing it with getListOfEventsInDay() for Dec 1 can return both if event A's timeEnd and eventB's timeStart are in range, as it expects the user to deal with overlapping times over a current day
     db
@@ -168,7 +143,8 @@ class _MultiDayCardState extends State<MultiDayCard> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => DayView(today: dateToDisplay)));
+                        builder: (context) =>
+                            DailyEventView(today: dateToDisplay)));
               },
               child: Center(
                 child: Column(
@@ -201,7 +177,8 @@ class _MultiDayCardState extends State<MultiDayCard> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => DayView(today: dateToDisplay)));
+                          builder: (context) =>
+                              DailyEventView(today: dateToDisplay)));
                 },
                 child: Column(
                   children: [
@@ -211,21 +188,6 @@ class _MultiDayCardState extends State<MultiDayCard> {
                           Expanded(
                             child: generateEventCardListView(dateToDisplay),
                           ),
-                          /*Flexible(
-                              flex: 0,
-                              child: SizedBox(
-                                  width: 40,
-                                  child: Card(
-                                      color: Colors.blue,
-                                      child: InkWell(
-                                          onTap: () async {
-                                            await addEventFormForDay(
-                                                context, dateToDisplay);
-                                          },
-                                          child: const Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [Icon(Icons.add)])))))*/
                         ],
                       ),
                     )
@@ -240,31 +202,17 @@ class _MultiDayCardState extends State<MultiDayCard> {
   }
 
   ListView generateEventCardListView(DateTime dateToDisplay) {
-    if (eventCount == 0) {
-      return ListView(
-        shrinkWrap: true,
-        children: List.generate(eventCount, (index) {
-          return Row(
-            children: [
-              EventCard(
-                  eventsToday: eventsToday, index: index, date: dateToDisplay)
-            ],
-          );
-        }),
-      );
-    } else {
-      return ListView(
-        shrinkWrap: true,
-        children: List.generate(eventCount, (index) {
-          return Row(
-            children: [
-              EventCard(
-                  eventsToday: eventsToday, index: index, date: dateToDisplay)
-            ],
-          );
-        }),
-      );
-    }
+    return ListView(
+      shrinkWrap: true,
+      children: List.generate(eventCount, (index) {
+        return Row(
+          children: [
+            EventCard(
+                eventsToday: eventsToday, index: index, date: dateToDisplay)
+          ],
+        );
+      }),
+    );
   }
 }
 
@@ -287,24 +235,30 @@ class _EventCardState extends State<EventCard> {
   Widget build(BuildContext context) {
     Event event = widget.eventsToday[widget.index];
     return Expanded(
-      child: SizedBox(
-        height: 40,
-        child: Card(
-          color: Colors.amber,
-          child: InkWell(
-            onTap: () {
-              showEventDetailPopup(context, event, widget.date);
-            },
-            child: Column(
-              children: [
-                Text(event.name),
-                Text(
-                    "${DateFormat("h:mma").format(event.timeStart)} to ${DateFormat("h:mma").format(event.timeEnd)}")
-              ],
+      //This Expanded > Row > Expanded is necessary to prevent ParentDataWidget error
+      child: Row(children: [
+        Expanded(
+          child: SizedBox(
+            height: 44,
+            child: Card(
+              color: Colors.amber,
+              child: InkWell(
+                onTap: () {
+                  showEventDetailPopup(context, event, widget.date,
+                      viewPeriod: "week");
+                },
+                child: Column(
+                  children: [
+                    Text(event.name),
+                    Text(
+                        "${DateFormat("h:mma").format(event.timeStart)} to ${DateFormat("h:mma").format(event.timeEnd)}")
+                  ],
+                ),
+              ),
             ),
           ),
         ),
-      ),
+      ]),
     );
   }
 }
