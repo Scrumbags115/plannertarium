@@ -54,7 +54,7 @@ class TaskViewState extends State<TaskView> {
     setState(() {});
   }
 
-  /// Dummy function called by taskCard, does not need implementation for daily view 
+  /// Dummy function called by taskCard, does not need implementation for daily view
   void toggleCompleted(Task task) {}
 
   /// A void function that takes a date and asynchronously fetches tasks for that date.

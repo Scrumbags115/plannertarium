@@ -7,14 +7,16 @@ import 'package:planner/view/eventDialogs.dart';
 import 'package:planner/view/weeklyEventView.dart';
 import 'package:planner/common/view/topbar.dart';
 
+
 const hourHeight = 50.0;
 const displayedHourWidth = 50.0;
 
 DatabaseService db = DatabaseService();
 
 class DailyEventView extends StatefulWidget {
-  DateTime selectedDay = DateTime.now();
-  DailyEventView({super.key, required this.selectedDay});
+DatabaseService db = DatabaseService();
+  DateTime today = DateTime.now();
+  DailyEventView({super.key, required this.today});
 
   @override
   State<DailyEventView> createState() => _DailyEventViewState();
@@ -31,7 +33,7 @@ class _DailyEventViewState extends State<DailyEventView> {
     
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => DailyEventView(selectedDay: selectedDate),
+        builder: (context) => DailyEventView(today: selectedDate),
       ),
     );
   }
@@ -48,7 +50,7 @@ class _DailyEventViewState extends State<DailyEventView> {
       child: Scaffold(
           appBar: getTopBar(Event, "daily", context, this),
           body: Stack(children: [
-            SingleDay(widget.selectedDay),
+            SingleDay(widget.today),
           ])),
     );
   }
