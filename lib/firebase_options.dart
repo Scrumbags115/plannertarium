@@ -67,6 +67,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '397341096369',
     projectId: 'test-project-a11d7',
     storageBucket: 'test-project-a11d7.appspot.com',
+    androidClientId: '397341096369-1nbpa9ikluk2s2i5k40lcit13s0196v3.apps.googleusercontent.com',
     iosClientId: '397341096369-vg4dhg1geasr4i1l0dibridit5oh7r6b.apps.googleusercontent.com',
     iosBundleId: 'com.example.plannertarium',
   );
@@ -77,6 +78,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '397341096369',
     projectId: 'test-project-a11d7',
     storageBucket: 'test-project-a11d7.appspot.com',
+    androidClientId: '397341096369-1nbpa9ikluk2s2i5k40lcit13s0196v3.apps.googleusercontent.com',
     iosClientId: '397341096369-lckkp2fa4h1tteu2orh3b47jeorqpiku.apps.googleusercontent.com',
     iosBundleId: 'com.example.planner.RunnerTests',
   );
