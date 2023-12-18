@@ -12,9 +12,9 @@ import 'package:planner/view/weeklyTaskView.dart';
 import 'package:planner/view/taskCard.dart';
 
 class TaskView extends StatefulWidget {
-  late DateTime selectedDay;
+  late DateTime initialDay;
   TaskView({super.key, DateTime? dayOfDailyView}) {
-    selectedDay = dayOfDailyView ?? DateTime.now();
+    initialDay = dayOfDailyView ?? DateTime.now();
   }
   @override
   TaskViewState createState() => TaskViewState();
@@ -25,32 +25,27 @@ class TaskViewState extends State<TaskView> {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final User? user = FirebaseAuth.instance.currentUser;
   DatabaseService db = DatabaseService();
-  DateTime today = DateTime.now();
+  late DateTime today;
   List<Task> active = [];
   List<Task> delay = [];
   List<Task> complete = [];
-
-  List<Task> todayTasks = [];
-  List<Task> selectedDateTasks = [];
-  List<Task> todayDelayedTasks = [];
-  bool forEvents = false;
 
   @override
 
   /// Initializes the state of the widget.
   void initState() {
+    today = widget.initialDay;
     super.initState();
     asyncInitState();
   }
 
   /// Performs asynchronous initialization for the widget.
   void asyncInitState() async {
-    var taskMaps = await db.getTaskMapsDay(widget.selectedDay);
+    var taskMaps = await db.getTaskMapsDay(today);
     active = taskMaps.$1;
     delay = taskMaps.$2;
     complete = taskMaps.$3;
 
-    todayTasks = active + delay + complete;
     setState(() {});
   }
 
@@ -63,7 +58,6 @@ class TaskViewState extends State<TaskView> {
       return;
     }
 
-    widget.selectedDay = selectedDate;
     var taskMaps = await db.getTaskMapsDay(selectedDate);
     active = taskMaps.$1;
     delay = taskMaps.$2;
@@ -71,7 +65,6 @@ class TaskViewState extends State<TaskView> {
 
     setState(() {
       today = selectedDate;
-      todayTasks = active + delay + complete;
       getTodayTaskList();
     });
   }
@@ -79,7 +72,6 @@ class TaskViewState extends State<TaskView> {
   void moveDelayedTask(Task task, DateTime oldDate) async {
     active.remove(task);
     delay.add(task);
-    todayTasks = active + delay + complete;
     setState(() {
       getTodayTaskList();
     });
@@ -89,7 +81,6 @@ class TaskViewState extends State<TaskView> {
     active.remove(task);
     delay.remove(task);
     complete.remove(task);
-    todayTasks = active + delay + complete;
     setState(() {
       getTodayTaskList();
     });
@@ -97,11 +88,11 @@ class TaskViewState extends State<TaskView> {
 
   ListView getTodayTaskList() {
     return ListView.builder(
-      itemCount: todayTasks.length,
+      itemCount: (active + delay + complete).length,
       itemBuilder: (context, index) {
-        Task task = todayTasks[index];
+        Task task = (active + delay + complete)[index];
         return TaskCard(
-            task: task, state: this, dateOfCard: widget.selectedDay);
+            task: task, state: this, dateOfCard: today);
       },
     );
   }
@@ -175,7 +166,7 @@ class TaskViewState extends State<TaskView> {
                       Task? newTask = await addButtonForm(context, this);
                       if (newTask != null) {
                         setState(() {
-                          todayTasks.add(newTask);
+                          active.add(newTask);
                         });
                       }
                     },
