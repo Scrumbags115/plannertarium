@@ -11,9 +11,9 @@ import 'package:planner/view/weeklyTaskView.dart';
 import 'package:planner/view/taskCard.dart';
 
 class TaskView extends StatefulWidget {
-  late final DateTime initialDay;
+  late final DateTime selectedDay;
   TaskView({super.key, DateTime? dayOfDailyView}) {
-    initialDay = dayOfDailyView ?? DateTime.now();
+    selectedDay = dayOfDailyView ?? DateTime.now();
   }
   @override
   TaskViewState createState() => TaskViewState();
@@ -33,7 +33,7 @@ class TaskViewState extends State<TaskView> {
 
   /// Initializes the state of the widget.
   void initState() {
-    today = widget.initialDay;
+    today = widget.selectedDay;
     super.initState();
     asyncInitState();
   }
