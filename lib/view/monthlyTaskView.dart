@@ -9,31 +9,25 @@ import 'package:planner/common/view/timeManagement.dart';
 import 'package:planner/view/taskCard.dart';
 
 class MonthlyTaskView extends StatefulWidget {
-  late DateTime startOfMonth;
-  late DateTime currentDate;
+  late DateTime selectedDay;
   MonthlyTaskView({super.key, required DateTime dayOfMonth}) {
-    currentDate = getDateOnly(dayOfMonth);
-    startOfMonth = getMonthAsDateTime(currentDate);
+    selectedDay = getDateOnly(dayOfMonth);
   }
   @override
   MonthlyTaskViewState createState() => MonthlyTaskViewState();
 }
 
 class MonthlyTaskViewState extends State<MonthlyTaskView> {
-  final CalendarFormat _calendarFormat = CalendarFormat.month;
-  DateTime _focusedDay = DateTime.now();
-  DateTime _selectedDay = getDateOnly(DateTime.now());
   final DatabaseService _db = DatabaseService();
-  List<Task> todayTasks = [];
-  final PageController _pageController = PageController();
+  late DateTime today;
   Map<DateTime, List<Task>> _active = {};
   Map<DateTime, List<Task>> _delay = {};
   Map<DateTime, List<Task>> _complete = {};
-  DateTime today = DateTime.now();
 
   /// Initializes the state of the widget
   @override
   void initState() {
+    today = widget.selectedDay;
     super.initState();
     asyncInitState();
   }
@@ -42,29 +36,23 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
   void asyncInitState() async {
     await setData();
     setState(() {});
-    // print('monthly: $_active');
   }
 
   /// Asynchronously fetches tasks for the current week
   Future<void> setData() async {
-    var taskMaps = await _db.getTaskMapsMonth(getMonthAsDateTime(_selectedDay));
+    var taskMaps = await _db.getTaskMapsMonth(getMonthAsDateTime(today));
     setState(() {
       _active = taskMaps.$1;
       _complete = taskMaps.$2;
       _delay = taskMaps.$3;
-      todayTasks = (_active[_selectedDay] ?? []) +
-          (_complete[_selectedDay] ?? []) +
-          (_delay[_selectedDay] ?? []);
     });
   }
 
   void toggleCompleted(Task task) {
-    for (int i = 0;
-        i <
-            daysBetween(widget.startOfMonth,
-                getNextMonthAsDateTime(widget.startOfMonth));
-        i++) {
-      DateTime curr = getDateOnly(widget.startOfMonth, offsetDays: i);
+    DateTime startOfMonth = getMonthAsDateTime(today);
+    DateTime startOfNextMonth = getNextMonthAsDateTime(today);
+    for (int i = 0; i < daysBetween(startOfMonth, startOfNextMonth); i++) {
+      DateTime curr = getDateOnly(startOfMonth, offsetDays: i);
       if (task.completed) {
         if (_active[curr]!.contains(task)) {
           // then remove it from active and add it to complete
@@ -100,9 +88,6 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
       });
     }
 
-    todayTasks = (_active[_selectedDay] ?? []) +
-        (_complete[_selectedDay] ?? []) +
-        (_delay[_selectedDay] ?? []);
     setState(() {
       getTaskList();
     });
@@ -126,9 +111,6 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
       _active[newTaskDate] = [];
     }
     _active[newTaskDate]!.add(task);
-    todayTasks = (_active[_selectedDay] ?? []) +
-        (_complete[_selectedDay] ?? []) +
-        (_delay[_selectedDay] ?? []);
 
     setState(() {
       getTaskList();
@@ -136,9 +118,9 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
   }
 
   void deleteTask(Task task) {
-    DateTime deletionStart = task.timeStart.isBefore(widget.startOfMonth)
-        ? widget.startOfMonth
-        : task.timeStart;
+    DateTime startOfMonth = getMonthAsDateTime(today);
+    DateTime deletionStart =
+        task.timeStart.isBefore(startOfMonth) ? startOfMonth : task.timeStart;
     DateTime deletionEnd = task.timeCurrent;
     int daysToDelete = daysBetween(deletionStart, deletionEnd) + 1;
 
@@ -151,9 +133,6 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
         getTasksForDay(toDeleteTaskFrom);
       });
     }
-    todayTasks = (_active[_selectedDay] ?? []) +
-        (_complete[_selectedDay] ?? []) +
-        (_delay[_selectedDay] ?? []);
     setState(() {
       getTaskList();
     });
@@ -162,7 +141,6 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
   /// Disposes of the resources used by the widget
   @override
   void dispose() {
-    _pageController.dispose();
     super.dispose();
   }
 
@@ -175,10 +153,15 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
   /// Gets the list of tasks for the current day (for bottom)
   ListView getTaskList() {
     return ListView.builder(
-      itemCount: todayTasks.length,
+      itemCount: ((_active[today] ?? []) +
+              (_complete[today] ?? []) +
+              (_delay[today] ?? []))
+          .length,
       itemBuilder: (context, index) {
-        Task task = todayTasks[index];
-        return TaskCard(task: task, dateOfCard: _selectedDay, state: this);
+        Task task = ((_active[today] ?? []) +
+            (_complete[today] ?? []) +
+            (_delay[today] ?? []))[index];
+        return TaskCard(task: task, dateOfCard: today, state: this);
       },
     );
   }
@@ -200,25 +183,22 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
               TableCalendar(
                 firstDay: DateTime(2020, 10, 16),
                 lastDay: DateTime(2130, 3, 14),
-                focusedDay: _focusedDay,
-                calendarFormat: _calendarFormat,
+                focusedDay: getDateOnly(DateTime.now()),
+                calendarFormat: CalendarFormat.month,
                 selectedDayPredicate: (day) {
-                  return isSameDay(_selectedDay, day);
+                  return isSameDay(today, day);
                 },
                 onDaySelected: (selectedDay, focusedDay) async {
-                  if (!isSameDay(_selectedDay, selectedDay)) {
+                  if (!isSameDay(today, selectedDay)) {
                     final newTodayTasks =
                         await _db.fetchTodayTasks(selectedDay);
                     setState(() {
-                      _selectedDay = getDateOnly(selectedDay);
-                      _focusedDay = focusedDay;
-                      todayTasks = newTodayTasks;
+                      today = getDateOnly(selectedDay);
                     });
                   }
                 },
                 onPageChanged: (focusedDay) {
-                  _focusedDay = focusedDay;
-                  _selectedDay = getDateOnly(focusedDay);
+                  today = getDateOnly(focusedDay);
                 },
                 eventLoader: (day) {
                   return getTasksForDay(day);
@@ -267,9 +247,6 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
                               ..._active[newTaskDateStart] ?? [],
                               newTask
                             ];
-                            todayTasks = (_active[_selectedDay] ?? []) +
-                                (_complete[_selectedDay] ?? []) +
-                                (_delay[_selectedDay] ?? []);
                             getTaskList();
                           });
                         }

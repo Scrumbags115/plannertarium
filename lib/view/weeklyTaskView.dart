@@ -11,7 +11,7 @@ import 'package:planner/view/taskCard.dart';
 class WeeklyTaskView extends StatefulWidget {
   late DateTime selectedDay;
   WeeklyTaskView({super.key, DateTime? dateInWeek}) {
-    selectedDay = mostRecentMonday(dateInWeek ?? DateTime.now());
+    selectedDay = getDateOnly(dateInWeek ?? DateTime.now());
   }
   @override
   WeeklyTaskViewState createState() => WeeklyTaskViewState();
@@ -20,9 +20,9 @@ class WeeklyTaskView extends StatefulWidget {
 class WeeklyTaskViewState extends State<WeeklyTaskView> {
   final DatabaseService _db = DatabaseService();
   late DateTime today;
-  Map<DateTime, List<Task>> active = {};
-  Map<DateTime, List<Task>> complete = {};
-  Map<DateTime, List<Task>> delay = {};
+  Map<DateTime, List<Task>> _active = {};
+  Map<DateTime, List<Task>> _complete = {};
+  Map<DateTime, List<Task>> _delay = {};
 
   /// Initializes the state of the widget
   @override
@@ -34,49 +34,51 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
 
   /// Asynchronously fetches tasks for the current week
   Future<void> setData() async {
-    var taskMaps = await _db.getTaskMapsWeek(today);
+    DateTime monday = mostRecentMonday(today);
+    var taskMaps = await _db.getTaskMapsWeek(monday);
     setState(() {
-      active = taskMaps.$1;
-      complete = taskMaps.$2;
-      delay = taskMaps.$3;
+      _active = taskMaps.$1;
+      _complete = taskMaps.$2;
+      _delay = taskMaps.$3;
     });
   }
 
   void toggleCompleted(Task task) {
+    DateTime monday = mostRecentMonday(today);
     for (int i = 0; i < 7; i++) {
       // get the date of the current day
-      DateTime curr = getDateOnly(today, offsetDays: i);
+      DateTime curr = getDateOnly(monday, offsetDays: i);
 
       // if the task was just completed
       if (task.completed) {
         // and if the task was active
-        if (active[curr]!.contains(task)) {
+        if (_active[curr]!.contains(task)) {
           // then remove it from active and add it to complete
-          active[curr]!.remove(task);
-          complete[curr]!.add(task);
+          _active[curr]!.remove(task);
+          _complete[curr]!.add(task);
         }
 
         // or if the task was delayed
-        if (delay[curr]!.contains(task)) {
+        if (_delay[curr]!.contains(task)) {
           // then remove it from delayed and add it to complete
-          delay[curr]!.remove(task);
-          complete[curr]!.add(task);
+          _delay[curr]!.remove(task);
+          _complete[curr]!.add(task);
         }
         // if the task was just uncompleted
       } else {
         // and if the task was complete
-        if (complete[curr]!.contains(task)) {
+        if (_complete[curr]!.contains(task)) {
           // then remove it from complete and add it to active
-          complete[curr]!.remove(task);
+          _complete[curr]!.remove(task);
           // if the task ws delayed
           if (curr.isBefore(task.timeCurrent)) {
             // then add it to the delayed list
-            delay[curr]!.add(task);
+            _delay[curr]!.add(task);
           }
 
           if (curr.isAtSameMomentAs(task.timeCurrent)) {
             // otherwise add it to the active list
-            active[curr]!.add(task);
+            _active[curr]!.add(task);
           }
         }
       }
@@ -89,18 +91,18 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
 
   void moveDelayedTask(Task task, DateTime oldTaskDate) async {
     DateTime newTaskDate = task.timeCurrent;
-    active[oldTaskDate]!.remove(task);
+    _active[oldTaskDate]!.remove(task);
     for (int i = 0; i < daysBetween(oldTaskDate, newTaskDate); i++) {
       DateTime dateToDelay = getDateOnly(oldTaskDate, offsetDays: i);
-      if (delay[dateToDelay] == null) {
-        delay[dateToDelay] = [];
+      if (_delay[dateToDelay] == null) {
+        _delay[dateToDelay] = [];
       }
-      delay[dateToDelay]!.add(task);
+      _delay[dateToDelay]!.add(task);
     }
-    if (active[newTaskDate] == null) {
-      active[newTaskDate] = [];
+    if (_active[newTaskDate] == null) {
+      _active[newTaskDate] = [];
     }
-    active[newTaskDate]!.add(task);
+    _active[newTaskDate]!.add(task);
     setState(() {
       generateScreen();
     });
@@ -108,17 +110,16 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
 
   void deleteTask(Task task) {
     DateTime startOfWeek = mostRecentMonday(today);
-    DateTime deletionStart = task.timeStart.isBefore(startOfWeek)
-        ? startOfWeek
-        : task.timeStart;
+    DateTime deletionStart =
+        task.timeStart.isBefore(startOfWeek) ? startOfWeek : task.timeStart;
     DateTime deletionEnd = task.timeCurrent;
     int daysToDelete = daysBetween(deletionStart, deletionEnd) + 1;
 
     for (int i = 0; i < daysToDelete; i++) {
       DateTime toDeleteTaskFrom = getDateOnly(deletionStart, offsetDays: i);
-      active[toDeleteTaskFrom]!.remove(task);
-      complete[toDeleteTaskFrom]!.remove(task);
-      delay[toDeleteTaskFrom]!.remove(task);
+      _active[toDeleteTaskFrom]!.remove(task);
+      _complete[toDeleteTaskFrom]!.remove(task);
+      _delay[toDeleteTaskFrom]!.remove(task);
     }
 
     setState(() {
@@ -158,15 +159,16 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
     generateScreen();
   }
 
-  ///A function that generates the screen for the next 7 days
+  /// A function that generates the screen for the next 7 days
   List<Widget> generateScreen() {
     List<Widget> dayWidgets = [];
+    DateTime monday = mostRecentMonday(today);
 
     for (int i = 0; i < 7; i++) {
-      DateTime currentDate = getDateOnly(today, offsetDays: i);
-      List<Task> tasksForDay = (active[currentDate] ?? []) +
-          (complete[currentDate] ?? []) +
-          (delay[currentDate] ?? []);
+      DateTime currentDate = getDateOnly(monday, offsetDays: i);
+      List<Task> tasksForDay = (_active[currentDate] ?? []) +
+          (_complete[currentDate] ?? []) +
+          (_delay[currentDate] ?? []);
 
       dayWidgets.add(
         Column(
@@ -213,13 +215,12 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
             onHorizontalDragEnd: (details) {
               if (details.primaryVelocity! < 0) {
                 Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) =>
-                      MonthlyTaskView(dayOfMonth: today),
+                  builder: (context) => MonthlyTaskView(dayOfMonth: today),
                 ));
               }
               if (details.primaryVelocity! > 0) {
                 Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => TaskView(),
+                  builder: (context) => DailyTaskView(),
                 ));
               }
             },

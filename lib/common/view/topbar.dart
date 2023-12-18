@@ -168,7 +168,7 @@ AppBar _getTopBarDaily(bool forEvents, BuildContext context, state) {
                   } else {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => TaskView(),
+                        builder: (context) => DailyTaskView(),
                       ),
                     );
                   }
