@@ -153,7 +153,6 @@ class TaskViewState extends State<TaskView> {
             Expanded(
               child: getTodayTaskList(),
             ),
-            //getAddTaskButton(this, context),
             Align(
               alignment: Alignment.bottomRight,
               child: Padding(
