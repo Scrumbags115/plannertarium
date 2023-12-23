@@ -174,11 +174,10 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
               child: ElevatedButton(
                 onPressed: () async {
                   Task? newTask = await addButtonForm(context, this);
-                  if (newTask != null) {
-                    setState(() {
-                      setData();
-                    });
-                  }
+                  localDB.addNewTask(newTask);
+                  setState(() {
+                    generateScreen();
+                  });
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.grey,

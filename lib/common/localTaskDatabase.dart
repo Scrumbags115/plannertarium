@@ -50,13 +50,9 @@ class LocalTaskDatabase {
     active[oldTaskDate]!.remove(task);
     for (int i = 0; i < daysBetween(oldTaskDate, newTaskDate); i++) {
       DateTime dateToDelay = getDateOnly(oldTaskDate, offsetDays: i);
-      if (delayed[dateToDelay] != null) {
-        delayed[dateToDelay]!.add(task);
-      }
+      delayed[dateToDelay]?.add(task);
     }
-    if (active[newTaskDate] != null) {
-      active[newTaskDate]!.add(task);
-    }
+    active[newTaskDate]?.add(task);
   }
 
   void deleteTask(Task task, DateTime deletionStart) {
@@ -65,9 +61,9 @@ class LocalTaskDatabase {
 
     for (int i = 0; i < daysToDelete; i++) {
       DateTime toDeleteTaskFrom = getDateOnly(deletionStart, offsetDays: i);
-      active[toDeleteTaskFrom]!.remove(task);
-      completed[toDeleteTaskFrom]!.remove(task);
-      delayed[toDeleteTaskFrom]!.remove(task);
+      active[toDeleteTaskFrom]?.remove(task);
+      completed[toDeleteTaskFrom]?.remove(task);
+      delayed[toDeleteTaskFrom]?.remove(task);
     }
   }
 
