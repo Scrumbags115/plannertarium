@@ -107,7 +107,6 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
     for (int i = 0; i < 7; i++) {
       DateTime currentDate = getDateOnly(monday, offsetDays: i);
       List<Task> tasksForDay = localDB.getTasksForDate(currentDate);
-      print(tasksForDay);
 
       dayWidgets.add(
         Column(
