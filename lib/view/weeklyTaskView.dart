@@ -91,11 +91,11 @@ class WeeklyTaskViewState extends State<WeeklyTaskView> {
       return;
     }
 
-    setState(() {
-      today = selectedDate;
-    });
+    today = selectedDate;
     await setData();
-    generateScreen();
+    setState(() {
+      generateScreen();
+    });
   }
 
   /// A function that generates the screen for the next 7 days

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
+import 'package:planner/common/localTaskDatabase.dart';
 import 'package:planner/common/view/addTaskButton.dart';
 import 'package:planner/common/view/topbar.dart';
 import 'package:planner/models/task.dart';
@@ -19,15 +20,14 @@ class MonthlyTaskView extends StatefulWidget {
 
 class MonthlyTaskViewState extends State<MonthlyTaskView> {
   final DatabaseService _db = DatabaseService();
+  late LocalTaskDatabase localDB;
   late DateTime today;
-  Map<DateTime, List<Task>> _active = {};
-  Map<DateTime, List<Task>> _delay = {};
-  Map<DateTime, List<Task>> _complete = {};
 
   /// Initializes the state of the widget
   @override
   void initState() {
     today = widget.selectedDay;
+    localDB = LocalTaskDatabase();
     super.initState();
     asyncInitState();
   }
@@ -40,78 +40,22 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
 
   /// Asynchronously fetches tasks for the current week
   Future<void> setData() async {
-    var taskMaps = await _db.getTaskMapsMonth(getMonthAsDateTime(today));
-    setState(() {
-      _active = taskMaps.$1;
-      _complete = taskMaps.$2;
-      _delay = taskMaps.$3;
-    });
+    DateTime firstOfMonth = getMonthAsDateTime(today);
+    localDB.setFromTuple(await _db.getTaskMapsMonth(firstOfMonth));
   }
 
   void toggleCompleted(Task task) {
     DateTime startOfMonth = getMonthAsDateTime(today);
-    DateTime startOfNextMonth = getNextMonthAsDateTime(today);
-    for (int i = 0; i < daysBetween(startOfMonth, startOfNextMonth); i++) {
-      DateTime curr = getDateOnly(startOfMonth, offsetDays: i);
-      if (task.completed) {
-        if (_active[curr]!.contains(task)) {
-          // then remove it from active and add it to complete
-          _active[curr]!.remove(task);
-          _complete[curr]!.add(task);
-        }
-
-        // or if the task was delayed
-        if (_delay[curr]!.contains(task)) {
-          // then remove it from delayed and add it to complete
-          _delay[curr]!.remove(task);
-          _complete[curr]!.add(task);
-        }
-        //break;
-      } else {
-        if (_complete[curr]!.contains(task)) {
-          // then remove it from complete and add it to active
-          _complete[curr]!.remove(task);
-          // if the task ws delayed
-          if (curr.isBefore(task.timeCurrent)) {
-            // then add it to the delayed list
-            _delay[curr]!.add(task);
-          }
-
-          if (curr.isAtSameMomentAs(task.timeCurrent)) {
-            // otherwise add it to the active list
-            _active[curr]!.add(task);
-          }
-        }
-      }
-      setState(() {
-        getTasksForDay(curr);
-      });
-    }
-
+    localDB.toggleCompleted(task, startOfMonth);
+    updateCalendarDots();
     setState(() {
       getTaskList();
     });
   }
 
   void moveDelayedTask(Task task, DateTime oldTaskDate) async {
-    DateTime newTaskDate = task.timeCurrent;
-    _active[oldTaskDate]!.remove(task);
-    setState(() {});
-    for (int i = 0; i < daysBetween(oldTaskDate, newTaskDate); i++) {
-      DateTime dateToDelay = getDateOnly(oldTaskDate, offsetDays: i);
-      if (_delay[dateToDelay] == null) {
-        _delay[dateToDelay] = [];
-      }
-      _delay[dateToDelay]!.add(task);
-      setState(() {
-        getTasksForDay(dateToDelay);
-      });
-    }
-    if (_active[newTaskDate] == null) {
-      _active[newTaskDate] = [];
-    }
-    _active[newTaskDate]!.add(task);
-
+    localDB.moveDelayedTask(task, oldTaskDate);
+    updateCalendarDots();
     setState(() {
       getTaskList();
     });
@@ -121,18 +65,8 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
     DateTime startOfMonth = getMonthAsDateTime(today);
     DateTime deletionStart =
         task.timeStart.isBefore(startOfMonth) ? startOfMonth : task.timeStart;
-    DateTime deletionEnd = task.timeCurrent;
-    int daysToDelete = daysBetween(deletionStart, deletionEnd) + 1;
-
-    for (int i = 0; i < daysToDelete; i++) {
-      DateTime toDeleteTaskFrom = getDateOnly(deletionStart, offsetDays: i);
-      _active[toDeleteTaskFrom]!.remove(task);
-      _complete[toDeleteTaskFrom]!.remove(task);
-      _delay[toDeleteTaskFrom]!.remove(task);
-      setState(() {
-        getTasksForDay(toDeleteTaskFrom);
-      });
-    }
+    localDB.deleteTask(task, deletionStart);
+    updateCalendarDots();
     setState(() {
       getTaskList();
     });
@@ -146,21 +80,27 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
 
   /// return a list of active tasks in a day (for dots)
   List<Task> getTasksForDay(DateTime day) {
-    var taskForDay = _active[getDateOnly(day)] ?? [];
-    return taskForDay;
+    return localDB.active[getDateOnly(day)] ?? [];
+  }
+
+  void updateCalendarDots() {
+    DateTime startOfMonth = getMonthAsDateTime(today);
+    DateTime startOfNextMonth = getNextMonthAsDateTime(today);
+
+    for (int i = 0; i < daysBetween(startOfMonth, startOfNextMonth); i++) {
+      DateTime curr = getDateOnly(startOfMonth, offsetDays: i);
+      setState(() {
+        getTasksForDay(curr);
+      });
+    }
   }
 
   /// Gets the list of tasks for the current day (for bottom)
   ListView getTaskList() {
     return ListView.builder(
-      itemCount: ((_active[today] ?? []) +
-              (_complete[today] ?? []) +
-              (_delay[today] ?? []))
-          .length,
+      itemCount: localDB.getTasksForDate(today).length,
       itemBuilder: (context, index) {
-        Task task = ((_active[today] ?? []) +
-            (_complete[today] ?? []) +
-            (_delay[today] ?? []))[index];
+        Task task = localDB.getTasksForDate(today)[index];
         return TaskCard(task: task, dateOfCard: today, state: this);
       },
     );
@@ -190,8 +130,6 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
                 },
                 onDaySelected: (selectedDay, focusedDay) async {
                   if (!isSameDay(today, selectedDay)) {
-                    final newTodayTasks =
-                        await _db.fetchTodayTasks(selectedDay);
                     setState(() {
                       today = getDateOnly(selectedDay);
                     });
@@ -240,16 +178,10 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
                     child: ElevatedButton(
                       onPressed: () async {
                         Task? newTask = await addButtonForm(context, this);
-                        if (newTask != null) {
-                          setState(() {
-                            DateTime newTaskDateStart = newTask.timeStart;
-                            _active[newTaskDateStart] = [
-                              ..._active[newTaskDateStart] ?? [],
-                              newTask
-                            ];
-                            getTaskList();
-                          });
-                        }
+                        localDB.addNewTask(newTask);
+                        setState(() {
+                          getTaskList();
+                        });
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.grey,
