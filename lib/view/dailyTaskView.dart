@@ -37,7 +37,6 @@ class TaskViewState extends State<DailyTaskView> {
   /// Performs asynchronous initialization for the widget.
   void asyncInitState() async {
     localDB.setFromTuple(await db.getTaskMapsDay(today));
-
     setState(() {});
   }
 
