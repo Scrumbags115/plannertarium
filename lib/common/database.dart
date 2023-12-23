@@ -477,19 +477,16 @@ class DatabaseService {
 
   /// Returns a 3-tuple of List<Task>
   /// Each list has tasks that are either active, completed, or delayed in a time window
-  Future<(List<Task>, List<Task>, List<Task>)> getTaskMapsDay(
+  Future<
+      (
+        Map<DateTime, List<Task>>,
+        Map<DateTime, List<Task>>,
+        Map<DateTime, List<Task>>
+      )> getTaskMapsDay(
       DateTime dateStart) async {
     dateStart = getDateOnly(dateStart);
 
-    Map<DateTime, List<Task>> dayActiveMap, dayCompMap, dayDelayMap;
-    (dayActiveMap, dayCompMap, dayDelayMap) =
-        await getTaskMaps(dateStart, getDateOnly(dateStart, offsetDays: 1));
-
-    return (
-      dayActiveMap[dateStart] ?? [],
-      dayCompMap[dateStart] ?? [],
-      dayDelayMap[dateStart] ?? []
-    );
+    return await getTaskMaps(dateStart, getDateOnly(dateStart, offsetDays: 1));
   }
 
   /// Returns a 3-tuple of Maps<DateTime, List<Task>> where each map goes from 1 week from dateStart
@@ -912,12 +909,12 @@ class DatabaseService {
   /// Get daily tasks for a day as a single list
   /// returns a list of tasks
   Future<List<Task>> fetchTodayTasks(DateTime selectedDate) async {
-    List<Task> activeList, delayedList, completedList;
-    (activeList, delayedList, completedList) =
+    Map<DateTime, List<Task>> activeMap, delayedMap, completedMap;
+    (activeMap, delayedMap, completedMap) =
         await getTaskMapsDay(selectedDate);
 
     //active = activeMap;
-    final todayTasks = [...activeList, ...delayedList, ...completedList];
+    final todayTasks = [...activeMap[selectedDate]!, ...delayedMap[selectedDate]!, ...completedMap[selectedDate]!];
 
     return todayTasks;
   }

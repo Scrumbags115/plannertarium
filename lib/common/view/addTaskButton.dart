@@ -18,7 +18,7 @@ Future<Task?> addButtonForm(BuildContext context, state) async {
   TextEditingController locationController = TextEditingController();
   TextEditingController tagController = TextEditingController();
   DateTime? dueDate;
-  DateTime startTime = getDateOnly(DateTime.now());
+  DateTime startTime = getDateOnly(state.today);
   Completer<Task?> completer = Completer<Task?>();
   List<Tag> enteredTags = [];
   showDialog(
