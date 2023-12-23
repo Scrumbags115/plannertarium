@@ -883,41 +883,7 @@ class DatabaseService {
     return getTasksDue(dateStart, nextMonth);
   }
 
-  /// Get weekly tasks as a single list
-  Future<List<Task>> fetchWeeklyTask({DateTime? weekStart}) async {
-    DateTime today = getDateOnly(weekStart ?? DateTime.now());
-    today = mostRecentMonday(today);
-    Map<DateTime, List<Task>> activeMap, delayedMap, completedMap;
-
-    // Fetch task maps for the specified week
-    (activeMap, delayedMap, completedMap) = await getTaskMapsWeek(today);
-    Map<DateTime, List<Task>> dueTasksMap = await getTasksDueWeek(today);
-
-    List<Task> allTasks = [];
-    for (int i = 0; i < 7; i++) {
-      DateTime newDay = getDateOnly(today, offsetDays: i);
-      allTasks += activeMap[newDay]!;
-      allTasks += delayedMap[newDay]!;
-      allTasks += completedMap[newDay]!;
-      allTasks += dueTasksMap[newDay]!;
-    }
-    // print('All tasks for the week: $allTasks');
-
-    return allTasks;
-  }
-
-  /// Get daily tasks for a day as a single list
-  /// returns a list of tasks
-  Future<List<Task>> fetchTodayTasks(DateTime selectedDate) async {
-    Map<DateTime, List<Task>> activeMap, delayedMap, completedMap;
-    (activeMap, delayedMap, completedMap) =
-        await getTaskMapsDay(selectedDate);
-
-    //active = activeMap;
-    final todayTasks = [...activeMap[selectedDate]!, ...delayedMap[selectedDate]!, ...completedMap[selectedDate]!];
-
-    return todayTasks;
-  }
+  ////////////////////////////////////////////////////
 
   // todo: figure out pagination support. from my findings, firestore has poor support for this when also doing queries, and this is only supported with third party services (there are libraries for 3rd parties though), which may not be free :(
   /// Perform a query on a user collection with a certain document key
