@@ -1,9 +1,8 @@
 import 'package:planner/common/database.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:planner/common/view/timeManagement.dart';
+import 'package:planner/common/localTaskDatabase.dart';
 import 'package:planner/common/view/addTaskButton.dart';
+import 'package:planner/common/view/timeManagement.dart';
 import 'package:planner/common/view/topbar.dart';
 import 'package:planner/models/task.dart';
 import 'package:planner/view/loginView.dart';
@@ -11,46 +10,33 @@ import 'dart:async';
 import 'package:planner/view/weeklyTaskView.dart';
 import 'package:planner/view/taskCard.dart';
 
-class TaskView extends StatefulWidget {
-  late DateTime selectedDay;
-  TaskView({super.key, DateTime? dayOfDailyView}) {
-    selectedDay = dayOfDailyView ?? DateTime.now();
+class DailyTaskView extends StatefulWidget {
+  late final DateTime selectedDay;
+  DailyTaskView({DateTime? dayOfDailyView}) {
+    selectedDay = getDateOnly(dayOfDailyView ?? DateTime.now());
   }
   @override
   TaskViewState createState() => TaskViewState();
 }
 
-class TaskViewState extends State<TaskView> {
-  final FirebaseAuth auth = FirebaseAuth.instance;
-  final FirebaseFirestore firestore = FirebaseFirestore.instance;
-  final User? user = FirebaseAuth.instance.currentUser;
+class TaskViewState extends State<DailyTaskView> {
   DatabaseService db = DatabaseService();
-  DateTime today = DateTime.now();
-  List<Task> active = [];
-  List<Task> delay = [];
-  List<Task> complete = [];
-
-  List<Task> todayTasks = [];
-  List<Task> selectedDateTasks = [];
-  List<Task> todayDelayedTasks = [];
-  bool forEvents = false;
+  late LocalTaskDatabase localDB;
+  late DateTime today;
 
   @override
 
   /// Initializes the state of the widget.
   void initState() {
+    today = widget.selectedDay;
+    localDB = LocalTaskDatabase();
     super.initState();
     asyncInitState();
   }
 
   /// Performs asynchronous initialization for the widget.
   void asyncInitState() async {
-    var taskMaps = await db.getTaskMapsDay(widget.selectedDay);
-    active = taskMaps.$1;
-    delay = taskMaps.$2;
-    complete = taskMaps.$3;
-
-    todayTasks = active + delay + complete;
+    localDB.setFromTuple(await db.getTaskMapsDay(today));
     setState(() {});
   }
 
@@ -63,45 +49,36 @@ class TaskViewState extends State<TaskView> {
       return;
     }
 
-    widget.selectedDay = selectedDate;
-    var taskMaps = await db.getTaskMapsDay(selectedDate);
-    active = taskMaps.$1;
-    delay = taskMaps.$2;
-    complete = taskMaps.$3;
+    localDB.setFromTuple(await db.getTaskMapsDay(selectedDate));
 
     setState(() {
-      today = selectedDate;
-      todayTasks = active + delay + complete;
+      today = getDateOnly(selectedDate);
       getTodayTaskList();
     });
   }
 
   void moveDelayedTask(Task task, DateTime oldDate) async {
-    active.remove(task);
-    delay.add(task);
-    todayTasks = active + delay + complete;
+    localDB.moveDelayedTask(task, oldDate);
     setState(() {
       getTodayTaskList();
     });
   }
 
   void deleteTask(Task task) {
-    active.remove(task);
-    delay.remove(task);
-    complete.remove(task);
-    todayTasks = active + delay + complete;
+    localDB.deleteTask(task, today);
     setState(() {
       getTodayTaskList();
     });
   }
 
   ListView getTodayTaskList() {
+    print(localDB.getTasksForDate(today));
     return ListView.builder(
-      itemCount: todayTasks.length,
+      // Must use this format for calls to setState(_active) or similar to update view
+      itemCount: localDB.getTasksForDate(today).length,
       itemBuilder: (context, index) {
-        Task task = todayTasks[index];
-        return TaskCard(
-            task: task, state: this, dateOfCard: widget.selectedDay);
+        Task task = localDB.getTasksForDate(today)[index];
+        return TaskCard(task: task, state: this, dateOfCard: today);
       },
     );
   }
@@ -163,7 +140,6 @@ class TaskViewState extends State<TaskView> {
             Expanded(
               child: getTodayTaskList(),
             ),
-            //getAddTaskButton(this, context),
             Align(
               alignment: Alignment.bottomRight,
               child: Padding(
@@ -173,11 +149,10 @@ class TaskViewState extends State<TaskView> {
                   child: ElevatedButton(
                     onPressed: () async {
                       Task? newTask = await addButtonForm(context, this);
-                      if (newTask != null) {
-                        setState(() {
-                          todayTasks.add(newTask);
-                        });
-                      }
+                      localDB.addNewTask(newTask);
+                      setState(() {
+                        getTodayTaskList();
+                      });
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.grey,

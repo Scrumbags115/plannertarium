@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:planner/common/database.dart';
+import 'package:planner/common/localTaskDatabase.dart';
 import 'package:planner/common/view/addTaskButton.dart';
 import 'package:planner/common/view/topbar.dart';
 import 'package:planner/models/task.dart';
@@ -9,31 +10,24 @@ import 'package:planner/common/view/timeManagement.dart';
 import 'package:planner/view/taskCard.dart';
 
 class MonthlyTaskView extends StatefulWidget {
-  late DateTime startOfMonth;
-  late DateTime currentDate;
+  late DateTime selectedDay;
   MonthlyTaskView({super.key, required DateTime dayOfMonth}) {
-    currentDate = getDateOnly(dayOfMonth);
-    startOfMonth = getMonthAsDateTime(currentDate);
+    selectedDay = getDateOnly(dayOfMonth);
   }
   @override
   MonthlyTaskViewState createState() => MonthlyTaskViewState();
 }
 
 class MonthlyTaskViewState extends State<MonthlyTaskView> {
-  final CalendarFormat _calendarFormat = CalendarFormat.month;
-  DateTime _focusedDay = DateTime.now();
-  DateTime _selectedDay = getDateOnly(DateTime.now());
   final DatabaseService _db = DatabaseService();
-  List<Task> todayTasks = [];
-  final PageController _pageController = PageController();
-  Map<DateTime, List<Task>> _active = {};
-  Map<DateTime, List<Task>> _delay = {};
-  Map<DateTime, List<Task>> _complete = {};
-  DateTime today = DateTime.now();
+  late LocalTaskDatabase localDB;
+  late DateTime today;
 
   /// Initializes the state of the widget
   @override
   void initState() {
+    today = widget.selectedDay;
+    localDB = LocalTaskDatabase();
     super.initState();
     asyncInitState();
   }
@@ -42,118 +36,37 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
   void asyncInitState() async {
     await setData();
     setState(() {});
-    // print('monthly: $_active');
   }
 
   /// Asynchronously fetches tasks for the current week
   Future<void> setData() async {
-    var taskMaps = await _db.getTaskMapsMonth(getMonthAsDateTime(_selectedDay));
-    setState(() {
-      _active = taskMaps.$1;
-      _complete = taskMaps.$2;
-      _delay = taskMaps.$3;
-      todayTasks = (_active[_selectedDay] ?? []) +
-          (_complete[_selectedDay] ?? []) +
-          (_delay[_selectedDay] ?? []);
-    });
+    DateTime firstOfMonth = getMonthAsDateTime(today);
+    localDB.setFromTuple(await _db.getTaskMapsMonth(firstOfMonth));
   }
 
   void toggleCompleted(Task task) {
-    for (int i = 0;
-        i <
-            daysBetween(widget.startOfMonth,
-                getNextMonthAsDateTime(widget.startOfMonth));
-        i++) {
-      DateTime curr = getDateOnly(widget.startOfMonth, offsetDays: i);
-      if (task.completed) {
-        if (_active[curr]!.contains(task)) {
-          // then remove it from active and add it to complete
-          _active[curr]!.remove(task);
-          _complete[curr]!.add(task);
-        }
-
-        // or if the task was delayed
-        if (_delay[curr]!.contains(task)) {
-          // then remove it from delayed and add it to complete
-          _delay[curr]!.remove(task);
-          _complete[curr]!.add(task);
-        }
-        //break;
-      } else {
-        if (_complete[curr]!.contains(task)) {
-          // then remove it from complete and add it to active
-          _complete[curr]!.remove(task);
-          // if the task ws delayed
-          if (curr.isBefore(task.timeCurrent)) {
-            // then add it to the delayed list
-            _delay[curr]!.add(task);
-          }
-
-          if (curr.isAtSameMomentAs(task.timeCurrent)) {
-            // otherwise add it to the active list
-            _active[curr]!.add(task);
-          }
-        }
-      }
-      setState(() {
-        getTasksForDay(curr);
-      });
-    }
-
-    todayTasks = (_active[_selectedDay] ?? []) +
-        (_complete[_selectedDay] ?? []) +
-        (_delay[_selectedDay] ?? []);
+    DateTime startOfMonth = getMonthAsDateTime(today);
+    localDB.toggleCompleted(task, startOfMonth);
+    updateCalendarDots();
     setState(() {
       getTaskList();
     });
   }
 
   void moveDelayedTask(Task task, DateTime oldTaskDate) async {
-    DateTime newTaskDate = task.timeCurrent;
-    _active[oldTaskDate]!.remove(task);
-    setState(() {});
-    for (int i = 0; i < daysBetween(oldTaskDate, newTaskDate); i++) {
-      DateTime dateToDelay = getDateOnly(oldTaskDate, offsetDays: i);
-      if (_delay[dateToDelay] == null) {
-        _delay[dateToDelay] = [];
-      }
-      _delay[dateToDelay]!.add(task);
-      setState(() {
-        getTasksForDay(dateToDelay);
-      });
-    }
-    if (_active[newTaskDate] == null) {
-      _active[newTaskDate] = [];
-    }
-    _active[newTaskDate]!.add(task);
-    todayTasks = (_active[_selectedDay] ?? []) +
-        (_complete[_selectedDay] ?? []) +
-        (_delay[_selectedDay] ?? []);
-
+    localDB.moveDelayedTask(task, oldTaskDate);
+    updateCalendarDots();
     setState(() {
       getTaskList();
     });
   }
 
   void deleteTask(Task task) {
-    DateTime deletionStart = task.timeStart.isBefore(widget.startOfMonth)
-        ? widget.startOfMonth
-        : task.timeStart;
-    DateTime deletionEnd = task.timeCurrent;
-    int daysToDelete = daysBetween(deletionStart, deletionEnd) + 1;
-
-    for (int i = 0; i < daysToDelete; i++) {
-      DateTime toDeleteTaskFrom = getDateOnly(deletionStart, offsetDays: i);
-      _active[toDeleteTaskFrom]!.remove(task);
-      _complete[toDeleteTaskFrom]!.remove(task);
-      _delay[toDeleteTaskFrom]!.remove(task);
-      setState(() {
-        getTasksForDay(toDeleteTaskFrom);
-      });
-    }
-    todayTasks = (_active[_selectedDay] ?? []) +
-        (_complete[_selectedDay] ?? []) +
-        (_delay[_selectedDay] ?? []);
+    DateTime startOfMonth = getMonthAsDateTime(today);
+    DateTime deletionStart =
+        task.timeStart.isBefore(startOfMonth) ? startOfMonth : task.timeStart;
+    localDB.deleteTask(task, deletionStart);
+    updateCalendarDots();
     setState(() {
       getTaskList();
     });
@@ -162,23 +75,33 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
   /// Disposes of the resources used by the widget
   @override
   void dispose() {
-    _pageController.dispose();
     super.dispose();
   }
 
   /// return a list of active tasks in a day (for dots)
   List<Task> getTasksForDay(DateTime day) {
-    var taskForDay = _active[getDateOnly(day)] ?? [];
-    return taskForDay;
+    return localDB.active[getDateOnly(day)] ?? [];
+  }
+
+  void updateCalendarDots() {
+    DateTime startOfMonth = getMonthAsDateTime(today);
+    DateTime startOfNextMonth = getNextMonthAsDateTime(today);
+
+    for (int i = 0; i < daysBetween(startOfMonth, startOfNextMonth); i++) {
+      DateTime curr = getDateOnly(startOfMonth, offsetDays: i);
+      setState(() {
+        getTasksForDay(curr);
+      });
+    }
   }
 
   /// Gets the list of tasks for the current day (for bottom)
   ListView getTaskList() {
     return ListView.builder(
-      itemCount: todayTasks.length,
+      itemCount: localDB.getTasksForDate(today).length,
       itemBuilder: (context, index) {
-        Task task = todayTasks[index];
-        return TaskCard(task: task, dateOfCard: _selectedDay, state: this);
+        Task task = localDB.getTasksForDate(today)[index];
+        return TaskCard(task: task, dateOfCard: today, state: this);
       },
     );
   }
@@ -200,25 +123,20 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
               TableCalendar(
                 firstDay: DateTime(2020, 10, 16),
                 lastDay: DateTime(2130, 3, 14),
-                focusedDay: _focusedDay,
-                calendarFormat: _calendarFormat,
+                focusedDay: getDateOnly(DateTime.now()),
+                calendarFormat: CalendarFormat.month,
                 selectedDayPredicate: (day) {
-                  return isSameDay(_selectedDay, day);
+                  return isSameDay(today, day);
                 },
                 onDaySelected: (selectedDay, focusedDay) async {
-                  if (!isSameDay(_selectedDay, selectedDay)) {
-                    final newTodayTasks =
-                        await _db.fetchTodayTasks(selectedDay);
+                  if (!isSameDay(today, selectedDay)) {
                     setState(() {
-                      _selectedDay = getDateOnly(selectedDay);
-                      _focusedDay = focusedDay;
-                      todayTasks = newTodayTasks;
+                      today = getDateOnly(selectedDay);
                     });
                   }
                 },
                 onPageChanged: (focusedDay) {
-                  _focusedDay = focusedDay;
-                  _selectedDay = getDateOnly(focusedDay);
+                  today = getDateOnly(focusedDay);
                 },
                 eventLoader: (day) {
                   return getTasksForDay(day);
@@ -260,19 +178,10 @@ class MonthlyTaskViewState extends State<MonthlyTaskView> {
                     child: ElevatedButton(
                       onPressed: () async {
                         Task? newTask = await addButtonForm(context, this);
-                        if (newTask != null) {
-                          setState(() {
-                            DateTime newTaskDateStart = newTask.timeStart;
-                            _active[newTaskDateStart] = [
-                              ..._active[newTaskDateStart] ?? [],
-                              newTask
-                            ];
-                            todayTasks = (_active[_selectedDay] ?? []) +
-                                (_complete[_selectedDay] ?? []) +
-                                (_delay[_selectedDay] ?? []);
-                            getTaskList();
-                          });
-                        }
+                        localDB.addNewTask(newTask);
+                        setState(() {
+                          getTaskList();
+                        });
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.grey,
