@@ -10,45 +10,6 @@ import '../../common/view/tagPopup.dart';
 
 import 'flashError.dart';
 
-getAddTaskButton(state, context) {
-  return Align(
-    alignment: Alignment.bottomRight,
-    child: Padding(
-      padding:
-          const EdgeInsets.fromLTRB(0, 0, 20, 20), // Adjust the value as needed
-      child: ClipOval(
-        child: ElevatedButton(
-          onPressed: () async {
-            Task? newTask = await addButtonForm(context, state);
-            final newTodayTasks =
-                await state.db.fetchTodayTasks(state.selectedDay);
-            if (newTask != null) {
-              state.setState(() {
-                state.todayTasks.add(newTask);
-                state.fetchWeeklyTasks();
-              });
-              state.setState(() {
-                state._selectedDay = state.selectedDay;
-                state._focusedDay = state.selectedDay;
-                state.todayTasks = newTodayTasks;
-              });
-            }
-            state.setState(() {});
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.grey,
-            minimumSize: const Size(75, 75),
-          ),
-          child: const Icon(
-            Icons.add_outlined,
-            color: Colors.black,
-          ),
-        ),
-      ),
-    ),
-  );
-}
-
 ///A function that asynchronously shows a dialog for adding a new task.
 Future<Task?> addButtonForm(BuildContext context, state) async {
   DatabaseService db = DatabaseService();
@@ -57,7 +18,7 @@ Future<Task?> addButtonForm(BuildContext context, state) async {
   TextEditingController locationController = TextEditingController();
   TextEditingController tagController = TextEditingController();
   DateTime? dueDate;
-  DateTime startTime = getDateOnly(DateTime.now());
+  DateTime startTime = getDateOnly(state.today);
   Completer<Task?> completer = Completer<Task?>();
   List<Tag> enteredTags = [];
   showDialog(

@@ -3,6 +3,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:planner/common/database.dart';
 import 'package:planner/models/task.dart';
+import 'common/mapEquals.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 
@@ -482,18 +483,6 @@ List<Task> tasksDue = [
       timeCreated: DateTime(2023, 11, 8)), // Just after 9th
 ];
 
-bool mapEquals(Map<DateTime, List<Task>> m1, Map<DateTime, List<Task>> m2) {
-  if (m1.keys.length != m2.keys.length) {
-    return false;
-  }
-  for (DateTime key in m1.keys) {
-    if (!setEquals(m1[key]!.toSet(), m2[key]!.toSet())) {
-      return false;
-    }
-  }
-  return true;
-}
-
 main() async {
   await task_getSet_new_user();
 
@@ -509,15 +498,14 @@ main() async {
 task_getSet_new_user() async {
   late DatabaseService db;
   late DateTime today;
-  late List<Task> emptyDay;
-  late Map<DateTime, List<Task>> emptyWeek, emptyMonth;
-  late List<Task> dailyActiveExp, dailyCompExp, dailyDelayExp;
+  late Map<DateTime, List<Task>> emptyDay, emptyWeek, emptyMonth;
+  late Map<DateTime, List<Task>> dailyActiveExp, dailyCompExp, dailyDelayExp;
   String newUser1 = "taskUser${DateTime.now().millisecondsSinceEpoch}";
   setUp(() async {
     today = DateTime(2023, 11, 4);
     db = DatabaseService.createTest(
         uid: newUser1, firestoreObject: FakeFirebaseFirestore());
-    emptyDay = [];
+    emptyDay = {today: []};
     emptyWeek = {
       DateTime(2023, 11, 4): [],
       DateTime(2023, 11, 5): [],
@@ -559,20 +547,26 @@ task_getSet_new_user() async {
       DateTime(2023, 12, 2): [],
       DateTime(2023, 12, 3): []
     };
-    dailyActiveExp = [tasks[18]];
-    dailyCompExp = [tasks[16], tasks[20]];
-    dailyDelayExp = [tasks[4], tasks[13]];
+    dailyActiveExp = {
+      DateTime(2023, 11, 20): [tasks[18]]
+    };
+    dailyCompExp = {
+      DateTime(2023, 11, 20): [tasks[16], tasks[20]]
+    };
+    dailyDelayExp = {
+      DateTime(2023, 11, 20): [tasks[4], tasks[13]]
+    };
   });
 
   group("Test that a new user works as expected", () {
     test("No active, completed, and delayed tasks for a 1 day time window",
         () async {
-      List<Task> dailyActive, dailyCompleted, dailyDelayed;
+      Map<DateTime, List<Task>> dailyActive, dailyCompleted, dailyDelayed;
       (dailyActive, dailyCompleted, dailyDelayed) =
           await db.getTaskMapsDay(today);
-      expect(dailyActive, emptyDay);
-      expect(dailyCompleted, emptyDay);
-      expect(dailyDelayed, emptyDay);
+      expect(myMapEquals(dailyActive, emptyDay), true);
+      expect(myMapEquals(dailyCompleted, emptyDay), true);
+      expect(myMapEquals(dailyDelayed, emptyDay), true);
     });
 
     test("No active, completed, and delayed tasks for a 1 week time window",
@@ -580,9 +574,9 @@ task_getSet_new_user() async {
       Map<DateTime, List<Task>> weeklyActive, weeklyCompleted, weeklyDelayed;
       (weeklyActive, weeklyCompleted, weeklyDelayed) =
           await db.getTaskMapsWeek(today);
-      assert(mapEquals(weeklyActive, emptyWeek));
-      assert(mapEquals(weeklyCompleted, emptyWeek));
-      assert(mapEquals(weeklyDelayed, emptyWeek));
+      expect(myMapEquals(weeklyActive, emptyWeek), true);
+      expect(myMapEquals(weeklyCompleted, emptyWeek), true);
+      expect(myMapEquals(weeklyDelayed, emptyWeek), true);
     });
 
     test("No active, completed, and delayed tasks for a 1 month time window",
@@ -590,9 +584,9 @@ task_getSet_new_user() async {
       Map<DateTime, List<Task>> monthlyActive, monthlyCompleted, monthlyDelayed;
       (monthlyActive, monthlyCompleted, monthlyDelayed) =
           await db.getTaskMapsMonth(today);
-      expect(mapEquals(monthlyActive, emptyMonth), true);
-      expect(mapEquals(monthlyCompleted, emptyMonth), true);
-      expect(mapEquals(monthlyDelayed, emptyMonth), true);
+      expect(myMapEquals(monthlyActive, emptyMonth), true);
+      expect(myMapEquals(monthlyCompleted, emptyMonth), true);
+      expect(myMapEquals(monthlyDelayed, emptyMonth), true);
     });
   });
 
@@ -601,12 +595,12 @@ task_getSet_new_user() async {
       for (var t in tasks) {
         db.setTask(t);
       }
-      List<Task> dailyActive, dailyCompleted, dailyDelayed;
+      Map<DateTime, List<Task>> dailyActive, dailyCompleted, dailyDelayed;
       (dailyActive, dailyCompleted, dailyDelayed) =
           await db.getTaskMapsDay(DateTime(2023, 11, 20));
-      expect(dailyActive, dailyActiveExp);
-      expect(dailyCompleted, dailyCompExp);
-      expect(dailyDelayed, dailyDelayExp);
+      expect(myMapEquals(dailyActive, dailyActiveExp), true);
+      expect(myMapEquals(dailyCompleted, dailyCompExp), true);
+      expect(myMapEquals(dailyDelayed, dailyDelayExp), true);
     });
   });
 
@@ -665,9 +659,9 @@ task_getSet_existing_user() async {
       Map<DateTime, List<Task>> weeklyActive, weeklyCompleted, weeklyDelayed;
       (weeklyActive, weeklyCompleted, weeklyDelayed) =
           await db.getTaskMapsWeek(DateTime(2023, 11, 6));
-      expect(mapEquals(weeklyActive, weeklyActiveExp), true);
-      expect(mapEquals(weeklyCompleted, weeklyCompExp), true);
-      expect(mapEquals(weeklyDelayed, weeklyDelayExp), true);
+      expect(myMapEquals(weeklyActive, weeklyActiveExp), true);
+      expect(myMapEquals(weeklyCompleted, weeklyCompExp), true);
+      expect(myMapEquals(weeklyDelayed, weeklyDelayExp), true);
     });
   });
 }
@@ -691,7 +685,7 @@ task_getTasksDue_gettingTheCorrectListOfTasksForADay() async {
     test("Test correct task due on 11/9 in list tasksDue", () async {
       Map<DateTime, List<Task>> dailyTasksDue =
           await db.getTasksDue(DateTime(2023, 11, 9), DateTime(2023, 11, 10));
-      expect(mapEquals(dailyTasksDue, dailyTasksDueExpected), true);
+      expect(myMapEquals(dailyTasksDue, dailyTasksDueExpected), true);
     });
   });
 }
@@ -797,10 +791,10 @@ task_move() async {
             await db.getTaskMapsWeek(DateTime(2023, 11, 6));
       }
 
-      expect(mapEquals(weeklyActive, weeklyActiveExp), true,
+      expect(myMapEquals(weeklyActive, weeklyActiveExp), true,
           reason: "$weeklyActive\n!=\n$weeklyActiveExp");
-      expect(mapEquals(weeklyCompleted, weeklyCompExp), true);
-      expect(mapEquals(weeklyDelayed, weeklyDelayExp), true);
+      expect(myMapEquals(weeklyCompleted, weeklyCompExp), true);
+      expect(myMapEquals(weeklyDelayed, weeklyDelayExp), true);
     });
   });
 }
