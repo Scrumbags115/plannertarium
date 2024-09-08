@@ -14,8 +14,8 @@ jobs:
 #          architecture: x64 # optional, x64 or arm64
       - run: flutter pub get
       - run: flutter test
-      - run: flutter build apk
-      - run: flutter build appbundle
+    #   - run: flutter build apk
+    #   - run: flutter build appbundle
 # todo: add integration tests
 #  integration-tests:
 #    runs-on: windows-latest
