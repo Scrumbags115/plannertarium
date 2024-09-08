@@ -18,3 +18,7 @@ cd plannertarium
 Then run the app with your [method of choice](https://docs.flutter.dev/get-started/test-drive). Current supported platforms are web and android. You will require a registered SHA1 key with a Firestore account.
 
 ## Demo
+
+
+
+
