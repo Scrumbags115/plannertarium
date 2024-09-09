@@ -19,6 +19,5 @@ Then run the app with your [method of choice](https://docs.flutter.dev/get-start
 
 ## Demo
 
-
-
+https://github.com/user-attachments/assets/00d50ef2-291f-44dc-967c-39da18723806
 
